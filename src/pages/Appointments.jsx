@@ -8,14 +8,16 @@ export default function Appointments() {
   const [loading, setLoading] = useState(true)
   const [clientId, setClientId] = useState('')
   const [date, setDate] = useState('')
+  const [filterDate, setFilterDate] = useState('')
   const [error, setError] = useState('')
   const [saving, setSaving] = useState(false)
   const [showForm, setShowForm] = useState(false)
 
-  async function loadData() {
+  async function loadData(filter = '') {
     try {
+      const url = filter ? `/appointments?date=${filter}` : '/appointments'
       const [apRes, clRes] = await Promise.all([
-        api.get('/appointments'),
+        api.get(url),
         api.get('/clients'),
       ])
       setAppointments(apRes.data.data.data)
@@ -29,6 +31,17 @@ export default function Appointments() {
 
   useEffect(() => { loadData() }, [])
 
+  function handleFilter(e) {
+    const value = e.target.value
+    setFilterDate(value)
+    loadData(value)
+  }
+
+  function handleClearFilter() {
+    setFilterDate('')
+    loadData('')
+  }
+
   async function handleSubmit(e) {
     e.preventDefault()
     setSaving(true)
@@ -41,7 +54,7 @@ export default function Appointments() {
       setClientId('')
       setDate('')
       setShowForm(false)
-      loadData()
+      loadData(filterDate)
     } catch (err) {
       setError(err.response?.data?.message || 'Erro ao criar agendamento')
     } finally {
@@ -52,7 +65,7 @@ export default function Appointments() {
   async function handleStatus(id, status) {
     try {
       await api.patch(`/appointments/${id}/status`, { status })
-      loadData()
+      loadData(filterDate)
     } catch (err) {
       console.error(err)
     }
@@ -62,7 +75,7 @@ export default function Appointments() {
     if (!confirm('Deletar este agendamento?')) return
     try {
       await api.delete(`/appointments/${id}`)
-      loadData()
+      loadData(filterDate)
     } catch (err) {
       console.error(err)
     }
@@ -73,13 +86,6 @@ export default function Appointments() {
     confirmed: { backgroundColor: '#d1fae5', color: '#059669' },
     cancelled: { backgroundColor: '#fee2e2', color: '#dc2626' },
     completed: { backgroundColor: '#e0e7ff', color: '#4f46e5' },
-  }
-
-  const statusLabels = {
-    pending: 'Pendente',
-    confirmed: 'Confirmado',
-    cancelled: 'Cancelado',
-    completed: 'Concluído',
   }
 
   if (loading) return <div style={styles.loading}>Carregando...</div>
@@ -124,14 +130,36 @@ export default function Appointments() {
                   required
                 />
               </div>
-              <button style={styles.btnPrimary} type="submit" disabled={saving}>
-                {saving ? 'Salvando...' : 'Salvar'}
-              </button>
+              <div style={styles.formButtons}>
+                <button style={styles.btnPrimary} type="submit" disabled={saving}>
+                  {saving ? 'Salvando...' : 'Salvar'}
+                </button>
+                <button style={styles.btnSecondary} type="button" onClick={() => setShowForm(false)}>
+                  Cancelar
+                </button>
+              </div>
             </form>
           </div>
         )}
 
         <div style={styles.section}>
+          <div style={styles.filterRow}>
+            <div style={styles.filterField}>
+              <label style={styles.label}>Filtrar por data</label>
+              <input
+                style={styles.input}
+                type="date"
+                value={filterDate}
+                onChange={handleFilter}
+              />
+            </div>
+            {filterDate && (
+              <button onClick={handleClearFilter} style={styles.btnSecondary}>
+                Limpar filtro
+              </button>
+            )}
+          </div>
+
           {appointments.length === 0 ? (
             <p style={styles.empty}>Nenhum agendamento encontrado</p>
           ) : (
@@ -171,6 +199,9 @@ const styles = {
   pageTitle: { margin: 0 },
   form: { backgroundColor: '#fff', padding: '24px', borderRadius: '12px', boxShadow: '0 2px 8px rgba(0,0,0,0.08)', marginBottom: '24px' },
   formTitle: { margin: '0 0 16px 0' },
+  formButtons: { display: 'flex', gap: '8px' },
+  filterRow: { display: 'flex', alignItems: 'flex-end', gap: '12px', marginBottom: '16px' },
+  filterField: { flex: 1 },
   field: { marginBottom: '16px' },
   label: { display: 'block', marginBottom: '6px', fontWeight: '600', color: '#333' },
   input: { width: '100%', padding: '10px 14px', borderRadius: '8px', border: '1px solid #ddd', fontSize: '16px', boxSizing: 'border-box' },
@@ -181,6 +212,7 @@ const styles = {
   actions: { display: 'flex', gap: '8px', alignItems: 'center' },
   statusSelect: { padding: '6px 10px', borderRadius: '8px', border: 'none', cursor: 'pointer', fontWeight: '600', fontSize: '13px' },
   btnPrimary: { padding: '10px 20px', backgroundColor: '#2563eb', color: '#fff', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: '600' },
+  btnSecondary: { padding: '10px 20px', backgroundColor: '#f1f5f9', color: '#333', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: '600' },
   btnDelete: { padding: '6px 14px', backgroundColor: '#fee2e2', color: '#dc2626', border: 'none', borderRadius: '8px', cursor: 'pointer' },
   error: { backgroundColor: '#fee2e2', color: '#dc2626', padding: '10px 14px', borderRadius: '8px', marginBottom: '16px' },
   loading: { display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '100vh', fontSize: '18px' },
