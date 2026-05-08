@@ -18,7 +18,7 @@ export default function Navbar() {
 
   return (
     <div style={styles.navbar}>
-      <div style={styles.brand}>BarberSaaS</div>
+      <div style={styles.brand}>BarberPro</div>
       <div style={styles.links}>
         {links.map((link) => (
           <button
