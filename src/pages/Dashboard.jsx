@@ -2,6 +2,10 @@ import { useState, useEffect } from 'react'
 import api from '../services/api'
 import Navbar from '../components/Navbar'
 
+function getInitials(name = '') {
+  return name.split(' ').slice(0, 2).map(n => n[0]).join('').toUpperCase()
+}
+
 export default function Dashboard() {
   const [appointments, setAppointments] = useState([])
   const [clients, setClients] = useState([])
@@ -28,68 +32,122 @@ export default function Dashboard() {
     loadData()
   }, [])
 
-  if (loading) return <div style={styles.loading}>Carregando...</div>
+  if (loading) return (
+    <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '100vh', background: '#09090b', color: '#a1a1aa', fontSize: '16px' }}>
+      Carregando...
+    </div>
+  )
+
+  const statusStyle = {
+    confirmed:  { background: '#14271e', color: '#4ade80' },
+    pending:    { background: '#2a1f10', color: '#fb923c' },
+    cancelled:  { background: '#2a1414', color: '#f87171' },
+    completed:  { background: '#1c1f2e', color: '#818cf8' },
+  }
 
   return (
-    <div>
+    <div style={{ background: '#09090b', minHeight: '100vh' }}>
       <Navbar />
-      <div style={styles.container}>
-        <h2 style={styles.pageTitle}>Dashboard</h2>
+      <div style={{ maxWidth: '900px', margin: '0 auto', padding: '32px 24px' }}>
 
-        <div style={styles.cards}>
-          <div style={styles.card}>
-            <div style={styles.cardNumber}>{appointments.length}</div>
-            <div style={styles.cardLabel}>Agendamentos</div>
-          </div>
-          <div style={styles.card}>
-            <div style={styles.cardNumber}>{clients.length}</div>
-            <div style={styles.cardLabel}>Clientes</div>
-          </div>
-          <div style={styles.card}>
-            <div style={styles.cardNumber}>{barbers.length}</div>
-            <div style={styles.cardLabel}>Barbeiros</div>
-          </div>
+        {/* Header */}
+        <div style={{ marginBottom: '28px' }}>
+          <h1 style={{ fontSize: '22px', fontWeight: '500', color: '#fff', margin: '0 0 4px' }}>Dashboard</h1>
+          <p style={{ fontSize: '13px', color: '#52525b', margin: 0 }}>Visão geral da sua barbearia</p>
         </div>
 
-        <div style={styles.section}>
-          <h2 style={styles.sectionTitle}>Próximos agendamentos</h2>
+        {/* Cards */}
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '12px', marginBottom: '28px' }}>
+          <StatCard
+            label="Agendamentos"
+            value={appointments.length}
+            sub="este mês"
+            icon="ti-calendar"
+            iconColor="#4ade80"
+            iconBg="#1c2a1e"
+          />
+          <StatCard
+            label="Clientes"
+            value={clients.length}
+            sub="cadastrados"
+            icon="ti-users"
+            iconColor="#818cf8"
+            iconBg="#1c1f2e"
+          />
+          <StatCard
+            label="Barbeiros"
+            value={barbers.length}
+            sub="ativos"
+            icon="ti-scissors"
+            iconColor="#fb923c"
+            iconBg="#2a1f1c"
+          />
+        </div>
+
+        {/* Appointments list */}
+        <div style={{ background: '#18181b', border: '0.5px solid #27272a', borderRadius: '12px', padding: '20px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '20px' }}>
+            <h2 style={{ fontSize: '15px', fontWeight: '500', color: '#fff', margin: 0 }}>Próximos agendamentos</h2>
+            <a href="/appointments" style={{ fontSize: '13px', color: '#f59e0b', textDecoration: 'none' }}>Ver todos</a>
+          </div>
+
           {appointments.length === 0 ? (
-            <p style={styles.empty}>Nenhum agendamento encontrado</p>
+            <p style={{ color: '#52525b', textAlign: 'center', padding: '24px 0', margin: 0 }}>Nenhum agendamento encontrado</p>
           ) : (
-            appointments.map((apt) => (
-              <div key={apt.id} style={styles.item}>
-                <div>
-                  <strong>{apt.client?.name}</strong>
-                  <div style={styles.itemSub}>{apt.appointment_date}</div>
+            appointments.slice(0, 5).map((apt, i) => (
+              <div
+                key={apt.id}
+                style={{
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                  padding: '12px 0',
+                  borderBottom: i < Math.min(appointments.length, 5) - 1 ? '0.5px solid #27272a' : 'none',
+                }}
+              >
+                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                  <div style={{
+                    width: '36px', height: '36px', borderRadius: '50%', background: '#27272a',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    fontSize: '13px', fontWeight: '500', color: '#a1a1aa', flexShrink: 0,
+                  }}>
+                    {getInitials(apt.client?.name)}
+                  </div>
+                  <div>
+                    <div style={{ fontSize: '14px', color: '#fff', fontWeight: '500' }}>{apt.client?.name}</div>
+                    <div style={{ fontSize: '12px', color: '#52525b', marginTop: '2px' }}>
+                      {apt.appointment_date}
+                      {apt.barber?.name ? ` · ${apt.barber.name}` : ''}
+                    </div>
+                  </div>
                 </div>
-                <div style={{...styles.badge, ...styles[apt.status]}}>
+                <span style={{
+                  ...statusStyle[apt.status] || { background: '#27272a', color: '#a1a1aa' },
+                  fontSize: '12px', padding: '4px 10px', borderRadius: '20px',
+                }}>
                   {apt.status}
-                </div>
+                </span>
               </div>
             ))
           )}
         </div>
+
       </div>
     </div>
   )
 }
 
-const styles = {
-  container: { maxWidth: '800px', margin: '0 auto', padding: '24px' },
-  pageTitle: { marginBottom: '24px' },
-  cards: { display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '16px', marginBottom: '32px' },
-  card: { backgroundColor: '#fff', padding: '24px', borderRadius: '12px', boxShadow: '0 2px 8px rgba(0,0,0,0.08)', textAlign: 'center' },
-  cardNumber: { fontSize: '40px', fontWeight: '700', color: '#2563eb' },
-  cardLabel: { color: '#666', marginTop: '4px' },
-  section: { backgroundColor: '#fff', padding: '24px', borderRadius: '12px', boxShadow: '0 2px 8px rgba(0,0,0,0.08)' },
-  sectionTitle: { margin: '0 0 16px 0', fontSize: '18px' },
-  item: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '12px 0', borderBottom: '1px solid #f0f0f0' },
-  itemSub: { color: '#666', fontSize: '14px', marginTop: '2px' },
-  empty: { color: '#666', textAlign: 'center', padding: '24px 0' },
-  badge: { padding: '4px 12px', borderRadius: '20px', fontSize: '12px', fontWeight: '600' },
-  pending: { backgroundColor: '#fef3c7', color: '#d97706' },
-  confirmed: { backgroundColor: '#d1fae5', color: '#059669' },
-  cancelled: { backgroundColor: '#fee2e2', color: '#dc2626' },
-  completed: { backgroundColor: '#e0e7ff', color: '#4f46e5' },
-  loading: { display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '100vh', fontSize: '18px' },
+function StatCard({ label, value, sub, icon, iconColor, iconBg }) {
+  return (
+    <div style={{ background: '#18181b', border: '0.5px solid #27272a', borderRadius: '12px', padding: '20px' }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px' }}>
+        <span style={{ fontSize: '13px', color: '#71717a' }}>{label}</span>
+        <div style={{ background: iconBg, width: '32px', height: '32px', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <i className={`ti ${icon}`} style={{ fontSize: '16px', color: iconColor }} aria-hidden="true" />
+        </div>
+      </div>
+      <div style={{ fontSize: '32px', fontWeight: '500', color: '#fff' }}>{value}</div>
+      <div style={{ fontSize: '12px', color: '#52525b', marginTop: '4px' }}>{sub}</div>
+    </div>
+  )
 }
