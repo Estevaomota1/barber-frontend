@@ -1,48 +1,140 @@
-import { useNavigate, useLocation } from 'react-router-dom'
+import { useState } from 'react'
 
 export default function Navbar() {
-  const navigate = useNavigate()
-  const location = useLocation()
+  const [active, setActive] = useState(window.location.pathname)
 
-  function handleLogout() {
-    localStorage.removeItem('token')
-    navigate('/login')
-  }
-
-  const links = [
-    { path: '/dashboard', label: '🏠 Dashboard' },
-    { path: '/clients', label: '👥 Clientes' },
-    { path: '/barbers', label: '✂️ Barbeiros' },
-    { path: '/appointments', label: '📅 Agendamentos' },
+  const navItems = [
+    { label: 'Dashboard', path: '/dashboard', icon: 'ti-layout-dashboard' },
+    { label: 'Clientes', path: '/clients', icon: 'ti-users' },
+    { label: 'Barbeiros', path: '/barbers', icon: 'ti-scissors' },
+    { label: 'Agendamentos', path: '/appointments', icon: 'ti-calendar-event' },
   ]
 
+  const handleLogout = () => {
+    localStorage.removeItem('token')
+    window.location.href = '/login'
+  }
+
   return (
-    <div style={styles.navbar}>
-      <div style={styles.brand}>BarberPro</div>
-      <div style={styles.links}>
-        {links.map((link) => (
-          <button
-            key={link.path}
-            onClick={() => navigate(link.path)}
-            style={{
-              ...styles.link,
-              ...(location.pathname === link.path ? styles.active : {})
-            }}
-          >
-            {link.label}
+    <nav style={styles.nav}>
+      <div style={styles.container}>
+        {/* Logo */}
+        <div style={styles.logoSection} onClick={() => window.location.href = '/dashboard'}>
+          <div style={styles.logoIcon}>
+            <i className="ti ti-scissors" style={{ fontSize: '18px', color: '#09090b' }}></i>
+          </div>
+          <span style={styles.logoText}>BarberSaaS</span>
+        </div>
+
+        {/* Menu Items */}
+        <div style={styles.menu}>
+          {navItems.map((item) => (
+            <a
+              key={item.path}
+              href={item.path}
+              style={{
+                ...styles.menuItem,
+                ...(active === item.path ? styles.menuItemActive : {})
+              }}
+            >
+              <i className={`ti ${item.icon}`} style={{ fontSize: '16px' }}></i>
+              {item.label}
+            </a>
+          ))}
+        </div>
+
+        {/* User Section */}
+        <div style={styles.userSection}>
+          <button onClick={handleLogout} style={styles.logoutBtn}>
+            <i className="ti ti-logout" style={{ marginRight: '6px' }}></i>
+            Sair
           </button>
-        ))}
+        </div>
       </div>
-      <button onClick={handleLogout} style={styles.logout}>Sair</button>
-    </div>
+    </nav>
   )
 }
 
 const styles = {
-  navbar: { display: 'flex', alignItems: 'center', backgroundColor: '#1e293b', padding: '0 24px', height: '60px', gap: '16px' },
-  brand: { color: '#fff', fontWeight: '700', fontSize: '18px', marginRight: '16px' },
-  links: { display: 'flex', gap: '8px', flex: 1 },
-  link: { padding: '8px 16px', backgroundColor: 'transparent', color: '#94a3b8', border: 'none', borderRadius: '8px', cursor: 'pointer', fontSize: '14px' },
-  active: { backgroundColor: '#2563eb', color: '#fff' },
-  logout: { padding: '8px 16px', backgroundColor: '#ef4444', color: '#fff', border: 'none', borderRadius: '8px', cursor: 'pointer' },
+  nav: {
+    background: '#18181b',
+    borderBottom: '0.5px solid #27272a',
+    padding: '0 20px',
+    height: '64px',
+    display: 'flex',
+    alignItems: 'center',
+    position: 'sticky',
+    top: 0,
+    zIndex: 100,
+  },
+  container: {
+    maxWidth: '1100px',
+    margin: '0 auto',
+    width: '100%',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  logoSection: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '10px',
+    cursor: 'pointer',
+  },
+  logoIcon: {
+    width: '32px',
+    height: '32px',
+    background: '#f59e0b',
+    borderRadius: '8px',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  logoText: {
+    fontSize: '18px',
+    fontWeight: '600',
+    color: '#fff',
+    letterSpacing: '-0.02em',
+  },
+  menu: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '8px',
+    '@media (max-width: 768px)': {
+      display: 'none',
+    }
+  },
+  menuItem: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '8px',
+    padding: '8px 12px',
+    borderRadius: '8px',
+    fontSize: '14px',
+    fontWeight: '500',
+    color: '#a1a1aa',
+    textDecoration: 'none',
+    transition: 'all 0.2s',
+  },
+  menuItemActive: {
+    background: '#27272a',
+    color: '#f59e0b',
+  },
+  userSection: {
+    display: 'flex',
+    alignItems: 'center',
+  },
+  logoutBtn: {
+    background: '#2a1414',
+    color: '#f87171',
+    border: '0.5px solid #7f1d1d',
+    padding: '6px 14px',
+    borderRadius: '8px',
+    fontSize: '13px',
+    fontWeight: '500',
+    cursor: 'pointer',
+    display: 'flex',
+    alignItems: 'center',
+    transition: 'all 0.2s',
+  }
 }
