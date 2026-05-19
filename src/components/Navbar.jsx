@@ -8,6 +8,7 @@ export default function Navbar() {
     { label: 'Clientes', path: '/clients', icon: 'ti-users' },
     { label: 'Barbeiros', path: '/barbers', icon: 'ti-scissors' },
     { label: 'Agendamentos', path: '/appointments', icon: 'ti-calendar-event' },
+    { label: 'WhatsApp', path: '/whatsapp', icon: 'ti-brand-whatsapp' },
   ]
 
   const handleLogout = () => {
