@@ -12,7 +12,7 @@ export default function WhatsApp() {
 
   function getHeaders() {
     const token = localStorage.getItem('token')
-    return { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' }
+    return { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json', 'Accept': 'application/json' }
   }
 
   async function fetchStatus() {
@@ -44,22 +44,33 @@ export default function WhatsApp() {
       if (data.base64) {
         setQrCode(data.base64)
         setQrLoading(false)
-        pollRef.current = setInterval(async () => {
-          await fetchStatus()
-        }, 3000)
+        pollRef.current = setInterval(fetchStatus, 3000)
       } else {
-        setTimeout(async () => {
-          const res2 = await fetch(`${API_URL}/whatsapp/connect`, { headers: getHeaders() })
-          const data2 = await res2.json()
-          if (data2.base64) {
-            setQrCode(data2.base64)
-            pollRef.current = setInterval(fetchStatus, 3000)
-          } else {
-            setError('Não foi possível gerar o QR Code. Tente novamente.')
-            setStatus('disconnected')
+        // Polling loop: Check for QR Code every 3 seconds for up to 30 seconds
+        let attempts = 0
+        const maxAttempts = 10
+
+        const pollQR = setInterval(async () => {
+          attempts++
+          try {
+            const res2 = await fetch(`${API_URL}/whatsapp/status`, { headers: getHeaders() })
+            const data2 = await res2.json()
+
+            if (data2.base64) {
+              setQrCode(data2.base64)
+              setQrLoading(false)
+              clearInterval(pollQR)
+              pollRef.current = setInterval(fetchStatus, 3000)
+            } else if (attempts >= maxAttempts) {
+              clearInterval(pollQR)
+              setError('O QR Code demorou muito para ser gerado. Tente novamente.')
+              setStatus('disconnected')
+              setQrLoading(false)
+            }
+          } catch {
+            console.error('Erro ao poll QR Code')
           }
-          setQrLoading(false)
-        }, 2000)
+        }, 3000)
       }
     } catch {
       setError('Erro ao conectar com a Evolution API.')
