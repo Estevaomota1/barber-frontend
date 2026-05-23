@@ -41,7 +41,7 @@ export default function Dashboard() {
 
   const statusStyle = {
     confirmed:  { background: '#14271e', color: '#4ade80', border: '0.5px solid #166534' },
-    pending:    { background: '#2a1f10', color: '#fb923c', border: '0.5px solid #7c2d12' },
+    pendente:    { background: '#2a1f10', color: '#fb923c', border: '0.5px solid #7c2d12' },
     cancelled:  { background: '#2a1414', color: '#f87171', border: '0.5px solid #7f1d1d' },
     completed:  { background: '#1c1f2e', color: '#818cf8', border: '0.5px solid #3730a3' },
   }

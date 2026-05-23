@@ -25,7 +25,7 @@ export default function Navbar() {
           <div style={styles.logoIcon}>
             <i className="ti ti-scissors" style={{ fontSize: '18px', color: '#09090b' }}></i>
           </div>
-          <span style={styles.logoText}>BarberSaaS</span>
+          <span style={styles.logoText}>BarberPro</span>
         </div>
 
         <div style={styles.menu}>
