@@ -8,6 +8,8 @@ import WhatsApp from './pages/WhatsApp'
 import Commissions from './pages/Commissions'
 import Orders from './pages/Orders'
 import Stock from './pages/Stock'
+import Reports from './pages/Reports'
+
 
 function PrivateRoute({ children }) {
   const token = localStorage.getItem('token')
@@ -28,6 +30,7 @@ export default function App() {
         <Route path="/orders" element={<PrivateRoute><Orders /></PrivateRoute>} />
         <Route path="/" element={<Navigate to="/login" />} />
         <Route path="/stock" element={<PrivateRoute><Stock /></PrivateRoute>} />
+        <Route path="/reports" element={<PrivateRoute><Reports /></PrivateRoute>} />
       </Routes>
     </BrowserRouter>
   )

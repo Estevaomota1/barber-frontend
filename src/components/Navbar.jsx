@@ -12,7 +12,7 @@ export default function Navbar() {
     { label: 'Comissões', path: '/commissions', icon: 'ti-coin' },
     { label: 'Estoque', path: '/stock', icon: 'ti-package' },
     { label: 'WhatsApp', path: '/whatsapp', icon: 'ti-brand-whatsapp' },
-    
+    { label: 'Relatórios', path: '/reports', icon: 'ti-chart-bar' },
   ]
 
   const handleLogout = () => {
