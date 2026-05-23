@@ -142,8 +142,8 @@ export default function Dashboard() {
             <div style={{ ...styles.card, background: 'linear-gradient(135deg, #18181b 0%, #09090b 100%)' }}>
               <h3 style={{ ...styles.cardTitle, marginBottom: '16px' }}>Ações Rápidas</h3>
               <div style={styles.quickActions}>
-                <button style={styles.actionBtn} onClick={() => window.location.href='/appointments/new'}>
-                  <i className="ti ti-plus"></i> Novo Agendamento
+                <button style={styles.actionBtn} onClick={() => window.location.href='/appointments'}>
+                  <i className="ti ti-plus"></i> 
                 </button>
                 <button style={styles.actionBtn} onClick={() => window.location.href='/clients'}>
                   <i className="ti ti-user-plus"></i> Cadastrar Cliente
