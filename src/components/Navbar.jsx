@@ -10,7 +10,9 @@ export default function Navbar() {
     { label: 'Agendamentos', path: '/appointments', icon: 'ti-calendar-event' },
     { label: 'Comandas', path: '/orders', icon: 'ti-receipt' },
     { label: 'Comissões', path: '/commissions', icon: 'ti-coin' },
+    { label: 'Estoque', path: '/stock', icon: 'ti-package' },
     { label: 'WhatsApp', path: '/whatsapp', icon: 'ti-brand-whatsapp' },
+    { label: 'Estoque', path: '/stock', icon: 'ti-package' },
   ]
 
   const handleLogout = () => {
