@@ -8,6 +8,8 @@ export default function Navbar() {
     { label: 'Clientes', path: '/clients', icon: 'ti-users' },
     { label: 'Barbeiros', path: '/barbers', icon: 'ti-scissors' },
     { label: 'Agendamentos', path: '/appointments', icon: 'ti-calendar-event' },
+    { label: 'Comandas', path: '/orders', icon: 'ti-receipt' },
+    { label: 'Comissões', path: '/commissions', icon: 'ti-coin' },
     { label: 'WhatsApp', path: '/whatsapp', icon: 'ti-brand-whatsapp' },
   ]
 
@@ -19,7 +21,6 @@ export default function Navbar() {
   return (
     <nav style={styles.nav}>
       <div style={styles.container}>
-        {/* Logo */}
         <div style={styles.logoSection} onClick={() => window.location.href = '/dashboard'}>
           <div style={styles.logoIcon}>
             <i className="ti ti-scissors" style={{ fontSize: '18px', color: '#09090b' }}></i>
@@ -27,10 +28,9 @@ export default function Navbar() {
           <span style={styles.logoText}>BarberSaaS</span>
         </div>
 
-        {/* Menu Items */}
         <div style={styles.menu}>
           {navItems.map((item) => (
-            <a
+            
               key={item.path}
               href={item.path}
               style={{
@@ -44,7 +44,6 @@ export default function Navbar() {
           ))}
         </div>
 
-        {/* User Section */}
         <div style={styles.userSection}>
           <button onClick={handleLogout} style={styles.logoutBtn}>
             <i className="ti ti-logout" style={{ marginRight: '6px' }}></i>
@@ -69,7 +68,7 @@ const styles = {
     zIndex: 100,
   },
   container: {
-    maxWidth: '1100px',
+    maxWidth: '1200px',
     margin: '0 auto',
     width: '100%',
     display: 'flex',
@@ -100,18 +99,15 @@ const styles = {
   menu: {
     display: 'flex',
     alignItems: 'center',
-    gap: '8px',
-    '@media (max-width: 768px)': {
-      display: 'none',
-    }
+    gap: '4px',
   },
   menuItem: {
     display: 'flex',
     alignItems: 'center',
-    gap: '8px',
-    padding: '8px 12px',
+    gap: '6px',
+    padding: '7px 10px',
     borderRadius: '8px',
-    fontSize: '14px',
+    fontSize: '13px',
     fontWeight: '500',
     color: '#a1a1aa',
     textDecoration: 'none',
