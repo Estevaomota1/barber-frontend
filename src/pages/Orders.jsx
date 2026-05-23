@@ -39,9 +39,9 @@ export default function Orders() {
       const appsData = await appsRes.json()
 
       setOrders(ordersData.orders || [])
-      setBarbers(barbersData.data || barbersData || [])
-      setClients(clientsData.data || clientsData || [])
-      setAppointments(appsData.data || appsData || [])
+      setBarbers(barbersData.data?.data || barbersData.data || barbersData || [])
+      setClients(clientsData.data?.data || clientsData.data || clientsData || [])
+      setAppointments(appsData.data?.data || appsData.data || appsData || [])
     } catch (err) {
       console.error(err)
     } finally {
@@ -84,10 +84,7 @@ export default function Orders() {
   const removeItem = async (orderId, itemId) => {
     if (!confirm('Remover item?')) return
     try {
-      await fetch(`${API}/orders/${orderId}/items/${itemId}`, {
-        method: 'DELETE',
-        headers,
-      })
+      await fetch(`${API}/orders/${orderId}/items/${itemId}`, { method: 'DELETE', headers })
       fetchAll()
     } catch (err) {
       console.error(err)
@@ -97,10 +94,7 @@ export default function Orders() {
   const closeOrder = async (orderId) => {
     if (!confirm('Fechar comanda e gerar comissão?')) return
     try {
-      await fetch(`${API}/orders/${orderId}/close`, {
-        method: 'PATCH',
-        headers,
-      })
+      await fetch(`${API}/orders/${orderId}/close`, { method: 'PATCH', headers })
       fetchAll()
     } catch (err) {
       console.error(err)
@@ -114,7 +108,6 @@ export default function Orders() {
       <Navbar />
       <div style={styles.container}>
 
-        {/* Header */}
         <div style={styles.header}>
           <div>
             <h1 style={styles.title}>Comandas</h1>
@@ -126,7 +119,6 @@ export default function Orders() {
           </button>
         </div>
 
-        {/* Filtros */}
         <div style={styles.filters}>
           {['all', 'open', 'closed'].map(f => (
             <button
@@ -139,16 +131,21 @@ export default function Orders() {
           ))}
         </div>
 
-        {/* Lista de Comandas */}
         {loading ? (
-          <div style={styles.empty}>Carregando...</div>
+          <div style={styles.empty}>
+            <div style={styles.spinner}></div>
+            <p style={{ margin: '16px 0 4px', color: '#a1a1aa' }}>Carregando comandas...</p>
+            <p style={{ margin: 0, fontSize: '12px', color: '#52525b' }}>Isso pode levar até 30 segundos na primeira vez</p>
+          </div>
         ) : filtered.length === 0 ? (
-          <div style={styles.empty}>Nenhuma comanda encontrada.</div>
+          <div style={styles.empty}>
+            <i className="ti ti-receipt-off" style={{ fontSize: '40px', color: '#3f3f46', marginBottom: '12px', display: 'block' }}></i>
+            <p style={{ margin: 0, color: '#71717a' }}>Nenhuma comanda encontrada.</p>
+          </div>
         ) : (
           <div style={styles.orderList}>
             {filtered.map(order => (
               <div key={order.id} style={styles.orderCard}>
-                {/* Card Header */}
                 <div style={styles.orderHeader}>
                   <div>
                     <span style={styles.orderId}>#{order.id}</span>
@@ -159,10 +156,7 @@ export default function Orders() {
                   <div style={{ display: 'flex', gap: '8px' }}>
                     {order.status === 'open' && (
                       <>
-                        <button
-                          onClick={() => { setSelectedOrder(order); setShowItemModal(true) }}
-                          style={styles.addItemBtn}
-                        >
+                        <button onClick={() => { setSelectedOrder(order); setShowItemModal(true) }} style={styles.addItemBtn}>
                           + Item
                         </button>
                         <button onClick={() => closeOrder(order.id)} style={styles.closeBtn}>
@@ -173,7 +167,6 @@ export default function Orders() {
                   </div>
                 </div>
 
-                {/* Info */}
                 <div style={styles.orderInfo}>
                   <span style={styles.infoItem}>
                     <i className="ti ti-scissors" style={{ marginRight: '4px' }}></i>
@@ -184,21 +177,18 @@ export default function Orders() {
                     {order.client?.name || '-'}
                   </span>
                   <span style={{ ...styles.infoItem, color: '#f59e0b', fontWeight: '600' }}>
-                    Total: R$ {Number(order.total).toFixed(2)}
+                    Total: R$ {Number(order.total || 0).toFixed(2)}
                   </span>
                 </div>
 
-                {/* Items */}
                 {order.items && order.items.length > 0 && (
                   <div style={styles.itemsList}>
                     {order.items.map(item => (
                       <div key={item.id} style={styles.itemRow}>
-                        <span style={styles.itemType}>
-                          {item.type === 'service' ? '✂️' : '📦'}
-                        </span>
+                        <span style={styles.itemType}>{item.type === 'service' ? '✂️' : '📦'}</span>
                         <span style={styles.itemName}>{item.name}</span>
                         <span style={styles.itemQty}>x{item.quantity}</span>
-                        <span style={styles.itemPrice}>R$ {Number(item.subtotal).toFixed(2)}</span>
+                        <span style={styles.itemPrice}>R$ {Number(item.subtotal || 0).toFixed(2)}</span>
                         {order.status === 'open' && (
                           <button onClick={() => removeItem(order.id, item.id)} style={styles.removeBtn}>✕</button>
                         )}
@@ -207,16 +197,13 @@ export default function Orders() {
                   </div>
                 )}
 
-                {order.notes && (
-                  <p style={styles.notes}>📝 {order.notes}</p>
-                )}
+                {order.notes && <p style={styles.notes}>📝 {order.notes}</p>}
               </div>
             ))}
           </div>
         )}
       </div>
 
-      {/* Modal Nova Comanda */}
       {showModal && (
         <div style={styles.overlay}>
           <div style={styles.modal}>
@@ -253,7 +240,6 @@ export default function Orders() {
         </div>
       )}
 
-      {/* Modal Adicionar Item */}
       {showItemModal && (
         <div style={styles.overlay}>
           <div style={styles.modal}>
@@ -321,5 +307,6 @@ const styles = {
   modalBtns: { display: 'flex', gap: '10px', marginTop: '24px' },
   cancelBtn: { flex: 1, padding: '10px', borderRadius: '8px', border: '0.5px solid #27272a', background: '#09090b', color: '#a1a1aa', fontSize: '14px', cursor: 'pointer' },
   confirmBtn: { flex: 1, padding: '10px', borderRadius: '8px', border: 'none', background: '#f59e0b', color: '#09090b', fontSize: '14px', fontWeight: '600', cursor: 'pointer' },
-  empty: { textAlign: 'center', color: '#71717a', padding: '60px', background: '#18181b', borderRadius: '12px' },
+  empty: { textAlign: 'center', padding: '60px', background: '#18181b', borderRadius: '12px' },
+  spinner: { width: '36px', height: '36px', border: '3px solid #27272a', borderTop: '3px solid #f59e0b', borderRadius: '50%', animation: 'spin 1s linear infinite', margin: '0 auto' },
 }
