@@ -31,7 +31,7 @@ export default function Login() {
           <div style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: '64px', height: '64px', background: '#f59e0b', borderRadius: '16px', marginBottom: '1rem' }}>
             <i className="ti ti-scissors" style={{ fontSize: '28px', color: '#09090b' }} aria-hidden="true" />
           </div>
-          <h1 style={{ fontSize: '26px', fontWeight: '500', color: '#fff', margin: '0 0 6px' }}>BarberShop</h1>
+          <h1 style={{ fontSize: '26px', fontWeight: '500', color: '#fff', margin: '0 0 6px' }}>BarberPro</h1>
           <p style={{ fontSize: '14px', color: '#71717a', margin: 0 }}>Gerencie sua barbearia com eficiência</p>
         </div>
 
