@@ -143,7 +143,7 @@ export default function Dashboard() {
               <h3 style={{ ...styles.cardTitle, marginBottom: '16px' }}>Ações Rápidas</h3>
               <div style={styles.quickActions}>
                 <button style={styles.actionBtn} onClick={() => window.location.href='/appointments'}>
-                  <i className="ti ti-plus"></i> 
+                  <i className="ti ti-plus"></i> Novo Agendamento 
                 </button>
                 <button style={styles.actionBtn} onClick={() => window.location.href='/clients'}>
                   <i className="ti ti-user-plus"></i> Cadastrar Cliente
