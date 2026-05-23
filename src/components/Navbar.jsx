@@ -30,7 +30,7 @@ export default function Navbar() {
 
         <div style={styles.menu}>
           {navItems.map((item) => (
-            
+            <a
               key={item.path}
               href={item.path}
               style={{
