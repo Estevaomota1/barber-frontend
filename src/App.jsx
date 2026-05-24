@@ -9,7 +9,7 @@ import Commissions from './pages/Commissions'
 import Orders from './pages/Orders'
 import Stock from './pages/Stock'
 import Reports from './pages/Reports'
-
+import Booking from './pages/Booking'
 
 function PrivateRoute({ children }) {
   const token = localStorage.getItem('token')
@@ -21,6 +21,7 @@ export default function App() {
     <BrowserRouter>
       <Routes>
         <Route path="/login" element={<Login />} />
+        <Route path="/agendar/:slug" element={<Booking />} />
         <Route path="/dashboard" element={<PrivateRoute><Dashboard /></PrivateRoute>} />
         <Route path="/clients" element={<PrivateRoute><Clients /></PrivateRoute>} />
         <Route path="/barbers" element={<PrivateRoute><Barbers /></PrivateRoute>} />
@@ -28,9 +29,9 @@ export default function App() {
         <Route path="/appointments" element={<PrivateRoute><Appointments /></PrivateRoute>} />
         <Route path="/commissions" element={<PrivateRoute><Commissions /></PrivateRoute>} />
         <Route path="/orders" element={<PrivateRoute><Orders /></PrivateRoute>} />
-        <Route path="/" element={<Navigate to="/login" />} />
         <Route path="/stock" element={<PrivateRoute><Stock /></PrivateRoute>} />
         <Route path="/reports" element={<PrivateRoute><Reports /></PrivateRoute>} />
+        <Route path="/" element={<Navigate to="/login" />} />
       </Routes>
     </BrowserRouter>
   )

@@ -2,11 +2,32 @@ import { useState, useEffect } from 'react'
 import api from '../services/api'
 import Navbar from '../components/Navbar'
 
+// Helper para formatar data e hora no padrão brasileiro
+const formatDateTime = (isoString) => {
+  if (!isoString) return ''
+  const date = new Date(isoString)
+  return new Intl.DateTimeFormat('pt-BR', {
+    day: '2-digit',
+    month: '2-digit',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit'
+  }).format(date)
+}
+
+// Helper para obter a data atual no formato YYYY-MM-DDTHH:mm para o input datetime-local
+const getCurrentDateTimeLocal = () => {
+  const now = new Date()
+  now.setMinutes(now.getMinutes() - now.getTimezoneOffset())
+  return now.toISOString().slice(0, 16)
+}
+
 export default function Clients() {
   const [clients, setClients] = useState([])
   const [loading, setLoading] = useState(true)
   const [name, setName] = useState('')
   const [phone, setPhone] = useState('')
+  const [appointmentDate, setAppointmentDate] = useState('') // Novo campo
   const [error, setError] = useState('')
   const [saving, setSaving] = useState(false)
   const [showForm, setShowForm] = useState(false)
@@ -30,6 +51,14 @@ export default function Clients() {
     setEditing(client)
     setName(client.name)
     setPhone(client.phone)
+    // Se o cliente já tiver uma data, formatamos para o input local
+    if (client.appointment_date) {
+        const date = new Date(client.appointment_date)
+        date.setMinutes(date.getMinutes() - date.getTimezoneOffset())
+        setAppointmentDate(date.toISOString().slice(0, 16))
+    } else {
+        setAppointmentDate('')
+    }
     setShowForm(true)
     window.scrollTo({ top: 0, behavior: 'smooth' })
   }
@@ -38,19 +67,37 @@ export default function Clients() {
     setEditing(null)
     setName('')
     setPhone('')
+    setAppointmentDate('')
     setShowForm(false)
     setError('')
   }
 
   async function handleSubmit(e) {
     e.preventDefault()
+    
+    // Validação básica de data
+    if (appointmentDate) {
+        const selectedDate = new Date(appointmentDate)
+        const now = new Date()
+        if (selectedDate < now) {
+            setError('A data do agendamento não pode ser no passado.')
+            return
+        }
+    }
+
     setSaving(true)
     setError('')
     try {
+      const payload = { 
+        name, 
+        phone, 
+        appointment_date: appointmentDate || null 
+      }
+
       if (editing) {
-        await api.put(`/clients/${editing.id}`, { name, phone })
+        await api.put(`/clients/${editing.id}`, payload)
       } else {
-        await api.post('/clients', { name, phone })
+        await api.post('/clients', payload)
       }
       handleCancel()
       loadClients()
@@ -88,8 +135,8 @@ export default function Clients() {
         {/* Header Section */}
         <div style={styles.header}>
           <div>
-            <h1 style={styles.pageTitle}>Clientes</h1>
-            <p style={styles.pageSubtitle}>Gerencie sua base de clientes e contatos</p>
+            <h1 style={styles.pageTitle}>Clientes & Agendamentos</h1>
+            <p style={styles.pageSubtitle}>Gerencie sua base de clientes e horários marcados</p>
           </div>
           <button 
             onClick={() => showForm ? handleCancel() : setShowForm(true)} 
@@ -98,7 +145,7 @@ export default function Clients() {
             {showForm ? (
               <><i className="ti ti-x" style={{ marginRight: '6px' }}></i> Cancelar</>
             ) : (
-              <><i className="ti ti-plus" style={{ marginRight: '6px' }}></i> Novo Cliente</>
+              <><i className="ti ti-plus" style={{ marginRight: '6px' }}></i> Novo Agendamento</>
             )}
           </button>
         </div>
@@ -107,7 +154,7 @@ export default function Clients() {
         {showForm && (
           <div style={styles.card}>
             <h2 style={styles.cardTitle}>
-              {editing ? 'Editar Informações' : 'Cadastrar Novo Cliente'}
+              {editing ? 'Editar Informações' : 'Cadastrar Novo Agendamento'}
             </h2>
             
             {error && <div style={styles.errorAlert}>{error}</div>}
@@ -141,11 +188,26 @@ export default function Clients() {
                     />
                   </div>
                 </div>
+
+                <div style={styles.inputGroup}>
+                  <label style={styles.label}>Data e Hora do Agendamento</label>
+                  <div style={styles.inputWrapper}>
+                    <i className="ti ti-calendar-event" style={styles.inputIcon}></i>
+                    <input
+                      type="datetime-local"
+                      style={styles.input}
+                      value={appointmentDate}
+                      min={getCurrentDateTimeLocal()}
+                      onChange={(e) => setAppointmentDate(e.target.value)}
+                      required
+                    />
+                  </div>
+                </div>
               </div>
 
               <div style={styles.formActions}>
                 <button style={styles.btnPrimary} type="submit" disabled={saving}>
-                  {saving ? 'Processando...' : editing ? 'Salvar Alterações' : 'Confirmar Cadastro'}
+                  {saving ? 'Processando...' : editing ? 'Salvar Alterações' : 'Confirmar Agendamento'}
                 </button>
               </div>
             </form>
@@ -155,15 +217,15 @@ export default function Clients() {
         {/* List Section */}
         <div style={styles.card}>
           <div style={styles.cardHeader}>
-            <h2 style={styles.cardTitle}>Lista de Clientes</h2>
-            <span style={styles.badge}>{clients.length} cadastrados</span>
+            <h2 style={styles.cardTitle}>Lista de Clientes e Horários</h2>
+            <span style={styles.badge}>{clients.length} registros</span>
           </div>
 
           <div style={styles.listContainer}>
             {clients.length === 0 ? (
               <div style={styles.emptyState}>
                 <i className="ti ti-users" style={{ fontSize: '48px', color: '#27272a', marginBottom: '12px' }}></i>
-                <p>Nenhum cliente encontrado na sua base.</p>
+                <p>Nenhum registro encontrado.</p>
               </div>
             ) : (
               <div style={styles.tableResponsive}>
@@ -172,6 +234,7 @@ export default function Clients() {
                     <tr>
                       <th style={styles.th}>Cliente</th>
                       <th style={styles.th}>Contato</th>
+                      <th style={styles.th}>Agendamento</th>
                       <th style={{ ...styles.th, textAlign: 'right' }}>Ações</th>
                     </tr>
                   </thead>
@@ -190,6 +253,12 @@ export default function Clients() {
                           <div style={styles.phoneLink}>
                             <i className="ti ti-brand-whatsapp" style={{ color: '#22c55e', marginRight: '6px' }}></i>
                             {client.phone}
+                          </div>
+                        </td>
+                        <td style={styles.td}>
+                          <div style={styles.dateInfo}>
+                            <i className="ti ti-clock" style={{ color: '#f59e0b', marginRight: '6px' }}></i>
+                            {client.appointment_date ? formatDateTime(client.appointment_date) : 'Sem data'}
                           </div>
                         </td>
                         <td style={{ ...styles.td, textAlign: 'right' }}>
@@ -412,6 +481,11 @@ const styles = {
     display: 'flex',
     alignItems: 'center',
     color: '#a1a1aa'
+  },
+  dateInfo: {
+    display: 'flex',
+    alignItems: 'center',
+    color: '#e4e4e7'
   },
   actionButtons: {
     display: 'flex',
