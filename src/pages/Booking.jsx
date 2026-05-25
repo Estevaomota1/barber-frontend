@@ -25,13 +25,18 @@ export default function Booking() {
   }, [slug])
 
   useEffect(() => {
-    if (selected.barber && selected.date && selected.service) {
-      setLoadingTimes(true)
-      fetch(`${API}/booking/${slug}/availability?barber_id=${selected.barber.id}&date=${selected.date}&duration=${selected.service.duration}`)
-        .then(r => r.json())
-        .then(d => { setAvailableTimes(d.available || []); setLoadingTimes(false) })
-    }
-  }, [selected.barber, selected.date])
+  if (step === 3 && selected.barber && selected.date && selected.service) {
+    setLoadingTimes(true)
+    setAvailableTimes([])
+    fetch(`${API}/booking/${slug}/availability?barber_id=${selected.barber.id}&date=${selected.date}&duration=${selected.service.duration}`)
+      .then(r => r.json())
+      .then(d => {
+        setAvailableTimes(d.available || [])
+        setLoadingTimes(false)
+      })
+      .catch(() => setLoadingTimes(false))
+  }
+}, [step, selected.barber, selected.date, selected.service])
 
   const confirm = async () => {
     if (!selected.client_name || !selected.client_phone) return
