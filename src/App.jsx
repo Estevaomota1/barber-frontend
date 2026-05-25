@@ -11,6 +11,7 @@ import Stock from './pages/Stock'
 import Reports from './pages/Reports'
 import Booking from './pages/Booking'
 import Services from './pages/Services'
+import Settings from './pages/Settings'
 
 function PrivateRoute({ children }) {
   const token = localStorage.getItem('token')
@@ -33,6 +34,7 @@ export default function App() {
         <Route path="/stock" element={<PrivateRoute><Stock /></PrivateRoute>} />
         <Route path="/reports" element={<PrivateRoute><Reports /></PrivateRoute>} />
         <Route path="/services" element={<PrivateRoute><Services /></PrivateRoute>} />
+        <Route path="/settings" element={<PrivateRoute><Settings /></PrivateRoute>} />
         <Route path="/" element={<Navigate to="/login" />} />
       </Routes>
     </BrowserRouter>

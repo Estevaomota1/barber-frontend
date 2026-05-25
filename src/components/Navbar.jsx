@@ -14,6 +14,8 @@ export default function Navbar() {
     { label: 'Estoque', path: '/stock', icon: 'ti-package' },
     { label: 'WhatsApp', path: '/whatsapp', icon: 'ti-brand-whatsapp' },
     { label: 'Relatórios', path: '/reports', icon: 'ti-chart-bar' },
+    { label: 'Configurações', path: '/settings', icon: 'ti-settings' },
+
   ]
 
   const handleLogout = () => {
