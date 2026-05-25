@@ -39,27 +39,33 @@ export default function Booking() {
 }, [step, selected.barber, selected.date, selected.service])
 
   const confirm = async () => {
-    if (!selected.client_name || !selected.client_phone) return
-    setSubmitting(true)
-    try {
-      const res = await fetch(`${API}/booking/${slug}`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
-        body: JSON.stringify({
-          service_id:    selected.service.id,
-          barber_id:     selected.barber.id,
-          date:          selected.date,
-          time:          selected.time,
-          client_name:   selected.client_name,
-          client_phone:  selected.client_phone,
-        })
+  if (!selected.client_name || !selected.client_phone) return
+  setSubmitting(true)
+  try {
+    const res = await fetch(`${API}/booking/${slug}`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+      },
+      body: JSON.stringify({
+        service_id:   String(selected.service.id),
+        barber_id:    String(selected.barber.id),
+        date:         selected.date,
+        time:         selected.time,
+        client_name:  selected.client_name,
+        client_phone: selected.client_phone,
       })
-      const data = await res.json()
-      if (data.success) setSuccess(true)
-    } finally {
-      setSubmitting(false)
-    }
+    })
+    const data = await res.json()
+    if (data.success) setSuccess(true)
+    else alert('Erro ao agendar: ' + data.error)
+  } catch(e) {
+    console.error(e)
+  } finally {
+    setSubmitting(false)
   }
+}
 
   const getDates = () => {
     const dates = []
