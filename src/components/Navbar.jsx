@@ -8,6 +8,7 @@ export default function Navbar() {
     { label: 'Clientes', path: '/clients', icon: 'ti-users' },
     { label: 'Barbeiros', path: '/barbers', icon: 'ti-scissors' },
     { label: 'Agendamentos', path: '/appointments', icon: 'ti-calendar-event' },
+    { label: 'Serviços', path: '/services', icon: 'ti-cut' },
     { label: 'Comandas', path: '/orders', icon: 'ti-receipt' },
     { label: 'Comissões', path: '/commissions', icon: 'ti-coin' },
     { label: 'Estoque', path: '/stock', icon: 'ti-package' },
