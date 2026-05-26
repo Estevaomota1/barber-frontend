@@ -139,9 +139,9 @@ export default function Dashboard() {
                 appointments.slice(0, 6).map((apt, i) => (
                   <div key={apt.id} style={{ ...styles.listItem, borderBottom: i < Math.min(appointments.length, 6) - 1 ? '0.5px solid #27272a' : 'none' }}>
                     <div style={styles.itemMain}>
-                      <div style={styles.avatar}>{getInitials(apt.client?.name)}</div>
+                      <div style={styles.avatar}>{getInitials(apt.client?.name || apt.client_name || '?')}</div>
                       <div>
-                        <div style={styles.itemName}>{apt.client?.name}</div>
+                        <div style={styles.itemName}>{apt.client?.name || apt.client_name || '—'}</div>
                         <div style={styles.itemSub}>
                           <i className="ti ti-clock" style={{ fontSize: '12px', marginRight: '4px' }}></i>
                           {apt.appointment_date}
