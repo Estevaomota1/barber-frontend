@@ -1,15 +1,15 @@
 import { useState, useEffect } from 'react'
 import api from '../services/api'
 import Navbar from '../components/Navbar'
- 
+
 function getInitials(name = '') {
   return name.split(' ').slice(0, 2).map(n => n[0]).join('').toUpperCase()
 }
- 
+
 function LinkAgendamento() {
   const [slug, setSlug] = useState('')
   const [copied, setCopied] = useState(false)
- 
+
   useEffect(() => {
     const token = localStorage.getItem('token')
     fetch('https://barber-saas-1-fpjl.onrender.com/api/my-barbershop', {
@@ -21,22 +21,22 @@ function LinkAgendamento() {
       .then(r => r.json())
       .then(d => { if (d.slug) setSlug(d.slug) })
   }, [])
- 
+
   const link = `https://barber-frontend-tan.vercel.app/agendar/${slug}`
- 
+
   const copy = () => {
     navigator.clipboard.writeText(link)
     setCopied(true)
     setTimeout(() => setCopied(false), 2000)
   }
- 
+
   const whatsapp = () => {
     const msg = encodeURIComponent(`Olá! Agende seu horário aqui: ${link}`)
     window.open(`https://wa.me/?text=${msg}`, '_blank')
   }
- 
+
   if (!slug) return <p style={{ fontSize: '13px', color: '#71717a' }}>Carregando link...</p>
- 
+
   return (
     <div>
       <div style={{
@@ -101,13 +101,13 @@ function LinkAgendamento() {
     </div>
   )
 }
- 
+
 export default function Dashboard() {
   const [appointments, setAppointments] = useState([])
   const [clients, setClients] = useState([])
   const [barbers, setBarbers] = useState([])
   const [loading, setLoading] = useState(true)
- 
+
   useEffect(() => {
     async function loadData() {
       try {
@@ -127,21 +127,21 @@ export default function Dashboard() {
     }
     loadData()
   }, [])
- 
+
   if (loading) return (
     <div style={styles.loadingContainer}>
       <div style={styles.spinner}></div>
       <span style={{ color: '#a1a1aa', marginTop: '12px' }}>Carregando dados...</span>
     </div>
   )
- 
+
   const statusStyle = {
     confirmed: { background: '#14271e', color: '#4ade80', border: '0.5px solid #166534' },
     pending:   { background: '#2a1f10', color: '#fb923c', border: '0.5px solid #7c2d12' },
     cancelled: { background: '#2a1414', color: '#f87171', border: '0.5px solid #7f1d1d' },
     completed: { background: '#1c1f2e', color: '#818cf8', border: '0.5px solid #3730a3' },
   }
- 
+
   return (
     <>
       {/* Inject responsive styles once */}
@@ -150,13 +150,13 @@ export default function Dashboard() {
           from { transform: rotate(0deg); }
           to { transform: rotate(360deg); }
         }
- 
+
         .dash-container {
           max-width: 1100px;
           margin: 0 auto;
           padding: 32px 16px;
         }
- 
+
         .dash-header {
           display: flex;
           justify-content: space-between;
@@ -165,72 +165,72 @@ export default function Dashboard() {
           gap: 12px;
           flex-wrap: wrap;
         }
- 
+
         .dash-stats-grid {
           display: grid;
           grid-template-columns: repeat(3, 1fr);
           gap: 12px;
           margin-bottom: 24px;
         }
- 
+
         .dash-content-grid {
           display: grid;
           grid-template-columns: 2fr 1fr;
           gap: 20px;
         }
- 
+
         .dash-right-col {
           display: flex;
           flex-direction: column;
           gap: 16px;
         }
- 
+
         .dash-quick-actions {
           display: flex;
           flex-direction: column;
           gap: 10px;
         }
- 
+
         /* Tablet: 2-col stats, stacked content */
         @media (max-width: 768px) {
           .dash-container {
             padding: 20px 12px;
           }
- 
+
           .dash-stats-grid {
             grid-template-columns: repeat(3, 1fr);
             gap: 8px;
           }
- 
+
           .dash-content-grid {
             grid-template-columns: 1fr;
           }
- 
+
           .dash-right-col {
             gap: 14px;
           }
         }
- 
+
         /* Mobile: single col stats, compact cards */
         @media (max-width: 480px) {
           .dash-container {
             padding: 16px 12px;
           }
- 
+
           .dash-header {
             margin-bottom: 20px;
           }
- 
+
           .dash-stats-grid {
             grid-template-columns: repeat(3, 1fr);
             gap: 6px;
           }
- 
+
           .dash-content-grid {
             gap: 14px;
           }
         }
- 
+
         /* Very small screens (320px) */
         @media (max-width: 360px) {
           .dash-stats-grid {
@@ -238,7 +238,7 @@ export default function Dashboard() {
             gap: 8px;
           }
         }
- 
+
         .stat-card {
           background: #18181b;
           border: 0.5px solid #27272a;
@@ -246,21 +246,21 @@ export default function Dashboard() {
           padding: 16px;
           cursor: default;
         }
- 
+
         @media (max-width: 480px) {
           .stat-card {
             padding: 12px 10px;
             border-radius: 10px;
           }
         }
- 
+
         .stat-header {
           display: flex;
           align-items: center;
           gap: 10px;
           margin-bottom: 10px;
         }
- 
+
         @media (max-width: 480px) {
           .stat-header {
             gap: 6px;
@@ -269,7 +269,7 @@ export default function Dashboard() {
             align-items: flex-start;
           }
         }
- 
+
         .stat-icon-wrapper {
           width: 36px;
           height: 36px;
@@ -281,69 +281,69 @@ export default function Dashboard() {
           border: 0.5px solid #27272a;
           flex-shrink: 0;
         }
- 
+
         @media (max-width: 480px) {
           .stat-icon-wrapper {
             width: 28px;
             height: 28px;
             border-radius: 7px;
           }
- 
+
           .stat-icon-wrapper i {
             font-size: 14px !important;
           }
         }
- 
+
         .stat-label {
           font-size: 13px;
           color: #71717a;
           font-weight: 500;
         }
- 
+
         @media (max-width: 480px) {
           .stat-label {
             font-size: 11px;
           }
         }
- 
+
         .stat-value {
           font-size: 28px;
           font-weight: 600;
           color: #fff;
           margin-bottom: 2px;
         }
- 
+
         @media (max-width: 480px) {
           .stat-value {
             font-size: 22px;
           }
         }
- 
+
         .stat-sub {
           font-size: 11px;
           color: #52525b;
         }
- 
+
         @media (max-width: 480px) {
           .stat-sub {
             font-size: 10px;
           }
         }
- 
+
         .dash-card {
           background: #18181b;
           border: 0.5px solid #27272a;
           border-radius: 14px;
           padding: 20px;
         }
- 
+
         @media (max-width: 480px) {
           .dash-card {
             padding: 16px 14px;
             border-radius: 12px;
           }
         }
- 
+
         .list-item {
           display: flex;
           justify-content: space-between;
@@ -351,14 +351,14 @@ export default function Dashboard() {
           padding: 12px 0;
           gap: 8px;
         }
- 
+
         .item-main {
           display: flex;
           align-items: center;
           gap: 10px;
           min-width: 0; /* allow text truncation */
         }
- 
+
         .item-name {
           font-size: 14px;
           font-weight: 500;
@@ -368,14 +368,14 @@ export default function Dashboard() {
           text-overflow: ellipsis;
           max-width: 140px;
         }
- 
+
         @media (max-width: 480px) {
           .item-name {
             font-size: 13px;
             max-width: 100px;
           }
         }
- 
+
         .item-sub {
           font-size: 11px;
           color: #71717a;
@@ -387,14 +387,14 @@ export default function Dashboard() {
           text-overflow: ellipsis;
           max-width: 160px;
         }
- 
+
         @media (max-width: 480px) {
           .item-sub {
             max-width: 100px;
             font-size: 10px;
           }
         }
- 
+
         .status-badge {
           font-size: 11px;
           font-weight: 600;
@@ -404,14 +404,14 @@ export default function Dashboard() {
           white-space: nowrap;
           flex-shrink: 0;
         }
- 
+
         @media (max-width: 480px) {
           .status-badge {
             font-size: 10px;
             padding: 3px 6px;
           }
         }
- 
+
         .action-btn {
           width: 100%;
           padding: 13px 14px;
@@ -429,11 +429,11 @@ export default function Dashboard() {
           min-height: 44px;
           transition: background 0.15s;
         }
- 
+
         .action-btn:active {
           background: #27272a;
         }
- 
+
         .date-badge {
           background: #18181b;
           border: 0.5px solid #27272a;
@@ -446,10 +446,10 @@ export default function Dashboard() {
           white-space: nowrap;
         }
       `}</style>
- 
+
       <div style={{ minHeight: '100vh', background: '#09090b', color: '#fff', fontFamily: 'Inter, system-ui, sans-serif' }}>
         <Navbar />
- 
+
         <div className="dash-container">
           {/* Header */}
           <div className="dash-header">
@@ -466,17 +466,17 @@ export default function Dashboard() {
               {new Date().toLocaleDateString('pt-BR', { day: '2-digit', month: 'long' })}
             </div>
           </div>
- 
+
           {/* Stats */}
           <div className="dash-stats-grid">
             <StatCard label="Agendamentos" value={appointments.length} sub="Este mês" icon="ti-calendar-time" color="#f59e0b" />
             <StatCard label="Clientes" value={clients.length} sub="Cadastrados" icon="ti-users" color="#f59e0b" />
             <StatCard label="Barbeiros" value={barbers.length} sub="Equipe ativa" icon="ti-scissors" color="#f59e0b" />
           </div>
- 
+
           {/* Content */}
           <div className="dash-content-grid">
- 
+
             {/* Agendamentos */}
             <div className="dash-card">
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
@@ -527,10 +527,10 @@ export default function Dashboard() {
                 )}
               </div>
             </div>
- 
+
             {/* Right column */}
             <div className="dash-right-col">
- 
+
               {/* Ações Rápidas */}
               <div className="dash-card" style={{ background: 'linear-gradient(135deg, #18181b 0%, #09090b 100%)' }}>
                 <h3 style={{ fontSize: '15px', fontWeight: '600', margin: '0 0 14px 0', color: '#fff' }}>Ações Rápidas</h3>
@@ -543,7 +543,7 @@ export default function Dashboard() {
                   </button>
                 </div>
               </div>
- 
+
               {/* Link de Agendamento */}
               <div className="dash-card">
                 <h3 style={{ fontSize: '15px', fontWeight: '600', margin: '0 0 4px 0', color: '#fff' }}>
@@ -555,7 +555,7 @@ export default function Dashboard() {
                 </p>
                 <LinkAgendamento />
               </div>
- 
+
               {/* Dica do Dia */}
               <div className="dash-card">
                 <h3 style={{ fontSize: '15px', fontWeight: '600', margin: '0 0 10px 0', color: '#fff' }}>Dica do Dia</h3>
@@ -563,7 +563,7 @@ export default function Dashboard() {
                   Mantenha o cadastro dos seus clientes atualizado para enviar lembretes via WhatsApp e reduzir faltas.
                 </p>
               </div>
- 
+
             </div>
           </div>
         </div>
@@ -571,7 +571,12 @@ export default function Dashboard() {
     </>
   )
 }
- 
+
+const styles = {
+  loadingContainer: { minHeight: '100vh', background: '#09090b', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' },
+  spinner: { width: '32px', height: '32px', border: '3px solid #27272a', borderTop: '3px solid #f59e0b', borderRadius: '50%', animation: 'spin 1s linear infinite' },
+}
+
 function StatCard({ label, value, sub, icon, color }) {
   return (
     <div className="stat-card">
