@@ -23,20 +23,21 @@ export default function Settings() {
   }
 
   useEffect(() => {
-    fetch(`${API}/my-barbershop`, { headers })
-      .then(r => r.json())
-      .then(d => {
-        setForm({
-          name:         d.name         || '',
-          phone:        d.phone        || '',
-          address:      d.address      || '',
-          description:  d.description  || '',
-          opening_time: d.opening_time || '09:00',
-          closing_time: d.closing_time || '18:00',
-        })
-        setLoading(false)
+  fetch(`${API}/my-barbershop`, { headers })
+    .then(r => r.json())
+    .then(d => {
+      setForm({
+        name:         d.name         || '',
+        phone:        d.phone        || '',
+        address:      d.address      || '',
+        description:  d.description  || '',
+        opening_time: d.opening_time || '09:00',
+        closing_time: d.closing_time || '18:00',
       })
-  }, [])
+      setLoading(false)
+    })
+    .catch(() => setLoading(false))
+}, [])
 
   const save = async () => {
     try {
