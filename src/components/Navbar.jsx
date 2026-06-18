@@ -10,12 +10,13 @@ const navItems = [
   { label: 'Estoque',       path: '/stock',        icon: 'ti-package' },
   { label: 'WhatsApp',      path: '/whatsapp',     icon: 'ti-brand-whatsapp' },
   { label: 'Relatórios',    path: '/reports',      icon: 'ti-chart-bar' },
+  { label: 'Configurações', path: '/settings',     icon: 'ti-settings' },
 ]
 
 const MOBILE_BREAKPOINT = 1024
 
 export default function Navbar() {
-  const [pathname, setPathname] = useState(window.location.pathname)
+  const [pathname, setPathname] = useState(() => window.location.pathname)
   const [menuOpen, setMenuOpen] = useState(false)
   const [isMobile, setIsMobile] = useState(window.innerWidth <= MOBILE_BREAKPOINT)
   const [hoveredItem, setHoveredItem] = useState(null)
