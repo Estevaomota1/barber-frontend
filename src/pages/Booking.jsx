@@ -357,9 +357,9 @@ const s = {
   splash: { minHeight: '100vh', background: '#09090b', display: 'flex', alignItems: 'center', justifyContent: 'center' },
   splashSpinner: { width: '36px', height: '36px', border: '3px solid #27272a', borderTop: '3px solid #f59e0b', borderRadius: '50%', animation: 'spin 1s linear infinite' },
 
-  hero: { background: 'linear-gradient(180deg, #18181b 0%, #09090b 100%)', padding: '48px 20px 32px', textAlign: 'center', borderBottom: '0.5px solid #27272a' },
+  hero:{"background":"linear-gradient(180deg, #18181b 0%, #09090b 100%)","padding":"32px 20px 24px","textAlign":"center","borderBottom":"0.5px solid #27272a"},
   heroAvatar: { fontSize: '52px', marginBottom: '12px' },
-  heroLogo: { width: '80px', height: '80px', borderRadius: '16px', objectFit: 'contain', marginBottom: '12px', background: '#27272a', padding: '4px', display: 'block', margin: '0 auto 12px' },
+  heroLogo: { width: '120px', height: '120px', borderRadius: '20px', objectFit: 'contain', background: '#27272a', padding: '6px', display: 'block', margin: '0 auto 16px' },
   heroName: { fontSize: '28px', fontWeight: '800', color: '#fff', margin: '0 0 8px' },
   heroDesc: { fontSize: '15px', color: '#a1a1aa', margin: '0 0 10px' },
   heroAddr: { fontSize: '13px', color: '#71717a', margin: '0 0 4px', display: 'flex', alignItems: 'center', justifyContent: 'center' },
