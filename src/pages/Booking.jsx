@@ -25,47 +25,47 @@ export default function Booking() {
   }, [slug])
 
   useEffect(() => {
-  if (step === 3 && selected.barber && selected.date && selected.service) {
-    setLoadingTimes(true)
-    setAvailableTimes([])
-    fetch(`${API}/booking/${slug}/availability?barber_id=${selected.barber.id}&date=${selected.date}&duration=${selected.service.duration}`)
-      .then(r => r.json())
-      .then(d => {
-        setAvailableTimes(d.available || [])
-        setLoadingTimes(false)
-      })
-      .catch(() => setLoadingTimes(false))
-  }
-}, [step, selected.barber, selected.date, selected.service])
+    if (step === 3 && selected.barber && selected.date && selected.service) {
+      setLoadingTimes(true)
+      setAvailableTimes([])
+      fetch(`${API}/booking/${slug}/availability?barber_id=${selected.barber.id}&date=${selected.date}&duration=${selected.service.duration}`)
+        .then(r => r.json())
+        .then(d => {
+          setAvailableTimes(d.available || [])
+          setLoadingTimes(false)
+        })
+        .catch(() => setLoadingTimes(false))
+    }
+  }, [step, selected.barber, selected.date, selected.service])
 
   const confirm = async () => {
-  if (!selected.client_name || !selected.client_phone) return
-  setSubmitting(true)
-  try {
-    const res = await fetch(`${API}/booking/${slug}`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Accept': 'application/json',
-      },
-      body: JSON.stringify({
-        service_id:   String(selected.service.id),
-        barber_id:    String(selected.barber.id),
-        date:         selected.date,
-        time:         selected.time,
-        client_name:  selected.client_name,
-        client_phone: selected.client_phone,
+    if (!selected.client_name || !selected.client_phone) return
+    setSubmitting(true)
+    try {
+      const res = await fetch(`${API}/booking/${slug}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        },
+        body: JSON.stringify({
+          service_id:   String(selected.service.id),
+          barber_id:    String(selected.barber.id),
+          date:         selected.date,
+          time:         selected.time,
+          client_name:  selected.client_name,
+          client_phone: selected.client_phone,
+        })
       })
-    })
-    const data = await res.json()
-    if (data.success) setSuccess(true)
-    else alert('Erro ao agendar: ' + data.error)
-  } catch(e) {
-    console.error(e)
-  } finally {
-    setSubmitting(false)
+      const data = await res.json()
+      if (data.success) setSuccess(true)
+      else alert('Erro ao agendar: ' + data.error)
+    } catch(e) {
+      console.error(e)
+    } finally {
+      setSubmitting(false)
+    }
   }
-}
 
   const getDates = () => {
     const dates = []
@@ -106,6 +106,22 @@ export default function Booking() {
           {new Date(selected.date + 'T12:00:00').toLocaleDateString('pt-BR', { weekday: 'long', day: '2-digit', month: 'long' })} às {selected.time}
         </p>
         <p style={s.successNote}>Aguarde a confirmação da barbearia.</p>
+
+        {/* QR Code Pix do barbeiro selecionado */}
+        {selected.barber?.pix_qr && (
+          <div style={s.pixSection}>
+            <div style={s.pixDivider}></div>
+            <p style={s.pixTitle}>💳 Pagamento via Pix</p>
+            <p style={s.pixSubtitle}>
+              Escaneie o QR Code para pagar <b>{selected.barber.name}</b>
+            </p>
+            <div style={s.pixQrWrap}>
+              <img src={selected.barber.pix_qr} alt="QR Code Pix" style={s.pixQrImg} />
+            </div>
+            <p style={s.pixNote}>O pagamento é opcional e pode ser feito na barbearia.</p>
+          </div>
+        )}
+
         <button onClick={() => { setSuccess(false); setStep(0); setSelected({ service: null, barber: null, date: null, time: null, client_name: '', client_phone: '' }) }} style={s.newBtn}>
           Fazer outro agendamento
         </button>
@@ -118,7 +134,11 @@ export default function Booking() {
 
       {/* Hero */}
       <div style={s.hero}>
-        <div style={s.heroAvatar}>✂️</div>
+        {barbershop.logo ? (
+          <img src={barbershop.logo} alt={barbershop.name} style={s.heroLogo} />
+        ) : (
+          <div style={s.heroAvatar}>✂️</div>
+        )}
         <h1 style={s.heroName}>{barbershop.name}</h1>
         <p style={s.heroDesc}>{barbershop.description || 'Agende seu horário com os melhores.'}</p>
         {barbershop.address && (
@@ -199,6 +219,9 @@ export default function Booking() {
                     <p style={s.barberName}>{b.name}</p>
                     <p style={s.barberRole}>Barbeiro</p>
                   </div>
+                  {b.pix_qr && (
+                    <span style={s.pixBadge}>Pix ✓</span>
+                  )}
                 </button>
               ))}
             </div>
@@ -336,6 +359,7 @@ const s = {
 
   hero: { background: 'linear-gradient(180deg, #18181b 0%, #09090b 100%)', padding: '48px 20px 32px', textAlign: 'center', borderBottom: '0.5px solid #27272a' },
   heroAvatar: { fontSize: '52px', marginBottom: '12px' },
+  heroLogo: { width: '80px', height: '80px', borderRadius: '16px', objectFit: 'contain', marginBottom: '12px', background: '#27272a', padding: '4px' },
   heroName: { fontSize: '28px', fontWeight: '800', color: '#fff', margin: '0 0 8px' },
   heroDesc: { fontSize: '15px', color: '#a1a1aa', margin: '0 0 10px' },
   heroAddr: { fontSize: '13px', color: '#71717a', margin: '0 0 4px', display: 'flex', alignItems: 'center', justifyContent: 'center' },
@@ -368,6 +392,7 @@ const s = {
   barberAvatar: { width: '44px', height: '44px', borderRadius: '50%', background: '#f59e0b', color: '#09090b', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '18px', fontWeight: '700', flexShrink: 0 },
   barberName: { fontSize: '15px', fontWeight: '600', color: '#fff', margin: 0 },
   barberRole: { fontSize: '12px', color: '#71717a', margin: '2px 0 0' },
+  pixBadge: { marginLeft: 'auto', fontSize: '11px', color: '#4ade80', background: '#14532d', padding: '3px 8px', borderRadius: '20px' },
 
   dateScroll: { display: 'flex', gap: '10px', overflowX: 'auto', paddingBottom: '8px', scrollbarWidth: 'none' },
   dateCard: { display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '12px 14px', background: '#18181b', border: '0.5px solid #27272a', borderRadius: '12px', cursor: 'pointer', minWidth: '64px', flexShrink: 0 },
@@ -399,11 +424,19 @@ const s = {
   teamName: { fontSize: '13px', fontWeight: '600', color: '#fff', margin: 0 },
   teamRole: { fontSize: '11px', color: '#71717a', margin: '2px 0 0' },
 
-  successWrap: { maxWidth: '400px', margin: '80px auto', textAlign: 'center', padding: '20px' },
+  successWrap: { maxWidth: '400px', margin: '60px auto', textAlign: 'center', padding: '20px' },
   successIcon: { fontSize: '64px', marginBottom: '16px' },
   successTitle: { fontSize: '28px', fontWeight: '800', color: '#fff', margin: '0 0 8px' },
   successSub: { fontSize: '16px', color: '#a1a1aa', margin: '0 0 8px' },
   successDate: { fontSize: '15px', color: '#f59e0b', fontWeight: '600', margin: '0 0 16px' },
-  successNote: { fontSize: '13px', color: '#71717a', margin: '0 0 24px' },
-  newBtn: { background: '#f59e0b', color: '#09090b', border: 'none', padding: '14px 28px', borderRadius: '10px', fontSize: '15px', fontWeight: '700', cursor: 'pointer' },
+  successNote: { fontSize: '13px', color: '#71717a', margin: '0 0 8px' },
+  newBtn: { background: '#f59e0b', color: '#09090b', border: 'none', padding: '14px 28px', borderRadius: '10px', fontSize: '15px', fontWeight: '700', cursor: 'pointer', marginTop: '20px' },
+
+  pixSection: { marginTop: '8px', marginBottom: '8px' },
+  pixDivider: { height: '1px', background: '#27272a', margin: '20px 0' },
+  pixTitle: { fontSize: '18px', fontWeight: '700', color: '#fff', margin: '0 0 6px' },
+  pixSubtitle: { fontSize: '13px', color: '#a1a1aa', margin: '0 0 16px' },
+  pixQrWrap: { background: '#fff', borderRadius: '12px', padding: '12px', display: 'inline-block', marginBottom: '12px' },
+  pixQrImg: { width: '180px', height: '180px', objectFit: 'contain', display: 'block' },
+  pixNote: { fontSize: '12px', color: '#52525b', margin: 0 },
 }
