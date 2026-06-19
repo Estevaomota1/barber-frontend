@@ -359,7 +359,7 @@ const s = {
 
   hero: { background: 'linear-gradient(180deg, #18181b 0%, #09090b 100%)', padding: '48px 20px 32px', textAlign: 'center', borderBottom: '0.5px solid #27272a' },
   heroAvatar: { fontSize: '52px', marginBottom: '12px' },
-  heroLogo: { width: '80px', height: '80px', borderRadius: '16px', objectFit: 'contain', marginBottom: '12px', background: '#27272a', padding: '4px' },
+  heroLogo: { width: '80px', height: '80px', borderRadius: '16px', objectFit: 'contain', marginBottom: '12px', background: '#27272a', padding: '4px', display: 'block', margin: '0 auto 12px' },
   heroName: { fontSize: '28px', fontWeight: '800', color: '#fff', margin: '0 0 8px' },
   heroDesc: { fontSize: '15px', color: '#a1a1aa', margin: '0 0 10px' },
   heroAddr: { fontSize: '13px', color: '#71717a', margin: '0 0 4px', display: 'flex', alignItems: 'center', justifyContent: 'center' },
