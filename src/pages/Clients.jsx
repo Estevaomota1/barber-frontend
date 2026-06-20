@@ -193,14 +193,13 @@ export default function Clients() {
                   <label style={styles.label}>Data e Hora do Agendamento</label>
                   <div style={styles.inputWrapper}>
                     <i className="ti ti-calendar-event" style={styles.inputIcon}></i>
-                    <input
-                      type="datetime-local"
-                      style={styles.input}
-                      value={appointmentDate}
-                      min={getCurrentDateTimeLocal()}
-                      onChange={(e) => setAppointmentDate(e.target.value)}
-                      required
-                    />
+                                          <input
+                        type="datetime-local"
+                        style={styles.input}
+                        value={appointmentDate}
+                        min={getCurrentDateTimeLocal()}
+                        onChange={(e) => setAppointmentDate(e.target.value)}
+                      />
                   </div>
                 </div>
               </div>

@@ -224,10 +224,22 @@ export default function Appointments() {
                   <i className="ti ti-user" style={{ marginRight: '6px', color: '#f59e0b' }}></i>
                   Cliente <span style={{ color: '#52525b', fontWeight: '400' }}>(opcional — pode ser walk-in)</span>
                 </label>
+                              {clients.length === 0 ? (
+                <div style={{ background: 'rgba(245,158,11,0.08)', border: '1px solid rgba(245,158,11,0.2)', borderRadius: '10px', padding: '14px 16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px' }}>
+                  <span style={{ fontSize: '13px', color: '#a1a1aa' }}>
+                    <i className="ti ti-alert-circle" style={{ color: '#f59e0b', marginRight: '8px' }}></i>
+                    Nenhum cliente cadastrado ainda.
+                  </span>
+                  <a href="/clients" style={{ fontSize: '13px', color: '#f59e0b', fontWeight: '600', textDecoration: 'none', whiteSpace: 'nowrap' }}>
+                    Cadastrar cliente →
+                  </a>
+                </div>
+              ) : (
                 <select className="ap-select" style={styles.selectField} value={clientId} onChange={e => setClientId(e.target.value)}>
                   <option value="">— Walk-in / sem cadastro —</option>
                   {clients.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
                 </select>
+              )}
               </div>
 
               {/* Data + Hora */}
