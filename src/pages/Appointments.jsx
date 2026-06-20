@@ -2,20 +2,23 @@ import { useState, useEffect } from 'react'
 import api from '../services/api'
 import Navbar from '../components/Navbar'
 
+const STATUS_PT = {
+  pending:   'Pendente',
+  confirmed: 'Confirmado',
+  cancelled: 'Cancelado',
+  completed: 'Concluído',
+}
+
 function formatDate(dateStr) {
   if (!dateStr) return '-'
   const date = new Date(dateStr.replace(' ', 'T'))
   return date.toLocaleDateString('pt-BR', {
-    day: '2-digit',
-    month: '2-digit',
-    year: 'numeric',
+    day: '2-digit', month: '2-digit', year: 'numeric',
   }) + ' às ' + date.toLocaleTimeString('pt-BR', {
-    hour: '2-digit',
-    minute: '2-digit',
+    hour: '2-digit', minute: '2-digit',
   })
 }
 
-// Converte "2024-06-15" + "14:30" → "2024-06-15 14:30:00"
 function combineDatetime(datePart, timePart) {
   if (!datePart || !timePart) return ''
   return `${datePart} ${timePart}:00`
@@ -23,25 +26,35 @@ function combineDatetime(datePart, timePart) {
 
 export default function Appointments() {
   const [appointments, setAppointments] = useState([])
-  const [clients, setClients] = useState([])
-  const [loading, setLoading] = useState(true)
-  const [clientId, setClientId] = useState('')
-  const [datePart, setDatePart] = useState('')   // "YYYY-MM-DD"
-  const [timePart, setTimePart] = useState('')   // "HH:MM"
+  const [clients, setClients]     = useState([])
+  const [barbers, setBarbers]     = useState([])
+  const [services, setServices]   = useState([])
+  const [loading, setLoading]     = useState(true)
+
+  // Form state
+  const [clientId, setClientId]   = useState('')
+  const [barberId, setBarberId]   = useState('')
+  const [serviceId, setServiceId] = useState('')
+  const [datePart, setDatePart]   = useState('')
+  const [timePart, setTimePart]   = useState('')
   const [filterDate, setFilterDate] = useState('')
-  const [error, setError] = useState('')
-  const [saving, setSaving] = useState(false)
-  const [showForm, setShowForm] = useState(false)
+  const [error, setError]         = useState('')
+  const [saving, setSaving]       = useState(false)
+  const [showForm, setShowForm]   = useState(false)
 
   async function loadData(filter = '') {
     try {
       const url = filter ? `/appointments?date=${filter}` : '/appointments'
-      const [apRes, clRes] = await Promise.all([
+      const [apRes, clRes, baRes, svRes] = await Promise.all([
         api.get(url),
         api.get('/clients'),
+        api.get('/barbers'),
+        api.get('/services'),
       ])
       setAppointments(apRes.data.data.data || [])
       setClients(clRes.data.data.data || [])
+      setBarbers(baRes.data.data.data || [])
+      setServices(svRes.data.data || svRes.data || [])
     } catch (err) {
       console.error(err)
     } finally {
@@ -62,22 +75,25 @@ export default function Appointments() {
     loadData('')
   }
 
+  // Auto-fill time when service is selected
+  const selectedService = services.find(s => String(s.id) === String(serviceId))
+
   async function handleSubmit(e) {
     e.preventDefault()
-    if (!datePart || !timePart) {
-      setError('Selecione a data e o horário.')
-      return
-    }
+    if (!datePart || !timePart) { setError('Selecione a data e o horário.'); return }
+    if (!barberId)  { setError('Selecione um barbeiro.'); return }
+    if (!serviceId) { setError('Selecione um serviço.'); return }
     setSaving(true)
     setError('')
     try {
       await api.post('/appointments', {
-        client_id: clientId,
+        client_id:        clientId || null,
+        barber_id:        barberId,
+        service_id:       serviceId,
         appointment_date: combineDatetime(datePart, timePart),
       })
-      setClientId('')
-      setDatePart('')
-      setTimePart('')
+      setClientId(''); setBarberId(''); setServiceId('')
+      setDatePart(''); setTimePart('')
       setShowForm(false)
       loadData(filterDate)
     } catch (err) {
@@ -91,9 +107,7 @@ export default function Appointments() {
     try {
       await api.patch(`/appointments/${id}/status`, { status })
       loadData(filterDate)
-    } catch (err) {
-      console.error(err)
-    }
+    } catch (err) { console.error(err) }
   }
 
   async function handleDelete(id) {
@@ -101,9 +115,7 @@ export default function Appointments() {
     try {
       await api.delete(`/appointments/${id}`)
       loadData(filterDate)
-    } catch (err) {
-      console.error(err)
-    }
+    } catch (err) { console.error(err) }
   }
 
   const statusStyles = {
@@ -113,78 +125,24 @@ export default function Appointments() {
     completed: { background: '#1c1f2e', color: '#818cf8', border: '0.5px solid #3730a3' },
   }
 
-  if (loading) {
-    return (
-      <div style={styles.loadingContainer}>
-        <div style={styles.spinner}></div>
-        <span style={{ color: '#a1a1aa', marginTop: '12px' }}>Carregando agenda...</span>
-      </div>
-    )
-  }
+  if (loading) return (
+    <div style={styles.loadingContainer}>
+      <div style={styles.spinner}></div>
+      <span style={{ color: '#a1a1aa', marginTop: '12px' }}>Carregando agenda...</span>
+    </div>
+  )
 
   return (
     <div style={styles.pageWrapper}>
       <style>{`
-        @keyframes spin {
-          from { transform: rotate(0deg); }
-          to { transform: rotate(360deg); }
-        }
-
-        /* Fix dropdown list background */
-        .ap-select option {
-          background: #1c1c1f !important;
-          color: #fff !important;
-        }
-
-        .ap-select:focus {
-          border-color: #f59e0b !important;
-          outline: none;
-        }
-
-        .ap-date-input::-webkit-calendar-picker-indicator {
-          filter: invert(1) opacity(0.4);
-          cursor: pointer;
-        }
-
-        .ap-date-input:focus {
-          border-color: #f59e0b !important;
-          outline: none;
-        }
-
-        .ap-field-row {
-          display: grid;
-          grid-template-columns: 1fr 1fr;
-          gap: 16px;
-        }
-
-        @media (max-width: 600px) {
-          .ap-field-row {
-            grid-template-columns: 1fr;
-          }
-          .ap-date-time-row {
-            grid-template-columns: 1fr 1fr !important;
-          }
-        }
-
-        .ap-date-time-row {
-          display: grid;
-          grid-template-columns: 1fr 1fr;
-          gap: 12px;
-        }
-
-        .ap-action-btn {
-          min-height: 44px;
-        }
-
-        /* Table responsive */
-        @media (max-width: 640px) {
-          .ap-table-wrap {
-            font-size: 13px;
-          }
-          .ap-col-barber {
-            display: none;
-          }
-        }
+        @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+        .ap-select option { background: #1c1c1f !important; color: #fff !important; }
+        .ap-select:focus { border-color: #f59e0b !important; outline: none; }
+        .ap-date-input::-webkit-calendar-picker-indicator { filter: invert(1) opacity(0.4); cursor: pointer; }
+        .ap-date-input:focus { border-color: #f59e0b !important; outline: none; }
+        .ap-date-time-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+        .ap-action-btn { min-height: 44px; }
+        @media (max-width: 640px) { .ap-table-wrap { font-size: 13px; } .ap-col-barber { display: none; } }
       `}</style>
 
       <Navbar />
@@ -201,11 +159,10 @@ export default function Appointments() {
             style={showForm ? styles.btnSecondary : styles.btnPrimary}
             className="ap-action-btn"
           >
-            {showForm ? (
-              <><i className="ti ti-x" style={{ marginRight: '6px' }}></i>Cancelar</>
-            ) : (
-              <><i className="ti ti-calendar-plus" style={{ marginRight: '6px' }}></i>Novo Agendamento</>
-            )}
+            {showForm
+              ? <><i className="ti ti-x" style={{ marginRight: '6px' }}></i>Cancelar</>
+              : <><i className="ti ti-calendar-plus" style={{ marginRight: '6px' }}></i>Novo Agendamento</>
+            }
           </button>
         </div>
 
@@ -217,86 +174,89 @@ export default function Appointments() {
               Marcar Novo Horário
             </h2>
 
-            {error && <div style={styles.errorAlert}><i className="ti ti-alert-circle" style={{ marginRight: '8px' }}></i>{error}</div>}
+            {error && (
+              <div style={styles.errorAlert}>
+                <i className="ti ti-alert-circle" style={{ marginRight: '8px' }}></i>{error}
+              </div>
+            )}
 
             <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
 
-              {/* Cliente */}
+              {/* Linha 1: Barbeiro + Serviço */}
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+                <div style={styles.inputGroup}>
+                  <label style={styles.label}>
+                    <i className="ti ti-scissors" style={{ marginRight: '6px', color: '#f59e0b' }}></i>
+                    Barbeiro *
+                  </label>
+                  <select className="ap-select" style={styles.selectField} value={barberId} onChange={e => setBarberId(e.target.value)} required>
+                    <option value="">— Selecione —</option>
+                    {barbers.map(b => <option key={b.id} value={b.id}>{b.name}</option>)}
+                  </select>
+                </div>
+
+                <div style={styles.inputGroup}>
+                  <label style={styles.label}>
+                    <i className="ti ti-tag" style={{ marginRight: '6px', color: '#f59e0b' }}></i>
+                    Serviço *
+                  </label>
+                  <select className="ap-select" style={styles.selectField} value={serviceId} onChange={e => setServiceId(e.target.value)} required>
+                    <option value="">— Selecione —</option>
+                    {services.map(s => (
+                      <option key={s.id} value={s.id}>{s.name} — R$ {Number(s.price).toFixed(2)}</option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+
+              {/* Preview do serviço */}
+              {selectedService && (
+                <div style={{ background: 'rgba(245,158,11,0.06)', border: '1px solid rgba(245,158,11,0.15)', borderRadius: '8px', padding: '10px 14px', fontSize: '13px', color: '#a1a1aa', display: 'flex', gap: '16px' }}>
+                  <span>⏱ {selectedService.duration} min</span>
+                  <span>💰 R$ {Number(selectedService.price).toFixed(2)}</span>
+                </div>
+              )}
+
+              {/* Cliente (opcional) */}
               <div style={styles.inputGroup}>
                 <label style={styles.label}>
                   <i className="ti ti-user" style={{ marginRight: '6px', color: '#f59e0b' }}></i>
-                  Cliente
+                  Cliente <span style={{ color: '#52525b', fontWeight: '400' }}>(opcional — pode ser walk-in)</span>
                 </label>
-                <select
-                  className="ap-select"
-                  style={styles.selectField}
-                  value={clientId}
-                  onChange={(e) => setClientId(e.target.value)}
-                  required
-                >
-                  <option value="">— Selecione um cliente —</option>
-                  {clients.map((c) => (
-                    <option key={c.id} value={c.id}>{c.name}</option>
-                  ))}
+                <select className="ap-select" style={styles.selectField} value={clientId} onChange={e => setClientId(e.target.value)}>
+                  <option value="">— Walk-in / sem cadastro —</option>
+                  {clients.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
                 </select>
               </div>
 
-              {/* Data + Hora separados */}
+              {/* Data + Hora */}
               <div>
                 <label style={styles.label}>
                   <i className="ti ti-clock" style={{ marginRight: '6px', color: '#f59e0b' }}></i>
-                  Data e Horário
+                  Data e Horário *
                 </label>
                 <div className="ap-date-time-row" style={{ marginTop: '8px' }}>
-                  {/* Data */}
                   <div style={styles.dateBlock}>
-                    <span style={styles.dateBlockLabel}>
-                      <i className="ti ti-calendar" style={{ marginRight: '5px' }}></i>Data
-                    </span>
-                    <input
-                      className="ap-date-input"
-                      style={styles.dateInput}
-                      type="date"
-                      value={datePart}
-                      onChange={(e) => setDatePart(e.target.value)}
-                      required
-                    />
+                    <span style={styles.dateBlockLabel}><i className="ti ti-calendar" style={{ marginRight: '5px' }}></i>Data</span>
+                    <input className="ap-date-input" style={styles.dateInput} type="date" value={datePart} onChange={e => setDatePart(e.target.value)} required />
                     {datePart && (
                       <span style={styles.datePreview}>
                         {new Date(datePart + 'T12:00:00').toLocaleDateString('pt-BR', { weekday: 'long', day: '2-digit', month: 'long' })}
                       </span>
                     )}
                   </div>
-
-                  {/* Hora */}
                   <div style={styles.dateBlock}>
-                    <span style={styles.dateBlockLabel}>
-                      <i className="ti ti-clock" style={{ marginRight: '5px' }}></i>Horário
-                    </span>
-                    <input
-                      className="ap-date-input"
-                      style={styles.dateInput}
-                      type="time"
-                      value={timePart}
-                      onChange={(e) => setTimePart(e.target.value)}
-                      required
-                    />
-                    {timePart && (
-                      <span style={styles.datePreview}>
-                        {timePart}h (horário de Brasília)
-                      </span>
-                    )}
+                    <span style={styles.dateBlockLabel}><i className="ti ti-clock" style={{ marginRight: '5px' }}></i>Horário</span>
+                    <input className="ap-date-input" style={styles.dateInput} type="time" value={timePart} onChange={e => setTimePart(e.target.value)} required />
+                    {timePart && <span style={styles.datePreview}>{timePart}h (horário de Brasília)</span>}
                   </div>
                 </div>
 
-                {/* Preview do agendamento */}
                 {datePart && timePart && (
                   <div style={styles.datetimePreviewBox}>
                     <i className="ti ti-calendar-check" style={{ color: '#f59e0b', marginRight: '8px' }}></i>
                     Agendamento: <strong style={{ color: '#fff', marginLeft: '4px' }}>
-                      {new Date(datePart + 'T' + timePart).toLocaleDateString('pt-BR', {
-                        weekday: 'long', day: '2-digit', month: 'long', year: 'numeric'
-                      })} às {timePart}h
+                      {new Date(datePart + 'T' + timePart).toLocaleDateString('pt-BR', { weekday: 'long', day: '2-digit', month: 'long', year: 'numeric' })} às {timePart}h
                     </strong>
                   </div>
                 )}
@@ -326,15 +286,8 @@ export default function Appointments() {
                 <p style={styles.filterSubtitle}>Selecione uma data para filtrar</p>
               </div>
             </div>
-
             <div style={styles.filterActions}>
-              <input
-                className="ap-date-input"
-                style={{ ...styles.dateInput, minWidth: '160px' }}
-                type="date"
-                value={filterDate}
-                onChange={handleFilter}
-              />
+              <input className="ap-date-input" style={{ ...styles.dateInput, minWidth: '160px', background: '#09090b', border: '1px solid #3f3f46', borderRadius: '8px', padding: '10px 12px' }} type="date" value={filterDate} onChange={handleFilter} />
               {filterDate && (
                 <button onClick={handleClearFilter} style={styles.premiumClearBtn}>
                   <i className="ti ti-refresh" style={{ marginRight: '6px' }}></i>Ver Tudo
@@ -377,11 +330,12 @@ export default function Appointments() {
                           </div>
                           <div>
                             <span style={styles.clientName}>
-                              {apt.client?.name || apt.client_name || '—'}
+                              {apt.client?.name || apt.client_name || 'Walk-in'}
                             </span>
                             {apt.barber && (
                               <div className="ap-col-barber" style={{ fontSize: '12px', color: '#71717a', marginTop: '2px' }}>
                                 ✂️ {apt.barber.name}
+                                {(apt.service?.name || apt.service_name) && ` • ${apt.service?.name || apt.service_name}`}
                               </div>
                             )}
                           </div>
@@ -392,26 +346,18 @@ export default function Appointments() {
                           <i className="ti ti-calendar" style={{ color: '#f59e0b', marginRight: '6px', flexShrink: 0 }}></i>
                           {formatDate(apt.appointment_date)}
                         </div>
-                        {(apt.service_name || apt.service?.name) && (
-                          <div style={{ fontSize: '12px', color: '#71717a', marginTop: '4px' }}>
-                            {apt.service?.name || apt.service_name}
-                            {apt.price > 0 && (
-                              <span style={{ color: '#f59e0b', marginLeft: '8px' }}>
-                                R$ {Number(apt.price).toFixed(2)}
-                              </span>
-                            )}
+                        {apt.price > 0 && (
+                          <div style={{ fontSize: '12px', color: '#f59e0b', marginTop: '4px' }}>
+                            R$ {Number(apt.price).toFixed(2)}
                           </div>
                         )}
                       </td>
                       <td style={styles.td}>
                         <select
                           className="ap-select"
-                          style={{
-                            ...styles.statusSelect,
-                            ...(statusStyles[apt.status] || statusStyles.pending),
-                          }}
+                          style={{ ...styles.statusSelect, ...(statusStyles[apt.status] || statusStyles.pending) }}
                           value={apt.status}
-                          onChange={(e) => handleStatus(apt.id, e.target.value)}
+                          onChange={e => handleStatus(apt.id, e.target.value)}
                         >
                           <option value="pending">Pendente</option>
                           <option value="confirmed">Confirmado</option>
@@ -420,11 +366,7 @@ export default function Appointments() {
                         </select>
                       </td>
                       <td style={{ ...styles.td, textAlign: 'right' }}>
-                        <button
-                          onClick={() => handleDelete(apt.id)}
-                          style={styles.iconBtnDelete}
-                          title="Excluir"
-                        >
+                        <button onClick={() => handleDelete(apt.id)} style={styles.iconBtnDelete} title="Excluir">
                           <i className="ti ti-trash"></i>
                         </button>
                       </td>
@@ -446,85 +388,20 @@ const styles = {
   header: { display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: '32px', gap: '16px', flexWrap: 'wrap' },
   pageTitle: { fontSize: 'clamp(22px, 5vw, 28px)', fontWeight: '600', margin: '0 0 6px 0', color: '#fff' },
   pageSubtitle: { fontSize: '14px', color: '#a1a1aa', margin: 0 },
-
   card: { background: '#18181b', border: '0.5px solid #27272a', borderRadius: '14px', padding: '24px', marginBottom: '24px' },
   cardHeader: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px', paddingBottom: '16px', borderBottom: '0.5px solid #27272a' },
   cardTitle: { fontSize: '15px', fontWeight: '600', margin: '0 0 20px 0', color: '#fff', display: 'flex', alignItems: 'center' },
-
   badge: { fontSize: '12px', background: '#27272a', color: '#a1a1aa', padding: '4px 10px', borderRadius: '20px', fontWeight: '500' },
-
   inputGroup: { display: 'flex', flexDirection: 'column', gap: '8px' },
   label: { fontSize: '13px', color: '#a1a1aa', fontWeight: '500', display: 'flex', alignItems: 'center' },
-
-  // Select estilizado — fundo escuro explícito para corrigir o branco
-  selectField: {
-    width: '100%',
-    background: '#09090b',
-    border: '1px solid #3f3f46',
-    borderRadius: '10px',
-    color: '#fff',
-    fontSize: '14px',
-    padding: '12px 16px',
-    fontFamily: 'inherit',
-    cursor: 'pointer',
-    appearance: 'none',
-    WebkitAppearance: 'none',
-    backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%2371717a' stroke-width='2'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E")`,
-    backgroundRepeat: 'no-repeat',
-    backgroundPosition: 'right 14px center',
-    paddingRight: '40px',
-  },
-
-  // Inputs de data/hora
-  dateBlock: {
-    background: '#09090b',
-    border: '1px solid #3f3f46',
-    borderRadius: '10px',
-    padding: '12px 14px',
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '6px',
-  },
-  dateBlockLabel: {
-    fontSize: '11px',
-    color: '#71717a',
-    fontWeight: '600',
-    textTransform: 'uppercase',
-    letterSpacing: '0.05em',
-    display: 'flex',
-    alignItems: 'center',
-  },
-  dateInput: {
-    background: 'transparent',
-    border: 'none',
-    outline: 'none',
-    color: '#fff',
-    fontSize: '15px',
-    fontWeight: '500',
-    fontFamily: 'inherit',
-    width: '100%',
-    cursor: 'pointer',
-  },
-  datePreview: {
-    fontSize: '11px',
-    color: '#f59e0b',
-    fontWeight: '500',
-  },
-  datetimePreviewBox: {
-    marginTop: '12px',
-    background: 'rgba(245, 158, 11, 0.08)',
-    border: '1px solid rgba(245, 158, 11, 0.2)',
-    borderRadius: '8px',
-    padding: '10px 14px',
-    fontSize: '13px',
-    color: '#a1a1aa',
-    display: 'flex',
-    alignItems: 'center',
-  },
-
+  selectField: { width: '100%', background: '#09090b', border: '1px solid #3f3f46', borderRadius: '10px', color: '#fff', fontSize: '14px', padding: '12px 16px', fontFamily: 'inherit', cursor: 'pointer', appearance: 'none', WebkitAppearance: 'none', backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%2371717a' stroke-width='2'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E")`, backgroundRepeat: 'no-repeat', backgroundPosition: 'right 14px center', paddingRight: '40px' },
+  dateBlock: { background: '#09090b', border: '1px solid #3f3f46', borderRadius: '10px', padding: '12px 14px', display: 'flex', flexDirection: 'column', gap: '6px' },
+  dateBlockLabel: { fontSize: '11px', color: '#71717a', fontWeight: '600', textTransform: 'uppercase', letterSpacing: '0.05em', display: 'flex', alignItems: 'center' },
+  dateInput: { background: 'transparent', border: 'none', outline: 'none', color: '#fff', fontSize: '15px', fontWeight: '500', fontFamily: 'inherit', width: '100%', cursor: 'pointer' },
+  datePreview: { fontSize: '11px', color: '#f59e0b', fontWeight: '500' },
+  datetimePreviewBox: { marginTop: '12px', background: 'rgba(245, 158, 11, 0.08)', border: '1px solid rgba(245, 158, 11, 0.2)', borderRadius: '8px', padding: '10px 14px', fontSize: '13px', color: '#a1a1aa', display: 'flex', alignItems: 'center' },
   btnPrimary: { display: 'inline-flex', alignItems: 'center', justifyContent: 'center', background: '#f59e0b', color: '#09090b', border: 'none', borderRadius: '8px', padding: '10px 20px', fontSize: '14px', fontWeight: '600', cursor: 'pointer' },
   btnSecondary: { display: 'inline-flex', alignItems: 'center', justifyContent: 'center', background: '#27272a', color: '#fff', border: '0.5px solid #3f3f46', borderRadius: '8px', padding: '10px 20px', fontSize: '14px', fontWeight: '500', cursor: 'pointer' },
-
   filterContainer: { background: 'linear-gradient(135deg, #18181b 0%, #111114 100%)', border: '1px solid #27272a', borderRadius: '14px', padding: '18px 20px', marginBottom: '28px' },
   filterHeader: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '16px', flexWrap: 'wrap' },
   filterTitleGroup: { display: 'flex', alignItems: 'center', gap: '14px' },
@@ -533,7 +410,6 @@ const styles = {
   filterSubtitle: { fontSize: '12px', color: '#71717a', margin: '2px 0 0 0' },
   filterActions: { display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' },
   premiumClearBtn: { background: 'rgba(248,113,113,0.1)', border: '1px solid rgba(248,113,113,0.2)', color: '#f87171', padding: '10px 14px', borderRadius: '8px', fontSize: '13px', fontWeight: '600', cursor: 'pointer', display: 'flex', alignItems: 'center', whiteSpace: 'nowrap' },
-
   table: { width: '100%', borderCollapse: 'collapse', textAlign: 'left' },
   th: { fontSize: '12px', textTransform: 'uppercase', color: '#71717a', fontWeight: '600', padding: '10px 14px', letterSpacing: '0.05em' },
   tr: { borderBottom: '0.5px solid #27272a' },
