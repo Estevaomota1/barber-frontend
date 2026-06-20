@@ -10,8 +10,9 @@ const navItems = [
   { label: 'Estoque',       path: '/stock',        icon: 'ti-package' },
   { label: 'WhatsApp',      path: '/whatsapp',     icon: 'ti-brand-whatsapp' },
   { label: 'Relatórios',    path: '/reports',      icon: 'ti-chart-bar' },
+  { label: 'Serviços',      path: '/services',     icon: 'ti-services' },
   { label: 'Configurações', path: '/settings',     icon: 'ti-settings' },
-]
+ ]
 
 const MOBILE_BREAKPOINT = 1024
 
