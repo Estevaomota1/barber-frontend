@@ -68,11 +68,6 @@ export default function Login() {
             <button type="submit" disabled={loading} style={{ ...s.btn, background: loading ? '#92400e' : '#f59e0b' }}>
               {loading ? 'Entrando...' : 'Entrar'}
             </button>
-
-            <div style={{ marginTop: '16px', textAlign: 'center', display: 'flex', flexDirection: 'column', gap: '8px' }}>
-              <a href="/register" style={s.link}>Criar conta de barbearia</a>
-              <a href="/register/vendor" style={{ ...s.link, color: '#71717a' }}>Acessar como vendedor</a>
-            </div>
           </form>
         </div>
 
