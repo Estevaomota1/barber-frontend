@@ -54,7 +54,7 @@ export default function Appointments() {
       setAppointments(apRes.data.data.data || [])
       setClients(clRes.data.data.data || [])
       setBarbers(baRes.data.data.data || [])
-      const svData = svRes.data.data || svRes.data || []
+      const svData = svRes.data.services || svRes.data.data || svRes.data || []
       setServices(Array.isArray(svData) ? svData : [])
     } catch (err) {
       console.error(err)
