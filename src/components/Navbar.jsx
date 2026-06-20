@@ -197,7 +197,7 @@ const d = {
   logoIcon: { width: 32, height: 32, background: '#f59e0b', borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center' },
   logoText: { fontSize: 18, fontWeight: 600, color: '#fff', letterSpacing: '-0.02em' },
   menu: { display: 'flex', alignItems: 'center', gap: 2, flexWrap: 'nowrap', overflow: 'hidden' },
-  menuItem: { display: 'flex', alignItems: 'center', gap: 6, padding: '8px 10px', borderRadius: 8, fontSize: 13, fontWeight: 500, color: '#a1a1aa', textDecoration: 'none', whiteSpace: 'nowrap' },
+  menuItem: { display: 'flex', alignItems: 'center', gap: 6, padding: '8px 10px', borderRadius: 8, fontSize: 10, fontWeight: 500, color: '#a1a1aa', textDecoration: 'none', whiteSpace: 'nowrap' },
   menuItemHover: { background: '#1f1f23', color: '#fff' },
   menuItemActive: { background: '#27272a', color: '#f59e0b' },
   logoutBtn: { background: '#2a1414', color: '#f87171', border: '1px solid #7f1d1d', padding: '8px 14px', borderRadius: 8, fontSize: 13, fontWeight: 500, cursor: 'pointer', display: 'flex', alignItems: 'center', flexShrink: 0 },
