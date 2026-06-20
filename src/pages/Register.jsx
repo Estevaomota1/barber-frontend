@@ -102,5 +102,5 @@ const s = {
   inputWrap: { display: 'flex', alignItems: 'center', background: '#09090b', border: '0.5px solid #3f3f46', borderRadius: '8px', padding: '0 12px', gap: '8px' },
   icon: { fontSize: '16px', color: '#52525b' },
   input: { background: 'transparent', border: 'none', outline: 'none', color: '#fff', fontSize: '14px', padding: '10px 0', width: '100%' },
-  btn: { width: '100%', background: '#f59e0b', border: 'none', borderRadius: '8px', padding: '12px', fontSize: '14px', fontWeight: '600', color: '#09090b', cursor: 'pointer', marginTop: '8px' },
+  btn: { width: '100%', background: 'rgb(238, 154, 9)', border: 'none', borderRadius: '8px', padding: '12px', fontSize: '14px', fontWeight: '600', color: '#09090b', cursor: 'pointer', marginTop: '8px' },
 }
