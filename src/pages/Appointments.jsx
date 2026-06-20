@@ -54,7 +54,8 @@ export default function Appointments() {
       setAppointments(apRes.data.data.data || [])
       setClients(clRes.data.data.data || [])
       setBarbers(baRes.data.data.data || [])
-      setServices(svRes.data.data || svRes.data || [])
+      const svData = svRes.data.data || svRes.data || []
+      setServices(Array.isArray(svData) ? svData : [])
     } catch (err) {
       console.error(err)
     } finally {
@@ -76,7 +77,7 @@ export default function Appointments() {
   }
 
   // Auto-fill time when service is selected
-  const selectedService = services.find(s => String(s.id) === String(serviceId))
+  const selectedService = Array.isArray(services) ? services.find(s => String(s.id) === String(serviceId)) : null
 
   async function handleSubmit(e) {
     e.preventDefault()
