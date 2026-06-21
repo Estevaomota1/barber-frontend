@@ -87,48 +87,26 @@ export default function Appointments() {
   setSaving(true)
   setError('')
   
-  const payload = {
-    client_id: clientId || null,
-    barber_id: barberId,
-    service_id: serviceId,
-    appointment_date: combineDatetime(datePart, timePart),
-    date: datePart,
-    time: timePart,
-  }
-  
   try {
-    await api.post('/appointments', payload)
+    await api.post('/appointments', {
+      client_id: clientId || null,
+      barber_id: barberId,
+      service_id: serviceId,
+      appointment_date: combineDatetime(datePart, timePart),
+      date: datePart,
+      time: timePart,
+    })
     setClientId(''); setBarberId(''); setServiceId('')
     setDatePart(''); setTimePart('')
     setShowForm(false)
     loadData(filterDate)
   } catch (err) {
+    console.log('📥 Resposta completa do erro:', JSON.stringify(err.response?.data, null, 2))
     setError(err.response?.data?.message || 'Erro ao criar agendamento')
   } finally {
     setSaving(false)
   }
-
-    try {
-    await api.post('/appointments', {
-    client_id:        clientId || null,
-    barber_id:        barberId,
-    service_id:       serviceId,
-    appointment_date: combineDatetime(datePart, timePart),
-})
-    console.log('📤 Payload enviado:', payload)
-    console.log('📅 Data bruta:', datePart, timePart)
-    console.log('🔗 Data combinada:', combineDatetime(datePart, timePart))
-      setClientId(''); setBarberId(''); setServiceId('')
-      setDatePart(''); setTimePart('')
-      setShowForm(false)
-      loadData(filterDate)
-    } catch (err) {
-          console.log('📥 Resposta completa do erro:', JSON.stringify(err.response?.data, null, 2))
-      setError(err.response?.data?.message || 'Erro ao criar agendamento')
-    } finally {
-      setSaving(false)
-    }
-  }
+}
 
   async function handleStatus(id, status) {
     try {
