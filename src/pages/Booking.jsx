@@ -334,13 +334,24 @@ export default function Booking() {
 
       </div>
 
-      {/* Equipe */}
+            {/* Equipe */}
       <div style={s.teamSection}>
         <h2 style={s.teamTitle}>Nossa Equipe</h2>
         <div style={s.teamList}>
           {barbershop.barbers.map(b => (
             <div key={b.id} style={s.teamCard}>
-              <div style={s.teamAvatar}>{b.name[0].toUpperCase()}</div>
+              {/* 🔥 NOVO: Avatar com foto */}
+              <div style={s.teamAvatar}>
+                {b.photo ? (
+                  <img 
+                    src={b.photo} 
+                    alt={b.name} 
+                    style={s.teamAvatarImg} 
+                  />
+                ) : (
+                  b.name[0].toUpperCase()
+                )}
+              </div>
               <p style={s.teamName}>{b.name}</p>
               <p style={s.teamRole}>Barbeiro</p>
             </div>
@@ -434,9 +445,37 @@ const s = {
   teamSection: { maxWidth: '480px', margin: '0 auto', padding: '32px 16px' },
   teamTitle: { fontSize: '18px', fontWeight: '700', color: '#fff', margin: '0 0 16px' },
   teamList: { display: 'flex', gap: '12px', flexWrap: 'wrap' },
-  teamCard: { background: '#18181b', border: '0.5px solid #27272a', borderRadius: '12px', padding: '16px', textAlign: 'center', minWidth: '100px' },
-  teamAvatar: { width: '44px', height: '44px', borderRadius: '50%', background: '#f59e0b', color: '#09090b', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '18px', fontWeight: '700', margin: '0 auto 8px' },
-  teamName: { fontSize: '13px', fontWeight: '600', color: '#fff', margin: 0 },
+  teamCard: { 
+    background: '#18181b', 
+    border: '0.5px solid #27272a', 
+    borderRadius: '12px', 
+    padding: '16px', 
+    textAlign: 'center', 
+    minWidth: '100px',
+    flex: '1 1 auto'
+  },
+   teamAvatar: { 
+    width: '56px', 
+    height: '56px', 
+    borderRadius: '50%', 
+    background: '#27272a', 
+    color: '#f59e0b', 
+    display: 'flex', 
+    alignItems: 'center', 
+    justifyContent: 'center', 
+    fontSize: '20px', 
+    fontWeight: '700', 
+    margin: '0 auto 8px',
+    overflow: 'hidden' // ⬅️ ESSENCIAL PARA A IMAGEM
+  },
+  teamAvatarImg: {
+    width: '56px',
+    height: '56px',
+    borderRadius: '50%',
+    objectFit: 'cover',
+    display: 'block'
+  },
+  teamName: { fontSize: '13px', fontWeight: '600', color: '#fff', margin: '4px 0 0 0' },
   teamRole: { fontSize: '11px', color: '#71717a', margin: '2px 0 0' },
 
   successWrap: { maxWidth: '400px', margin: '60px auto', textAlign: 'center', padding: '20px' },
