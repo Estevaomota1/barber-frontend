@@ -353,7 +353,22 @@ export default function Booking() {
 }
 
 const s = {
-  page: { minHeight: '100vh', background: '#09090b', fontFamily: 'system-ui, sans-serif' },
+  page: { 
+    minHeight: '100vh', 
+    minHeight: '100dvh', // PARA DISPOSITIVOS MÓVEIS
+    width: '100%',
+    background: '#09090b', 
+    fontFamily: 'system-ui, sans-serif',
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    justifyContent: 'flex-start',
+    margin: 0,
+    padding: 0,
+    boxSizing: 'border-box',
+    position: 'relative',
+    overflow: 'hidden' // IMPEDE QUALQUER VAZAMENTO
+  }
   splash: { minHeight: '100vh', background: '#09090b', display: 'flex', alignItems: 'center', justifyContent: 'center' },
   splashSpinner: { width: '36px', height: '36px', border: '3px solid #27272a', borderTop: '3px solid #f59e0b', borderRadius: '50%', animation: 'spin 1s linear infinite' },
 
