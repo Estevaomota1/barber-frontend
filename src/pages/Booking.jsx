@@ -353,26 +353,26 @@ export default function Booking() {
 }
 
 const s = {
-  page: { 
-    minHeight: '100vh', 
-    minHeight: '100dvh', // PARA DISPOSITIVOS MÓVEIS
-    width: '100%',
-    background: '#09090b', 
-    fontFamily: 'system-ui, sans-serif',
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'center',
-    justifyContent: 'flex-start',
-    margin: 0,
-    padding: 0,
-    boxSizing: 'border-box',
-    position: 'relative',
-    overflow: 'hidden' // IMPEDE QUALQUER VAZAMENTO
-  },
+  page: {  
+  minHeight: '100dvh',  // ✅ APENAS UM (já cobre 100vh)
+  width: '100%',
+  background: '#09090b',
+  fontFamily: 'system-ui, sans-serif',
+  display: 'flex',
+  flexDirection: 'column',
+  margin: 0,
+  padding: 0,
+  boxSizing: 'border-box',
+  position: 'relative',
+  overflowX: 'hidden',
+  overflowY: 'auto',
+  WebkitOverflowScrolling: 'touch'
+},
   splash: { minHeight: '100vh', background: '#09090b', display: 'flex', alignItems: 'center', justifyContent: 'center' },
   splashSpinner: { width: '36px', height: '36px', border: '3px solid #27272a', borderTop: '3px solid #f59e0b', borderRadius: '50%', animation: 'spin 1s linear infinite' },
 
-  hero:{"background":"linear-gradient(180deg, #18181b 0%, #09090b 100%)","padding":"32px 20px 24px","textAlign":"center","borderBottom":"0.5px solid #27272a"},
+  hero: {  width: '100%',  boxSizing: 'border-box',  background: 'linear-gradient(180deg, #18181b 0%, #09090b 100%)',  padding: '32px 20px 24px',  textAlign: 'center',
+  borderBottom: '0.5px solid #27272a'},
   heroAvatar: { fontSize: '52px', marginBottom: '12px' },
   heroLogo: { width: '120px', height: '120px', borderRadius: '20px', objectFit: 'contain', background: '#27272a', padding: '6px', display: 'block', margin: '0 auto 16px' },
   heroName: { fontSize: '28px', fontWeight: '800', color: '#fff', margin: '0 0 8px' },
@@ -389,7 +389,7 @@ const s = {
   stepCircleDone: { background: '#14532d', color: '#4ade80' },
   stepLabel: { fontSize: '12px', fontWeight: '500' },
 
-  content: { maxWidth: '480px', margin: '0 auto', padding: '24px 16px' },
+  content: {  width: '100%',  maxWidth: '480px',  margin: '0 auto',  padding: '24px 16px',  boxSizing: 'border-box'},
   stepWrap: { display: 'flex', flexDirection: 'column', gap: '12px' },
   stepTitle: { fontSize: '20px', fontWeight: '700', color: '#fff', margin: '0 0 4px' },
 
