@@ -1,7 +1,7 @@
 import axios from 'axios'
 
 const api = axios.create({
-  baseURL: 'https://barber-saas-ggo4.onrender.com/api',
+  baseURL: 'https://barber-saas-1-fpjl.onrender.com/api',
 })
 api.interceptors.request.use((config) => {
   const token = localStorage.getItem('token')
