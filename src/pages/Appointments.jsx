@@ -93,11 +93,15 @@ export default function Appointments() {
     service_id:       serviceId,
     appointment_date: combineDatetime(datePart, timePart),
 })
+    console.log('📤 Payload enviado:', payload)
+    console.log('📅 Data bruta:', datePart, timePart)
+    console.log('🔗 Data combinada:', combineDatetime(datePart, timePart))
       setClientId(''); setBarberId(''); setServiceId('')
       setDatePart(''); setTimePart('')
       setShowForm(false)
       loadData(filterDate)
     } catch (err) {
+          console.log('📥 Resposta do erro:', err.response?.data)
       setError(err.response?.data?.message || 'Erro ao criar agendamento')
     } finally {
       setSaving(false)
