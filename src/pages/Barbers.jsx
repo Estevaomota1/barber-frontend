@@ -74,7 +74,9 @@ export default function Barbers() {
       }
 
       if (editing) {
-        await api.put(`/barbers/${editing.id}`, formData, {
+                formData.append('_method', 'PUT')
+
+        await api.post(`/barbers/${editing.id}`, formData, {
           headers: { 'Content-Type': 'multipart/form-data' }
         })
       } else {
