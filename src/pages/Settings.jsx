@@ -249,26 +249,32 @@ export default function Settings() {
                   </div>
  
                   {barber.pix_qr ? (
-                    <div style={s.pixPreviewWrap}>
-                      <img src={barber.pix_qr} alt="QR Pix" style={s.pixPreview} />
-                      <div style={s.pixActions}>
-                        <label style={s.pixChangeBtn}>
-                          <i className="ti ti-pencil" style={{ marginRight: '4px' }}></i>Trocar
-                          <input type="file" accept="image/*" style={{ display: 'none' }}
-                            onChange={(e) => handlePixUpload(barber.id, e)} />
-                        </label>
-                        <button onClick={() => removePix(barber.id)} style={s.pixRemoveBtn}>
-                          <i className="ti ti-trash" style={{ marginRight: '4px' }}></i>Remover
-                        </button>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                      <div style={s.pixPreviewWrap}>
+                        <img src={barber.pix_qr} alt="QR Pix" style={s.pixPreview} />
+                        <div style={s.pixActions}>
+                          <label style={s.pixChangeBtn}>
+                            <i className="ti ti-pencil" style={{ marginRight: '4px' }}></i>Trocar
+                            <input type="file" accept="image/*" style={{ display: 'none' }}
+                              onChange={(e) => handlePixUpload(barber.id, e)} />
+                          </label>
+                          <button onClick={() => removePix(barber.id)} style={s.pixRemoveBtn}>
+                            <i className="ti ti-trash" style={{ marginRight: '4px' }}></i>Remover
+                          </button>
+                        </div>
                       </div>
+                      <PixKeyField barber={barber} onSave={(key) => savePixKey(barber.id, key)} />
                     </div>
                   ) : (
-                    <label style={s.pixUploadArea}>
-                      <i className="ti ti-upload" style={{ fontSize: '22px', color: '#52525b', marginBottom: '6px' }}></i>
-                      <span style={{ fontSize: '12px', color: '#71717a' }}>Upload do QR Code Pix</span>
-                      <input type="file" accept="image/*" style={{ display: 'none' }}
-                        onChange={(e) => handlePixUpload(barber.id, e)} />
-                    </label>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                      <label style={s.pixUploadArea}>
+                        <i className="ti ti-upload" style={{ fontSize: '22px', color: '#52525b', marginBottom: '6px' }}></i>
+                        <span style={{ fontSize: '12px', color: '#71717a' }}>Upload do QR Code Pix</span>
+                        <input type="file" accept="image/*" style={{ display: 'none' }}
+                          onChange={(e) => handlePixUpload(barber.id, e)} />
+                      </label>
+                      <PixKeyField barber={barber} onSave={(key) => savePixKey(barber.id, key)} />
+                    </div>
                   )}
                 </div>
               ))}
@@ -339,7 +345,47 @@ function LinkBox() {
     </div>
   )
 }
- 
+const savePixKey = async (barberId, pixKey) => {
+  try {
+    await fetch(`${API}/barbers/${barberId}/pix`, {
+      method: 'PUT',
+      headers,
+      body: JSON.stringify({ pix_key: pixKey }),
+    })
+    setBarbers(bs => bs.map(b => b.id === barberId ? { ...b, pix_key: pixKey } : b))
+  } catch (err) {
+    console.error(err)
+  }
+}
+function PixKeyField({ barber, onSave }) {
+  const [key, setKey] = useState(barber.pix_key || '')
+  const [saved, setSaved] = useState(false)
+
+  const save = async () => {
+    await onSave(key)
+    setSaved(true)
+    setTimeout(() => setSaved(false), 2000)
+  }
+
+  return (
+    <div>
+      <label style={{ fontSize: '12px', color: '#71717a', display: 'block', marginBottom: '6px' }}>
+        Chave Pix (copia e cola)
+      </label>
+      <div style={{ display: 'flex', gap: '8px' }}>
+        <input
+          value={key}
+          onChange={e => setKey(e.target.value)}
+          placeholder="CPF, email, telefone ou chave aleatória"
+          style={{ flex: 1, background: '#27272a', border: '0.5px solid #3f3f46', borderRadius: '8px', padding: '8px 12px', color: '#fff', fontSize: '13px', outline: 'none' }}
+        />
+        <button onClick={save} style={{ background: saved ? '#14532d' : '#27272a', color: saved ? '#4ade80' : '#a1a1aa', border: 'none', borderRadius: '8px', padding: '8px 14px', fontSize: '12px', cursor: 'pointer', whiteSpace: 'nowrap' }}>
+          {saved ? '✓ Salvo' : 'Salvar'}
+        </button>
+      </div>
+    </div>
+  )
+}
 const s = {
   page: { minHeight: '100vh', background: '#09090b' },
   container: { maxWidth: '700px', margin: '0 auto', padding: '32px 20px' },
