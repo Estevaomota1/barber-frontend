@@ -353,7 +353,7 @@ export default function Booking() {
 }
 
 const s = {
-  page: { minHeight: '100vh', background: '#09090b', fontFamily: 'system-ui, sans-serif' },
+  page: { minHeight: '100vh', background: '#09090b', fontFamily: 'system-ui, sans-serif', paddingBottom: '1px' },
   splash: { minHeight: '100vh', background: '#09090b', display: 'flex', alignItems: 'center', justifyContent: 'center' },
   splashSpinner: { width: '36px', height: '36px', border: '3px solid #27272a', borderTop: '3px solid #f59e0b', borderRadius: '50%', animation: 'spin 1s linear infinite' },
 
