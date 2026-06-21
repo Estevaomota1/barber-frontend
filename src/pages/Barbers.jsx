@@ -85,8 +85,12 @@ export default function Barbers() {
       handleCancel()
       loadBarbers()
     } catch (err) {
-      setError('Erro ao salvar barbeiro. Tente novamente.')
-      console.error(err)
+  console.error('STATUS:', err.response?.status)
+  console.error('DATA:', err.response?.data)
+  console.error('ERRO COMPLETO:', err)
+
+  setError('Erro ao salvar barbeiro. Tente novamente.')
+
     } finally {
       setSaving(false)
     }
