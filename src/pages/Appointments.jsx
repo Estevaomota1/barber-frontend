@@ -80,12 +80,34 @@ export default function Appointments() {
   const selectedService = Array.isArray(services) ? services.find(s => String(s.id) === String(serviceId)) : null
 
   async function handleSubmit(e) {
-    e.preventDefault()
-    if (!datePart || !timePart) { setError('Selecione a data e o horário.'); return }
-    if (!barberId)  { setError('Selecione um barbeiro.'); return }
-    if (!serviceId) { setError('Selecione um serviço.'); return }
-    setSaving(true)
-    setError('')
+  e.preventDefault()
+  if (!datePart || !timePart) { setError('Selecione a data e o horário.'); return }
+  if (!barberId)  { setError('Selecione um barbeiro.'); return }
+  if (!serviceId) { setError('Selecione um serviço.'); return }
+  setSaving(true)
+  setError('')
+  
+  const payload = {
+    client_id: clientId || null,
+    barber_id: barberId,
+    service_id: serviceId,
+    appointment_date: combineDatetime(datePart, timePart),
+    date: datePart,
+    time: timePart,
+  }
+  
+  try {
+    await api.post('/appointments', payload)
+    setClientId(''); setBarberId(''); setServiceId('')
+    setDatePart(''); setTimePart('')
+    setShowForm(false)
+    loadData(filterDate)
+  } catch (err) {
+    setError(err.response?.data?.message || 'Erro ao criar agendamento')
+  } finally {
+    setSaving(false)
+  }
+
     try {
     await api.post('/appointments', {
     client_id:        clientId || null,
@@ -398,7 +420,6 @@ export default function Appointments() {
     </div>
   )
 }
-
 const styles = {
   pageWrapper: { minHeight: '100vh', background: '#09090b', color: '#fff', fontFamily: 'Inter, system-ui, sans-serif' },
   container: { maxWidth: '1000px', margin: '0 auto', padding: '40px 20px' },
