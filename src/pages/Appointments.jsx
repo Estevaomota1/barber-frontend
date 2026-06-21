@@ -101,7 +101,7 @@ export default function Appointments() {
       setShowForm(false)
       loadData(filterDate)
     } catch (err) {
-          console.log('📥 Resposta do erro:', err.response?.data)
+          console.log('📥 Resposta completa do erro:', JSON.stringify(err.response?.data, null, 2))
       setError(err.response?.data?.message || 'Erro ao criar agendamento')
     } finally {
       setSaving(false)
