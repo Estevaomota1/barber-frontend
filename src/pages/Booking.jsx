@@ -362,7 +362,13 @@ useEffect(() => {
     }
   }, [])
 const s = {
-  page: {minHeight: '100vh',background: '#09090b', fontFamily: 'system-ui, sans-serif', display: 'flex', flexDirection: 'column'},
+  page: { 
+    minHeight: '100vh', 
+    background: '#09090b', 
+    fontFamily: 'system-ui, sans-serif', 
+    display: 'flex', 
+    flexDirection: 'column' 
+  },
   splash: { minHeight: '100vh', background: '#09090b', display: 'flex', alignItems: 'center', justifyContent: 'center' },
   splashSpinner: { width: '36px', height: '36px', border: '3px solid #27272a', borderTop: '3px solid #f59e0b', borderRadius: '50%', animation: 'spin 1s linear infinite' },
 
