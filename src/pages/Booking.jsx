@@ -351,9 +351,18 @@ export default function Booking() {
     </div>
   )
 }
-
+useEffect(() => {
+    // Garante que o fundo do body seja sempre preto para evitar faixas brancas
+    document.body.style.backgroundColor = '#09090b'
+    document.body.style.margin = '0'
+    return () => {
+      // Limpa o estilo ao sair da página para não afetar outras partes do app
+      document.body.style.backgroundColor = ''
+      document.body.style.margin = ''
+    }
+  }, [])
 const s = {
-  page: { minHeight: '100vh', background: '#09090b', fontFamily: 'system-ui, sans-serif', paddingBottom: '1px' },
+  page: {minHeight: '100vh',background: '#09090b', fontFamily: 'system-ui, sans-serif', display: 'flex', flexDirection: 'column'},
   splash: { minHeight: '100vh', background: '#09090b', display: 'flex', alignItems: 'center', justifyContent: 'center' },
   splashSpinner: { width: '36px', height: '36px', border: '3px solid #27272a', borderTop: '3px solid #f59e0b', borderRadius: '50%', animation: 'spin 1s linear infinite' },
 
