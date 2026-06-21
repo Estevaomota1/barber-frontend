@@ -87,12 +87,14 @@ export default function Appointments() {
     setSaving(true)
     setError('')
     try {
-      await api.post('/appointments', {
-        client_id:        clientId || null,
-        barber_id:        barberId,
-        service_id:       serviceId,
-        appointment_date: combineDatetime(datePart, timePart),
-      })
+    await api.post('/appointments', {
+  client_id:        clientId || null,
+  barber_id:        barberId,
+  service_id:       serviceId,
+  appointment_date: combineDatetime(datePart, timePart),
+  date:             datePart,
+  time:             timePart,
+})
       setClientId(''); setBarberId(''); setServiceId('')
       setDatePart(''); setTimePart('')
       setShowForm(false)
