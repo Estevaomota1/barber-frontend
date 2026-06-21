@@ -87,21 +87,24 @@ export default function Appointments() {
   setSaving(true)
   setError('')
   
+  // 👇 Pegue o serviço selecionado
+  const selectedService = services.find(s => String(s.id) === String(serviceId))
+  
   try {
     await api.post('/appointments', {
       client_id: clientId || null,
       barber_id: barberId,
       service_id: serviceId,
       appointment_date: combineDatetime(datePart, timePart),
-      date: datePart,
-      time: timePart,
+      price: selectedService?.price || 0,  // 👈 Adicione o preço
+      service_name: selectedService?.name || '',  // 👈 Adicione o nome do serviço
     })
     setClientId(''); setBarberId(''); setServiceId('')
     setDatePart(''); setTimePart('')
     setShowForm(false)
     loadData(filterDate)
   } catch (err) {
-    console.log('📥 Resposta completa do erro:', JSON.stringify(err.response?.data, null, 2))
+    console.log('Erro:', err.response?.data)
     setError(err.response?.data?.message || 'Erro ao criar agendamento')
   } finally {
     setSaving(false)
