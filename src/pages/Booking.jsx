@@ -368,7 +368,7 @@ const s = {
     boxSizing: 'border-box',
     position: 'relative',
     overflow: 'hidden' // IMPEDE QUALQUER VAZAMENTO
-  }
+  },
   splash: { minHeight: '100vh', background: '#09090b', display: 'flex', alignItems: 'center', justifyContent: 'center' },
   splashSpinner: { width: '36px', height: '36px', border: '3px solid #27272a', borderTop: '3px solid #f59e0b', borderRadius: '50%', animation: 'spin 1s linear infinite' },
 
