@@ -88,12 +88,10 @@ export default function Appointments() {
     setError('')
     try {
     await api.post('/appointments', {
-  client_id:        clientId || null,
-  barber_id:        barberId,
-  service_id:       serviceId,
-  appointment_date: combineDatetime(datePart, timePart),
-  date:             datePart,
-  time:             timePart,
+    client_id:        clientId || null,
+    barber_id:        barberId,
+    service_id:       serviceId,
+    appointment_date: combineDatetime(datePart, timePart),
 })
       setClientId(''); setBarberId(''); setServiceId('')
       setDatePart(''); setTimePart('')
