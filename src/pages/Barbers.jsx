@@ -51,15 +51,30 @@ export default function Barbers() {
   }
 
   function handlePhotoChange(e) {
-    const file = e.target.files[0]
-    if (!file) return
-    const reader = new FileReader()
-    reader.onloadend = () => {
-      setPhoto(reader.result)
-      setPhotoPreview(reader.result)
-    }
-    reader.readAsDataURL(file)
+  const file = e.target.files[0]
+  if (!file) return
+
+  const canvas = document.createElement('canvas')
+  const ctx = canvas.getContext('2d')
+  const img = new Image()
+  const url = URL.createObjectURL(file)
+
+  img.onload = () => {
+    const MAX = 400
+    let w = img.width
+    let h = img.height
+    if (w > h) { h = Math.round(h * MAX / w); w = MAX }
+    else        { w = Math.round(w * MAX / h); h = MAX }
+    canvas.width = w
+    canvas.height = h
+    ctx.drawImage(img, 0, 0, w, h)
+    const base64 = canvas.toDataURL('image/jpeg', 0.7)
+    setPhoto(base64)
+    setPhotoPreview(base64)
+    URL.revokeObjectURL(url)
   }
+  img.src = url
+}
 
   async function handleSubmit(e) {
     e.preventDefault()
