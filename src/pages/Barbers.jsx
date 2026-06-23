@@ -7,8 +7,8 @@ export default function Barbers() {
   const [loading, setLoading] = useState(true)
   const [name, setName] = useState('')
   const [phone, setPhone] = useState('')
-  const [photo, setPhoto] = useState(null)
-  const [photoPreview, setPhotoPreview] = useState('')
+  const [photo, setPhoto] = useState(null) // O objeto File
+  const [photoPreview, setPhotoPreview] = useState('') // A URL para exibição
   const [error, setError] = useState('')
   const [saving, setSaving] = useState(false)
   const [showForm, setShowForm] = useState(false)
@@ -21,6 +21,7 @@ export default function Barbers() {
       setBarbers(res.data.data.data || [])
     } catch (err) {
       console.error(err)
+      setError('Erro ao carregar barbeiros. Tente novamente.')
     } finally {
       setLoading(false)
     }
@@ -33,6 +34,7 @@ export default function Barbers() {
     setName(barber.name)
     setPhone(barber.phone || '')
     setPhotoPreview(barber.photo || '')
+    setPhoto(null) // Resetar o objeto File ao editar, para que o usuário possa escolher um novo
     setShowForm(true)
     window.scrollTo({ top: 0, behavior: 'smooth' })
   }
@@ -64,35 +66,55 @@ export default function Barbers() {
     e.preventDefault()
     setSaving(true)
     setError('')
-    
+
     try {
       const formData = new FormData()
       formData.append('name', name)
-      formData.append('phone', phone)
+      formData.append('phone', phone || '')
       if (photo) {
-        formData.append('photo', photo)
+        formData.append('photo', photo) // Envia o objeto File
+      } else if (photoPreview && editing && editing.photo === photoPreview) {
+        // Se não há novo arquivo, mas há uma pré-visualização e é a mesma do barbeiro editado,
+        // significa que a foto existente deve ser mantida. Não precisamos enviar nada.
+      } else if (photoPreview && editing && editing.photo !== photoPreview) {
+        // Se há uma pré-visualização, mas é diferente da original (e não é um novo arquivo),
+        // significa que a foto foi alterada para uma nova base64 (o que não deveria acontecer com o fluxo atual)
+        // ou que a foto foi removida (photoPreview = '').
+        // Para simplificar, se photoPreview é uma string e não é um File, e não é a foto original,
+        // assumimos que é uma nova foto base64 ou que foi removida.
+        // O ideal seria que o backend soubesse lidar com base64 ou que o frontend enviasse apenas o File.
+        // Para este cenário, vamos enviar photoPreview se for uma string e não um File.
+        // No entanto, a melhor prática é sempre enviar o File ou um indicador de remoção.
+        // Para compatibilidade com o backend PHP que espera um File, vamos ajustar.
+        // Se photoPreview está vazia, significa que a foto foi removida.
+        if (!photoPreview) {
+          formData.append('photo', ''); // Indica que a foto foi removida
+        }
       }
 
+      let res
       if (editing) {
-                formData.append('_method', 'PUT')
-
-        await api.post(`/barbers/${editing.id}`, formData, {
-          headers: { 'Content-Type': 'multipart/form-data' }
+        // Para PUT com FormData, Laravel pode precisar de _method=PUT
+        formData.append('_method', 'PUT')
+        res = await api.post(`/barbers/${editing.id}`, formData, {
+          headers: { 'Content-Type': 'multipart/form-data' },
         })
       } else {
-        await api.post('/barbers', formData, {
-          headers: { 'Content-Type': 'multipart/form-data' }
+        res = await api.post('/barbers', formData, {
+          headers: { 'Content-Type': 'multipart/form-data' },
         })
       }
       handleCancel()
       loadBarbers()
     } catch (err) {
-  console.error('STATUS:', err.response?.status)
-  console.error('DATA:', err.response?.data)
-  console.error('ERRO COMPLETO:', err)
-
-  setError('Erro ao salvar barbeiro. Tente novamente.')
-
+      console.error('STATUS:', err.response?.status)
+      console.error('DATA:', err.response?.data)
+      if (err.response?.data?.errors) {
+        const validationErrors = Object.values(err.response.data.errors).flat().join('\n')
+        setError(`Erro de validação:\n${validationErrors}`)
+      } else {
+        setError('Erro ao salvar barbeiro. Tente novamente.')
+      }
     } finally {
       setSaving(false)
     }
@@ -105,6 +127,7 @@ export default function Barbers() {
       loadBarbers()
     } catch (err) {
       console.error(err)
+      setError('Erro ao deletar barbeiro. Tente novamente.')
     }
   }
 
@@ -531,7 +554,6 @@ const styles = {
     borderRadius: '50%',
     animation: 'spin 1s linear infinite'
   },
-  // 🔥 NOVOS ESTILOS PARA FOTO
   photoUploadContainer: {
     display: 'flex',
     justifyContent: 'center',
@@ -582,7 +604,6 @@ const styles = {
   }
 }
 
-// Adiciona a animação do spinner no CSS global
 const styleSheet = document.createElement('style')
 styleSheet.textContent = `
   @keyframes spin {
