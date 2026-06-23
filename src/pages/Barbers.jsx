@@ -28,6 +28,7 @@ export default function Barbers() {
   }
 
   useEffect(() => { loadBarbers() }, [])
+  
   function handleEdit(barber) {
     setEditing(barber)
     setName(barber.name)
@@ -50,31 +51,30 @@ export default function Barbers() {
   }
 
   function handlePhotoChange(e) {
-  const file = e.target.files[0]
-  if (!file) return
+    const file = e.target.files[0]
+    if (!file) return
 
-  const canvas = document.createElement('canvas')
-  const ctx = canvas.getContext('2d')
-  const img = new Image()
-  const url = URL.createObjectURL(file)
+    const canvas = document.createElement('canvas')
+    const ctx = canvas.getContext('2d')
+    const img = new Image()
+    const url = URL.createObjectURL(file)
 
-  img.onload = () => {
-    const MAX = 400
-    let w = img.width
-    let h = img.height
-    if (w > h) { h = Math.round(h * MAX / w); w = MAX }
-    else        { w = Math.round(w * MAX / h); h = MAX }
-    canvas.width = w
-    canvas.height = h
-    ctx.drawImage(img, 0, 0, w, h)
-    const base64 = canvas.toDataURL('image/jpeg', 0.7)
-    setPhoto(base64)
-    setPhotoPreview(base64)
-    URL.revokeObjectURL(url)
-    // Clean up the object URL after use
+    img.onload = () => {
+      const MAX = 400
+      let w = img.width
+      let h = img.height
+      if (w > h) { h = Math.round(h * MAX / w); w = MAX }
+      else        { w = Math.round(w * MAX / h); h = MAX }
+      canvas.width = w
+      canvas.height = h
+      ctx.drawImage(img, 0, 0, w, h)
+      const base64 = canvas.toDataURL('image/jpeg', 0.7)
+      setPhoto(base64)
+      setPhotoPreview(base64)
+      URL.revokeObjectURL(url)
+    }
+    img.src = url
   }
-  img.src = url
-}
 
   async function handleSubmit(e) {
     e.preventDefault()
@@ -249,7 +249,12 @@ export default function Barbers() {
                 <div style={styles.barberHeader}>
                   <div style={styles.avatar}>
                     {barber.photo ? (
-                      <img src={barber.photo} alt={barber.name} style={styles.avatarImg} />
+                      /* ✅ CORREÇÃO AQUI - Adiciona o prefixo base64 */
+                      <img 
+                        src={`data:image/jpeg;base64,${barber.photo}`} 
+                        alt={barber.name} 
+                        style={styles.avatarImg} 
+                      />
                     ) : (
                       barber.name.charAt(0).toUpperCase()
                     )}

@@ -334,17 +334,16 @@ export default function Booking() {
 
       </div>
 
-            {/* Equipe */}
+      {/* ✅ EQUIPE - CORRIGIDO COM O PREFIXO BASE64 */}
       <div style={s.teamSection}>
         <h2 style={s.teamTitle}>Nossa Equipe</h2>
         <div style={s.teamList}>
           {barbershop.barbers.map(b => (
             <div key={b.id} style={s.teamCard}>
-              {/* 🔥 NOVO: Avatar com foto */}
               <div style={s.teamAvatar}>
                 {b.photo ? (
                   <img 
-                    src={b.photo} 
+                    src={`data:image/jpeg;base64,${b.photo}`} 
                     alt={b.name} 
                     style={s.teamAvatarImg} 
                   />
@@ -365,25 +364,31 @@ export default function Booking() {
 
 const s = {
   page: {  
-  minHeight: '100dvh',  // ✅ APENAS UM (já cobre 100vh)
-  width: '100%',
-  background: '#09090b',
-  fontFamily: 'system-ui, sans-serif',
-  display: 'flex',
-  flexDirection: 'column',
-  margin: 0,
-  padding: 0,
-  boxSizing: 'border-box',
-  position: 'relative',
-  overflowX: 'hidden',
-  overflowY: 'auto',
-  WebkitOverflowScrolling: 'touch'
-},
+    minHeight: '100dvh',
+    width: '100%',
+    background: '#09090b',
+    fontFamily: 'system-ui, sans-serif',
+    display: 'flex',
+    flexDirection: 'column',
+    margin: 0,
+    padding: 0,
+    boxSizing: 'border-box',
+    position: 'relative',
+    overflowX: 'hidden',
+    overflowY: 'auto',
+    WebkitOverflowScrolling: 'touch'
+  },
   splash: { minHeight: '100vh', background: '#09090b', display: 'flex', alignItems: 'center', justifyContent: 'center' },
   splashSpinner: { width: '36px', height: '36px', border: '3px solid #27272a', borderTop: '3px solid #f59e0b', borderRadius: '50%', animation: 'spin 1s linear infinite' },
 
-  hero: {  width: '100%',  boxSizing: 'border-box',  background: 'linear-gradient(180deg, #18181b 0%, #09090b 100%)',  padding: '32px 20px 24px',  textAlign: 'center',
-  borderBottom: '0.5px solid #27272a'},
+  hero: {  
+    width: '100%',  
+    boxSizing: 'border-box',  
+    background: 'linear-gradient(180deg, #18181b 0%, #09090b 100%)',  
+    padding: '32px 20px 24px',  
+    textAlign: 'center',
+    borderBottom: '0.5px solid #27272a'
+  },
   heroAvatar: { fontSize: '52px', marginBottom: '12px' },
   heroLogo: { width: '120px', height: '120px', borderRadius: '20px', objectFit: 'contain', background: '#27272a', padding: '6px', display: 'block', margin: '0 auto 16px' },
   heroName: { fontSize: '28px', fontWeight: '800', color: '#fff', margin: '0 0 8px' },
@@ -400,7 +405,13 @@ const s = {
   stepCircleDone: { background: '#14532d', color: '#4ade80' },
   stepLabel: { fontSize: '12px', fontWeight: '500' },
 
-  content: {  width: '100%',  maxWidth: '480px',  margin: '0 auto',  padding: '24px 16px',  boxSizing: 'border-box'},
+  content: {  
+    width: '100%',  
+    maxWidth: '480px',  
+    margin: '0 auto',  
+    padding: '24px 16px',  
+    boxSizing: 'border-box'
+  },
   stepWrap: { display: 'flex', flexDirection: 'column', gap: '12px' },
   stepTitle: { fontSize: '20px', fontWeight: '700', color: '#fff', margin: '0 0 4px' },
 
@@ -454,7 +465,7 @@ const s = {
     minWidth: '100px',
     flex: '1 1 auto'
   },
-   teamAvatar: { 
+  teamAvatar: { 
     width: '56px', 
     height: '56px', 
     borderRadius: '50%', 
@@ -466,7 +477,7 @@ const s = {
     fontSize: '20px', 
     fontWeight: '700', 
     margin: '0 auto 8px',
-    overflow: 'hidden' // ⬅️ ESSENCIAL PARA A IMAGEM
+    overflow: 'hidden'
   },
   teamAvatarImg: {
     width: '56px',
