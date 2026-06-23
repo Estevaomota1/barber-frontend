@@ -68,7 +68,7 @@ export default function Barbers() {
       canvas.width = w
       canvas.height = h
       ctx.drawImage(img, 0, 0, w, h)
-      const base64 = canvas.toDataURL('image/jpeg', 0.95)   // <--- LINHA DA QUALIDADE
+      const base64 = canvas.toDataURL('image/jpeg', 1.0)   // <--- LINHA DA QUALIDADE
       setPhoto(base64)
       setPhotoPreview(base64)
       URL.revokeObjectURL(url)
@@ -250,8 +250,8 @@ export default function Barbers() {
                   <div style={styles.avatar}>
                     {barber.photo ? (
                       /* ✅ CORREÇÃO AQUI - Adiciona o prefixo base64 */
-                      <img 
-                        src={`data:image/jpeg;base64,${barber.photo}`} 
+                                            <img 
+                        src={barber.photo}
                         alt={barber.name} 
                         style={styles.avatarImg} 
                       />
