@@ -343,7 +343,7 @@ export default function Booking() {
               <div style={s.teamAvatar}>
                 {b.photo ? (
                   <img 
-                    src={`data:image/jpeg;base64,${b.photo}`} 
+                    src={b.photo}
                     alt={b.name} 
                     style={s.teamAvatarImg} 
                   />
