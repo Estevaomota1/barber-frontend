@@ -68,13 +68,13 @@ export default function Barbers() {
       canvas.width = w
       canvas.height = h
       ctx.drawImage(img, 0, 0, w, h)
-      const base64 = canvas.toDataURL('image/jpeg', 0.95)
+      const base64 = canvas.toDataURL('image/jpeg', 0.95)   // <--- LINHA DA QUALIDADE
       setPhoto(base64)
       setPhotoPreview(base64)
       URL.revokeObjectURL(url)
     }
     img.src = url
-  }
+}
 
   async function handleSubmit(e) {
     e.preventDefault()
