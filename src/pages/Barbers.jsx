@@ -28,7 +28,6 @@ export default function Barbers() {
   }
 
   useEffect(() => { loadBarbers() }, [])
-
   function handleEdit(barber) {
     setEditing(barber)
     setName(barber.name)
@@ -72,6 +71,7 @@ export default function Barbers() {
     setPhoto(base64)
     setPhotoPreview(base64)
     URL.revokeObjectURL(url)
+    // Clean up the object URL after use
   }
   img.src = url
 }
