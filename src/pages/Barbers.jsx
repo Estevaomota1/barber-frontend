@@ -7,8 +7,8 @@ export default function Barbers() {
   const [loading, setLoading] = useState(true)
   const [name, setName] = useState('')
   const [phone, setPhone] = useState('')
-  const [photo, setPhoto] = useState(null) // O objeto File (não será enviado diretamente)
-  const [photoPreview, setPhotoPreview] = useState('') // A URL para exibição (será enviado como string)
+  const [photo, setPhoto] = useState(null)
+  const [photoPreview, setPhotoPreview] = useState('')
   const [error, setError] = useState('')
   const [saving, setSaving] = useState(false)
   const [showForm, setShowForm] = useState(false)
@@ -34,7 +34,7 @@ export default function Barbers() {
     setName(barber.name)
     setPhone(barber.phone || '')
     setPhotoPreview(barber.photo || '')
-    setPhoto(null) // Resetar o objeto File ao editar
+    setPhoto(null)
     setShowForm(true)
     window.scrollTo({ top: 0, behavior: 'smooth' })
   }
@@ -51,15 +51,14 @@ export default function Barbers() {
   }
 
   function handlePhotoChange(e) {
-  const file = e.target.files[0]
-  if (!file) return
-  const reader = new FileReader()
-  reader.onloadend = () => {
-    setPhoto(reader.result)
-    setPhotoPreview(reader.result)
-  }
-  reader.readAsDataURL(file)
-  }
+    const file = e.target.files[0]
+    if (!file) return
+    const reader = new FileReader()
+    reader.onloadend = () => {
+      setPhoto(reader.result)
+      setPhotoPreview(reader.result)
+    }
+    reader.readAsDataURL(file)
   }
 
   async function handleSubmit(e) {
@@ -68,18 +67,16 @@ export default function Barbers() {
     setError('')
 
     try {
-      // O backend espera a foto como uma string (base64 ou URL)
       const payload = {
         name,
         phone: phone || null,
-        photo: photo || null, // Envia a string base64 ou URL
+        photo: photo || null,
       }
 
-      let res
       if (editing) {
-        res = await api.put(`/barbers/${editing.id}`, payload)
+        await api.put(`/barbers/${editing.id}`, payload)
       } else {
-        res = await api.post('/barbers', payload)
+        await api.post('/barbers', payload)
       }
       handleCancel()
       loadBarbers()
@@ -149,7 +146,6 @@ export default function Barbers() {
             
             <form onSubmit={handleSubmit} style={styles.form}>
               <div style={styles.formGrid}>
-                {/* Upload de Foto */}
                 <div style={styles.inputGroup}>
                   <label style={styles.label}>Foto de Perfil</label>
                   <div style={styles.photoUploadContainer}>
