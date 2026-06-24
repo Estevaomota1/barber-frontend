@@ -112,19 +112,25 @@ export default function Booking() {
         <p style={s.successNote}>Aguarde a confirmação da barbearia.</p>
 
         {/* QR Code Pix do barbeiro selecionado */}
-        {selected.barber?.pix_qr && (
-          <div style={s.pixSection}>
-            <div style={s.pixDivider}></div>
-            <p style={s.pixTitle}>💳 Pagamento via Pix</p>
-            <p style={s.pixSubtitle}>
-              Escaneie o QR Code para pagar <b>{selected.barber.name}</b>
-            </p>
-            <div style={s.pixQrWrap}>
-              <img src={selected.barber.pix_qr} alt="QR Code Pix" style={s.pixQrImg} />
-            </div>
-            <p style={s.pixNote}>O pagamento é opcional e pode ser feito na barbearia.</p>
-          </div>
-        )}
+        {(selected.barber?.pix_qr || selected.barber?.pix_key) && (
+  <div style={s.pixSection}>
+    <div style={s.pixDivider}></div>
+    <p style={s.pixTitle}>💳 Pagamento via Pix</p>
+    <p style={s.pixSubtitle}>
+      Pague <b>{selected.barber.name}</b> via Pix
+    </p>
+    {selected.barber?.pix_qr && (
+      <div style={s.pixQrWrap}>
+        <img src={selected.barber.pix_qr} alt="QR Code Pix" style={s.pixQrImg} />
+      </div>
+    )}
+    {selected.barber?.pix_key && (
+      <PixCopyBox pixKey={selected.barber.pix_key} />
+    )}
+    <p style={s.pixNote}>O pagamento é opcional e pode ser feito na barbearia.</p>
+  </div>
+)}
+
 
         <button onClick={() => { setSuccess(false); setStep(0); setSelected({ service: null, barber: null, date: null, time: null, client_name: '', client_phone: '' }) }} style={s.newBtn}>
           Fazer outro agendamento
@@ -132,7 +138,25 @@ export default function Booking() {
       </div>
     </div>
   )
-
+function PixCopyBox({ pixKey }) {
+  const [copied, setCopied] = useState(false)
+  const copy = () => {
+    navigator.clipboard.writeText(pixKey)
+    setCopied(true)
+    setTimeout(() => setCopied(false), 2000)
+  }
+  return (
+    <div style={{ margin: '12px 0', background: '#18181b', border: '0.5px solid #27272a', borderRadius: '10px', padding: '12px 14px' }}>
+      <p style={{ fontSize: '11px', color: '#71717a', margin: '0 0 6px', textAlign: 'left' }}>Chave Pix</p>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+        <span style={{ fontSize: '13px', color: '#fff', flex: 1, textAlign: 'left', wordBreak: 'break-all' }}>{pixKey}</span>
+        <button onClick={copy} style={{ background: copied ? '#14532d' : '#27272a', color: copied ? '#4ade80' : '#a1a1aa', border: 'none', borderRadius: '8px', padding: '6px 12px', fontSize: '12px', cursor: 'pointer', whiteSpace: 'nowrap', flexShrink: 0 }}>
+          {copied ? '✓ Copiado' : 'Copiar'}
+        </button>
+      </div>
+    </div>
+  )
+}
   return (
     <div style={s.page}>
 
