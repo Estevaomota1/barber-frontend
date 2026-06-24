@@ -20,10 +20,13 @@ export default function Booking() {
   useEffect(() => {
     fetch(`${API}/booking/${slug}`)
       .then(r => r.json())
-      .then(d => { setBarbershop(d.barbershop); setLoading(false) })
-      .catch(() => setLoading(false))
-  }, [slug])
+      .then(d => {
+  console.log('BARBERSHOP:', d.barbershop)
+  setBarbershop(d.barbershop)
+  setLoading(false)
+})
 
+ 
   useEffect(() => {
     if (step === 3 && selected.barber && selected.date && selected.service) {
       setLoadingTimes(true)
