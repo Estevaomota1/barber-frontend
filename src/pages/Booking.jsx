@@ -18,14 +18,15 @@ export default function Booking() {
   const [submitting, setSubmitting] = useState(false)
 
   useEffect(() => {
-    fetch(`${API}/booking/${slug}`)
-      .then(r => r.json())
-      .then(d => {
-  console.log('BARBERSHOP:', d.barbershop)
-  setBarbershop(d.barbershop)
-  setLoading(false)
-})
-
+  fetch(`${API}/booking/${slug}`)
+    .then(r => r.json())
+    .then(d => {
+      console.log('BARBERSHOP:', d.barbershop)
+      setBarbershop(d.barbershop)
+      setLoading(false)
+    })
+    .catch(() => setLoading(false))
+}, [slug])
  
   useEffect(() => {
     if (step === 3 && selected.barber && selected.date && selected.service) {
