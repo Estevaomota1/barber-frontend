@@ -18,16 +18,16 @@ export default function Booking() {
   const [submitting, setSubmitting] = useState(false)
 
   useEffect(() => {
-  fetch(`${API}/booking/${slug}`)
-    .then(r => r.json())
-    .then(d => {
-      console.log('BARBERSHOP:', d.barbershop)
-      setBarbershop(d.barbershop)
-      setLoading(false)
-    })
-    .catch(() => setLoading(false))
-}, [slug])
- 
+    fetch(`${API}/booking/${slug}`)
+      .then(r => r.json())
+      .then(d => {
+        console.log('BARBERSHOP:', d.barbershop)
+        setBarbershop(d.barbershop)
+        setLoading(false)
+      })
+      .catch(() => setLoading(false))
+  }, [slug])
+
   useEffect(() => {
     if (step === 3 && selected.barber && selected.date && selected.service) {
       setLoadingTimes(true)
@@ -111,26 +111,26 @@ export default function Booking() {
         </p>
         <p style={s.successNote}>Aguarde a confirmação da barbearia.</p>
 
-        {/* QR Code Pix do barbeiro selecionado */}
+        {/* ========== BLOCO PIX CORRIGIDO ========== */}
         {(selected.barber?.pix_qr || selected.barber?.pix_key) && (
-  <div style={s.pixSection}>
-    <div style={s.pixDivider}></div>
-    <p style={s.pixTitle}>💳 Pagamento via Pix</p>
-    <p style={s.pixSubtitle}>
-      Pague <b>{selected.barber.name}</b> via Pix
-    </p>
-    {selected.barber?.pix_qr && (
-      <div style={s.pixQrWrap}>
-        <img src={selected.barber.pix_qr} alt="QR Code Pix" style={s.pixQrImg} />
-      </div>
-    )}
-    {selected.barber?.pix_key && (
-      <PixCopyBox pixKey={selected.barber.pix_key} />
-    )}
-    <p style={s.pixNote}>O pagamento é opcional e pode ser feito na barbearia.</p>
-  </div>
-)}
-
+          <div style={s.pixSection}>
+            <div style={s.pixDivider}></div>
+            <p style={s.pixTitle}>💳 Pagamento via Pix</p>
+            <p style={s.pixSubtitle}>
+              Pague <b>{selected.barber.name}</b> via Pix
+            </p>
+            {selected.barber?.pix_qr && (
+              <div style={s.pixQrWrap}>
+                <img src={selected.barber.pix_qr} alt="QR Code Pix" style={s.pixQrImg} />
+              </div>
+            )}
+            {selected.barber?.pix_key && (
+              <PixCopyBox pixKey={selected.barber.pix_key} />
+            )}
+            <p style={s.pixNote}>O pagamento é opcional e pode ser feito na barbearia.</p>
+          </div>
+        )}
+        {/* ======================================== */}
 
         <button onClick={() => { setSuccess(false); setStep(0); setSelected({ service: null, barber: null, date: null, time: null, client_name: '', client_phone: '' }) }} style={s.newBtn}>
           Fazer outro agendamento
@@ -138,28 +138,31 @@ export default function Booking() {
       </div>
     </div>
   )
-function PixCopyBox({ pixKey }) {
-  const [copied, setCopied] = useState(false)
-  const copy = () => {
-    navigator.clipboard.writeText(pixKey)
-    setCopied(true)
-    setTimeout(() => setCopied(false), 2000)
-  }
-  return (
-    <div style={{ margin: '12px 0', background: '#18181b', border: '0.5px solid #27272a', borderRadius: '10px', padding: '12px 14px' }}>
-      <p style={{ fontSize: '11px', color: '#71717a', margin: '0 0 6px', textAlign: 'left' }}>Chave Pix</p>
-      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-        <span style={{ fontSize: '13px', color: '#fff', flex: 1, textAlign: 'left', wordBreak: 'break-all' }}>{pixKey}</span>
-        <button onClick={copy} style={{ background: copied ? '#14532d' : '#27272a', color: copied ? '#4ade80' : '#a1a1aa', border: 'none', borderRadius: '8px', padding: '6px 12px', fontSize: '12px', cursor: 'pointer', whiteSpace: 'nowrap', flexShrink: 0 }}>
-          {copied ? '✓ Copiado' : 'Copiar'}
-        </button>
+
+  // ========== COMPONENTE PIXCOPYBOX ==========
+  function PixCopyBox({ pixKey }) {
+    const [copied, setCopied] = useState(false)
+    const copy = () => {
+      navigator.clipboard.writeText(pixKey)
+      setCopied(true)
+      setTimeout(() => setCopied(false), 2000)
+    }
+    return (
+      <div style={{ margin: '12px 0', background: '#18181b', border: '0.5px solid #27272a', borderRadius: '10px', padding: '12px 14px' }}>
+        <p style={{ fontSize: '11px', color: '#71717a', margin: '0 0 6px', textAlign: 'left' }}>Chave Pix</p>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <span style={{ fontSize: '13px', color: '#fff', flex: 1, textAlign: 'left', wordBreak: 'break-all' }}>{pixKey}</span>
+          <button onClick={copy} style={{ background: copied ? '#14532d' : '#27272a', color: copied ? '#4ade80' : '#a1a1aa', border: 'none', borderRadius: '8px', padding: '6px 12px', fontSize: '12px', cursor: 'pointer', whiteSpace: 'nowrap', flexShrink: 0 }}>
+            {copied ? '✓ Copiado' : 'Copiar'}
+          </button>
+        </div>
       </div>
-    </div>
-  )
-}
+    )
+  }
+  // ===========================================
+
   return (
     <div style={s.page}>
-
       {/* Hero */}
       <div style={s.hero}>
         {barbershop.logo ? (
@@ -202,7 +205,6 @@ function PixCopyBox({ pixKey }) {
 
       {/* Content */}
       <div style={s.content}>
-
         {/* Step 0 — Serviço */}
         {step === 0 && (
           <div style={s.stepWrap}>
@@ -359,10 +361,9 @@ function PixCopyBox({ pixKey }) {
             <button onClick={() => setStep(3)} style={s.backBtn}>← Voltar</button>
           </div>
         )}
-
       </div>
 
-      {/* ✅ EQUIPE - CORRIGIDO COM O PREFIXO BASE64 */}
+      {/* Equipe */}
       <div style={s.teamSection}>
         <h2 style={s.teamTitle}>Nossa Equipe</h2>
         <div style={s.teamList}>
@@ -385,38 +386,18 @@ function PixCopyBox({ pixKey }) {
           ))}
         </div>
       </div>
-
     </div>
   )
 }
 
 const s = {
-  page: {  
-    minHeight: '100dvh',
-    width: '100%',
-    background: '#09090b',
-    fontFamily: 'system-ui, sans-serif',
-    display: 'flex',
-    flexDirection: 'column',
-    margin: 0,
-    padding: 0,
-    boxSizing: 'border-box',
-    position: 'relative',
-    overflowX: 'hidden',
-    overflowY: 'auto',
-    WebkitOverflowScrolling: 'touch'
-  },
+  page: {      minHeight: '100dvh',    width: '100%',    background: '#09090b',    fontFamily: 'system-ui, sans-serif',    display: 'flex',    flexDirection: 'column',
+    margin: 0,    padding: 0,    boxSizing: 'border-box',    position: 'relative',    overflowX: 'hidden',    overflowY: 'auto',    WebkitOverflowScrolling: 'touch'  },
   splash: { minHeight: '100vh', background: '#09090b', display: 'flex', alignItems: 'center', justifyContent: 'center' },
   splashSpinner: { width: '36px', height: '36px', border: '3px solid #27272a', borderTop: '3px solid #f59e0b', borderRadius: '50%', animation: 'spin 1s linear infinite' },
 
-  hero: {  
-    width: '100%',  
-    boxSizing: 'border-box',  
-    background: 'linear-gradient(180deg, #18181b 0%, #09090b 100%)',  
-    padding: '32px 20px 24px',  
-    textAlign: 'center',
-    borderBottom: '0.5px solid #27272a'
-  },
+  hero: {   width: '100%',      boxSizing: 'border-box',      background: 'linear-gradient(180deg, #18181b 0%, #09090b 100%)', padding: '32px 20px 24px',   textAlign: 'center',
+    borderBottom: '0.5px solid #27272a'  },
   heroAvatar: { fontSize: '52px', marginBottom: '12px' },
   heroLogo: { width: '120px', height: '120px', borderRadius: '20px', objectFit: 'contain', background: '#27272a', padding: '6px', display: 'block', margin: '0 auto 16px' },
   heroName: { fontSize: '28px', fontWeight: '800', color: '#fff', margin: '0 0 8px' },
@@ -432,14 +413,7 @@ const s = {
   stepCircleActive: { background: '#f59e0b', color: '#09090b' },
   stepCircleDone: { background: '#14532d', color: '#4ade80' },
   stepLabel: { fontSize: '12px', fontWeight: '500' },
-
-  content: {  
-    width: '100%',  
-    maxWidth: '480px',  
-    margin: '0 auto',  
-    padding: '24px 16px',  
-    boxSizing: 'border-box'
-  },
+  content: {      width: '100%',      maxWidth: '480px',      margin: '0 auto',      padding: '24px 16px',      boxSizing: 'border-box'  },
   stepWrap: { display: 'flex', flexDirection: 'column', gap: '12px' },
   stepTitle: { fontSize: '20px', fontWeight: '700', color: '#fff', margin: '0 0 4px' },
 
@@ -485,35 +459,10 @@ const s = {
   teamTitle: { fontSize: '18px', fontWeight: '700', color: '#fff', margin: '0 0 16px' },
   teamList: { display: 'flex', gap: '12px', flexWrap: 'wrap' },
   teamCard: { 
-    background: '#18181b', 
-    border: '0.5px solid #27272a', 
-    borderRadius: '12px', 
-    padding: '16px', 
-    textAlign: 'center', 
-    minWidth: '100px',
-    flex: '1 1 auto'
-  },
-  teamAvatar: { 
-    width: '56px', 
-    height: '56px', 
-    borderRadius: '50%', 
-    background: '#27272a', 
-    color: '#f59e0b', 
-    display: 'flex', 
-    alignItems: 'center', 
-    justifyContent: 'center', 
-    fontSize: '20px', 
-    fontWeight: '700', 
-    margin: '0 auto 8px',
-    overflow: 'hidden'
-  },
-  teamAvatarImg: {
-    width: '56px',
-    height: '56px',
-    borderRadius: '50%',
-    objectFit: 'cover',
-    display: 'block'
-  },
+    background: '#18181b',  border: '0.5px solid #27272a',  borderRadius: '12px',  padding: '16px',   textAlign: 'center',   minWidth: '100px', flex: '1 1 auto' },
+  teamAvatar: {    width: '56px',     height: '56px',     borderRadius: '50%',     background: '#27272a',     color: '#f59e0b',     display: 'flex',     alignItems: 'center', 
+    justifyContent: 'center',    fontSize: '20px',     fontWeight: '700',     margin: '0 auto 8px',    overflow: 'hidden'  },
+  teamAvatarImg: {    width: '56px',    height: '56px',    borderRadius: '50%',    objectFit: 'cover',    display: 'block'  },
   teamName: { fontSize: '13px', fontWeight: '600', color: '#fff', margin: '4px 0 0 0' },
   teamRole: { fontSize: '11px', color: '#71717a', margin: '2px 0 0' },
 

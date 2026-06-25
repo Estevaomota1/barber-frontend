@@ -250,11 +250,11 @@ export default function Barbers() {
                   <div style={styles.avatar}>
                     {barber.photo ? (
                       /* ✅ CORREÇÃO AQUI - Adiciona o prefixo base64 */
-                                            <img 
-                        src={barber.photo}
-                        alt={barber.name} 
-                        style={styles.avatarImg} 
-                      />
+                                          <img 
+                      src={barber.photo}
+                      alt={barber.name} 
+                      style={styles.avatarImg} 
+                    />
                     ) : (
                       barber.name.charAt(0).toUpperCase()
                     )}
