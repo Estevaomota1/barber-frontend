@@ -5,12 +5,12 @@ const navItems = [
   { label: 'Clientes',      path: '/clients',      icon: 'ti-users' },
   { label: 'Barbeiros',     path: '/barbers',      icon: 'ti-scissors' },
   { label: 'Agendamentos',  path: '/appointments', icon: 'ti-calendar-event' },
+  { label: 'Serviços', path: '/services', icon: 'ti-tools' },
   { label: 'Comandas',      path: '/orders',       icon: 'ti-receipt' },
   { label: 'Comissões',     path: '/commissions',  icon: 'ti-coin' },
   { label: 'Estoque',       path: '/stock',        icon: 'ti-package' },
   { label: 'WhatsApp',      path: '/whatsapp',     icon: 'ti-brand-whatsapp' },
   { label: 'Relatórios',    path: '/reports',      icon: 'ti-chart-bar' },
-  { label: 'Serviços',      path: '/services',     icon: 'ti-services' },
   { label: 'Configurações', path: '/settings',     icon: 'ti-settings' },
  ]
 
