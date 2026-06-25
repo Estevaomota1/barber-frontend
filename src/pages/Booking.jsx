@@ -98,7 +98,12 @@ export default function Booking() {
     </div>
   )
 
-  if (success) return (
+ if (success) {
+  console.log('BARBER:', selected.barber);
+  console.log('PIX_QR:', selected.barber?.pix_qr);
+  console.log('PIX_KEY:', selected.barber?.pix_key);
+
+  return (
     <div style={s.page}>
       <div style={s.successWrap}>
         <div style={s.successIcon}>🎉</div>
@@ -110,7 +115,6 @@ export default function Booking() {
           {new Date(selected.date + 'T12:00:00').toLocaleDateString('pt-BR', { weekday: 'long', day: '2-digit', month: 'long' })} às {selected.time}
         </p>
         <p style={s.successNote}>Aguarde a confirmação da barbearia.</p>
-
 
         {(selected.barber?.pix_qr || selected.barber?.pix_key) && (
           <div style={s.pixSection}>
@@ -130,15 +134,14 @@ export default function Booking() {
             <p style={s.pixNote}>O pagamento é opcional e pode ser feito na barbearia.</p>
           </div>
         )}
-        {/* ======================================== */}
 
         <button onClick={() => { setSuccess(false); setStep(0); setSelected({ service: null, barber: null, date: null, time: null, client_name: '', client_phone: '' }) }} style={s.newBtn}>
           Fazer outro agendamento
         </button>
       </div>
     </div>
-  )
-
+  );
+}
   // ========== COMPONENTE PIXCOPYBOX ==========
   function PixCopyBox({ pixKey }) {
   const [copied, setCopied] = useState(false)
@@ -160,7 +163,7 @@ export default function Booking() {
   )
 }
 
-  // ===========================================
+
 
   return (
     <div style={s.page}>
