@@ -3,7 +3,7 @@ import Navbar from '../components/Navbar'
  
 const API = 'https://barber-saas-1-fpjl.onrender.com/api'
  
-export default function Settings() {
+export default function Settings( ) {
   const [form, setForm] = useState({
     name: '',
     phone: '',
@@ -97,6 +97,19 @@ export default function Settings() {
         headers,
         body: JSON.stringify({ pix_qr: null }),
       })
+    } catch (err) {
+      console.error(err)
+    }
+  }
+
+  const savePixKey = async (barberId, pixKey, headers) => {
+    try {
+      await fetch(`${API}/barbers/${barberId}/pix`, {
+        method: 'PUT',
+        headers,
+        body: JSON.stringify({ pix_key: pixKey }),
+      })
+      setBarbers(bs => bs.map(b => b.id === barberId ? { ...b, pix_key: pixKey } : b))
     } catch (err) {
       console.error(err)
     }
@@ -263,7 +276,7 @@ export default function Settings() {
                           </button>
                         </div>
                       </div>
-                      <PixKeyField barber={barber} onSave={(key) => savePixKey(barber.id, key)} />
+                      <PixKeyField barber={barber} onSave={(key) => savePixKey(barber.id, key, headers)} headers={headers} />
                     </div>
                   ) : (
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
@@ -273,7 +286,7 @@ export default function Settings() {
                         <input type="file" accept="image/*" style={{ display: 'none' }}
                           onChange={(e) => handlePixUpload(barber.id, e)} />
                       </label>
-                      <PixKeyField barber={barber} onSave={(key) => savePixKey(barber.id, key)} />
+                      <PixKeyField barber={barber} onSave={(key) => savePixKey(barber.id, key, headers)} headers={headers} />
                     </div>
                   )}
                 </div>
@@ -307,14 +320,14 @@ function LinkBox() {
   useEffect(() => {
     fetch('https://barber-saas-1-fpjl.onrender.com/api/my-barbershop', {
       headers: { 'Authorization': `Bearer ${token}`, 'Accept': 'application/json' }
-    })
+    } )
       .then(r => r.json())
       .then(d => { if (d.slug) setSlug(d.slug) })
   }, [])
  
   const link = `https://barber-frontend-tan.vercel.app/agendar/${slug}`
  
-  const copy = () => {
+  const copy = ( ) => {
     navigator.clipboard.writeText(link)
     setCopied(true)
     setTimeout(() => setCopied(false), 2000)
@@ -322,7 +335,7 @@ function LinkBox() {
  
   const whatsapp = () => {
     const msg = encodeURIComponent(`Olá! Agende seu horário aqui: ${link}`)
-    window.open(`https://wa.me/?text=${msg}`, '_blank')
+    window.open(`https://wa.me/?text=${msg}`, '_blank' )
   }
  
   if (!slug) return <p style={{ fontSize: '13px', color: '#71717a' }}>Carregando...</p>
@@ -345,24 +358,13 @@ function LinkBox() {
     </div>
   )
 }
-const savePixKey = async (barberId, pixKey) => {
-  try {
-    await fetch(`${API}/barbers/${barberId}/pix`, {
-      method: 'PUT',
-      headers,
-      body: JSON.stringify({ pix_key: pixKey }),
-    })
-    setBarbers(bs => bs.map(b => b.id === barberId ? { ...b, pix_key: pixKey } : b))
-  } catch (err) {
-    console.error(err)
-  }
-}
-function PixKeyField({ barber, onSave }) {
+
+function PixKeyField({ barber, onSave, headers }) {
   const [key, setKey] = useState(barber.pix_key || '')
   const [saved, setSaved] = useState(false)
 
   const save = async () => {
-    await onSave(key)
+    await onSave(key, headers)
     setSaved(true)
     setTimeout(() => setSaved(false), 2000)
   }
@@ -379,13 +381,14 @@ function PixKeyField({ barber, onSave }) {
           placeholder="CPF, email, telefone ou chave aleatória"
           style={{ flex: 1, background: '#27272a', border: '0.5px solid #3f3f46', borderRadius: '8px', padding: '8px 12px', color: '#fff', fontSize: '13px', outline: 'none' }}
         />
-        <button onClick={save} style={{ background: saved ? '#14532d' : '#27272a', color: saved ? '#4ade80' : '#a1a1aa', border: 'none', borderRadius: '8px', padding: '8px 14px', fontSize: '12px', cursor: 'pointer', whiteSpace: 'nowrap' }}>
+        <button onClick={save} style={{ background: saved ? '#14532d' : '#27272a', color: saved ? '#4ade80' : '#fff', border: 'none', borderRadius: '8px', padding: '8px 16px', fontSize: '13px', fontWeight: '600', cursor: 'pointer' }}>
           {saved ? '✓ Salvo' : 'Salvar'}
         </button>
       </div>
     </div>
   )
 }
+
 const s = {
   page: { minHeight: '100vh', background: '#09090b' },
   container: { maxWidth: '700px', margin: '0 auto', padding: '32px 20px' },
