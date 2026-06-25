@@ -359,12 +359,17 @@ function LinkBox() {
   )
 }
 
-function PixKeyField({ barber, onSave, headers }) {
+function PixKeyField({ barber, onSave }) {
   const [key, setKey] = useState(barber.pix_key || '')
   const [saved, setSaved] = useState(false)
 
+  // ✅ Sincroniza quando o barber.pix_key muda no pai
+  useEffect(() => {
+    setKey(barber.pix_key || '')
+  }, [barber.pix_key])
+
   const save = async () => {
-    await onSave(key, headers)
+    await onSave(key)  // Passa só a chave
     setSaved(true)
     setTimeout(() => setSaved(false), 2000)
   }
@@ -381,7 +386,19 @@ function PixKeyField({ barber, onSave, headers }) {
           placeholder="CPF, email, telefone ou chave aleatória"
           style={{ flex: 1, background: '#27272a', border: '0.5px solid #3f3f46', borderRadius: '8px', padding: '8px 12px', color: '#fff', fontSize: '13px', outline: 'none' }}
         />
-        <button onClick={save} style={{ background: saved ? '#14532d' : '#27272a', color: saved ? '#4ade80' : '#fff', border: 'none', borderRadius: '8px', padding: '8px 16px', fontSize: '13px', fontWeight: '600', cursor: 'pointer' }}>
+        <button 
+          onClick={save} 
+          style={{ 
+            background: saved ? '#14532d' : '#27272a', 
+            color: saved ? '#4ade80' : '#fff', 
+            border: 'none', 
+            borderRadius: '8px', 
+            padding: '8px 16px', 
+            fontSize: '13px', 
+            fontWeight: '600', 
+            cursor: 'pointer' 
+          }}
+        >
           {saved ? '✓ Salvo' : 'Salvar'}
         </button>
       </div>
