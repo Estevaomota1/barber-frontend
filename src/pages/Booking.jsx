@@ -21,6 +21,15 @@ export default function Booking() {
   const [cancelConfirm, setCancelConfirm] = useState(false)
   const [cancelDone, setCancelDone] = useState(false)
 
+  // === NOVOS ESTADOS PARA MEUS AGENDAMENTOS ===
+  const [showMyAppointments, setShowMyAppointments] = useState(false)
+  const [myAppointments, setMyAppointments] = useState([])
+  const [loadingAppointments, setLoadingAppointments] = useState(false)
+  const [appointmentPhone, setAppointmentPhone] = useState('')
+  const [appointmentName, setAppointmentName] = useState('')
+  const [cancellingId, setCancellingId] = useState(null)
+
+  // Buscar dados da barbearia
   useEffect(() => {
     fetch(`${API}/booking/${slug}`)
       .then(r => r.json())
@@ -31,6 +40,7 @@ export default function Booking() {
       .catch(() => setLoading(false))
   }, [slug])
 
+  // Buscar horários disponíveis (step 3)
   useEffect(() => {
     if (step === 3 && selected.barber && selected.date && selected.service) {
       setLoadingTimes(true)
@@ -45,6 +55,7 @@ export default function Booking() {
     }
   }, [step, selected.barber, selected.date, selected.service])
 
+  // Confirmar agendamento
   const confirm = async () => {
     if (!selected.client_name || !selected.client_phone) return
     setSubmitting(true)
@@ -75,6 +86,7 @@ export default function Booking() {
     }
   }
 
+  // Cancelar o agendamento recém-criado (token)
   const cancelAppointment = async () => {
     setCancelling(true)
     try {
@@ -94,6 +106,57 @@ export default function Booking() {
     }
   }
 
+  // === FUNÇÕES PARA MEUS AGENDAMENTOS ===
+
+  // Buscar agendamentos do cliente
+  const fetchMyAppointments = async () => {
+    if (!appointmentName || !appointmentPhone) {
+      alert('Preencha nome e telefone para buscar.')
+      return
+    }
+    setLoadingAppointments(true)
+    try {
+      const res = await fetch(`${API}/booking/${slug}/my-appointments?client_name=${encodeURIComponent(appointmentName)}&client_phone=${encodeURIComponent(appointmentPhone)}`)
+      const data = await res.json()
+      if (data.success) {
+        setMyAppointments(data.appointments)
+      } else {
+        setMyAppointments([])
+      }
+    } catch (e) {
+      console.error(e)
+      setMyAppointments([])
+    } finally {
+      setLoadingAppointments(false)
+    }
+  }
+
+  // Cancelar um agendamento da lista (por token)
+  const cancelMyAppointment = async (token) => {
+    if (!confirm('Tem certeza que deseja cancelar este agendamento? O horário será liberado.')) return
+    setCancellingId(token)
+    try {
+      const res = await fetch(`${API}/cancel/${token}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+      })
+      const data = await res.json()
+      if (data.success) {
+        // Remove da lista ou recarrega
+        setMyAppointments(prev => prev.filter(a => a.cancel_token !== token))
+        alert('Agendamento cancelado com sucesso!')
+      } else {
+        alert('Erro ao cancelar: ' + (data.error || 'tente novamente'))
+      }
+    } catch (e) {
+      console.error(e)
+      alert('Erro ao cancelar agendamento.')
+    } finally {
+      setCancellingId(null)
+    }
+  }
+
+  // Datas disponíveis (30 dias)
   const getDates = () => {
     const dates = []
     const today = new Date()
@@ -108,6 +171,10 @@ export default function Booking() {
   const formatDateValue = (d) => d.toISOString().split('T')[0]
 
   const STEPS = ['Serviço', 'Barbeiro', 'Data', 'Horário', 'Confirmação']
+
+  // ============================================
+  // RENDERIZAÇÃO
+  // ============================================
 
   if (loading) return (
     <div style={s.splash}><div style={s.splashSpinner}></div></div>
@@ -158,7 +225,7 @@ export default function Booking() {
           Fazer outro agendamento
         </button>
 
-        {/* Cancelamento */}
+        {/* Cancelamento do agendamento recém-criado */}
         {cancelToken && !cancelDone && (
           <div style={{ marginTop: '20px' }}>
             {!cancelConfirm ? (
@@ -207,8 +274,12 @@ export default function Booking() {
     </div>
   )
 
+  // ============================================
+  // PÁGINA PRINCIPAL (com agendamento + meus agendamentos)
+  // ============================================
   return (
     <div style={s.page}>
+      {/* Hero */}
       <div style={s.hero}>
         {barbershop.logo ? (
           <img src={barbershop.logo} alt={barbershop.name} style={s.heroLogo} />
@@ -223,144 +294,244 @@ export default function Booking() {
         <p style={s.heroHours}>🕐 {barbershop.opening_time} às {barbershop.closing_time}</p>
       </div>
 
-      <div style={s.stepsBar}>
-        {STEPS.map((st, i) => (
-          <button
-            key={i}
-            onClick={() => i < step ? setStep(i) : null}
-            style={{ ...s.stepBtn, ...(i === step ? s.stepBtnActive : {}), ...(i < step ? s.stepBtnDone : {}), cursor: i < step ? 'pointer' : 'default' }}
-          >
-            <div style={{ ...s.stepCircle, ...(i === step ? s.stepCircleActive : {}), ...(i < step ? s.stepCircleDone : {}) }}>
-              {i < step ? '✓' : i + 1}
-            </div>
-            <span style={s.stepLabel}>{st}</span>
-          </button>
-        ))}
+      {/* Botão para alternar entre agendamento e meus agendamentos */}
+      <div style={{ display: 'flex', justifyContent: 'center', gap: '12px', padding: '12px 16px', background: '#18181b', borderBottom: '0.5px solid #27272a' }}>
+        <button
+          onClick={() => setShowMyAppointments(false)}
+          style={{
+            ...s.tabBtn,
+            background: !showMyAppointments ? '#f59e0b' : 'transparent',
+            color: !showMyAppointments ? '#09090b' : '#a1a1aa',
+          }}
+        >
+          ✂️ Novo Agendamento
+        </button>
+        <button
+          onClick={() => setShowMyAppointments(true)}
+          style={{
+            ...s.tabBtn,
+            background: showMyAppointments ? '#f59e0b' : 'transparent',
+            color: showMyAppointments ? '#09090b' : '#a1a1aa',
+          }}
+        >
+          📋 Meus Agendamentos
+        </button>
       </div>
 
-      <div style={s.content}>
-        {step === 0 && (
-          <div style={s.stepWrap}>
-            <h2 style={s.stepTitle}>Escolha o Serviço</h2>
-            {barbershop.services.length === 0 ? (
-              <div style={s.emptyBox}><p>Nenhum serviço disponível no momento.</p></div>
-            ) : (
-              <div style={s.serviceList}>
-                {barbershop.services.map(sv => (
-                  <button key={sv.id} onClick={() => { setSelected({ ...selected, service: sv }); setStep(1) }}
-                    style={{ ...s.serviceCard, ...(selected.service?.id === sv.id ? s.serviceCardSelected : {}) }}>
-                    <div style={s.serviceInfo}>
-                      <span style={s.serviceName}>{sv.name}</span>
-                      <span style={s.serviceMeta}>{sv.duration} min</span>
-                    </div>
-                    <span style={s.servicePrice}>R$ {Number(sv.price).toFixed(2)}</span>
-                  </button>
-                ))}
-              </div>
-            )}
+      {/* ========================================= */}
+      {/* SEÇÃO: NOVO AGENDAMENTO */}
+      {/* ========================================= */}
+      {!showMyAppointments && (
+        <>
+          <div style={s.stepsBar}>
+            {STEPS.map((st, i) => (
+              <button
+                key={i}
+                onClick={() => i < step ? setStep(i) : null}
+                style={{ ...s.stepBtn, ...(i === step ? s.stepBtnActive : {}), ...(i < step ? s.stepBtnDone : {}), cursor: i < step ? 'pointer' : 'default' }}
+              >
+                <div style={{ ...s.stepCircle, ...(i === step ? s.stepCircleActive : {}), ...(i < step ? s.stepCircleDone : {}) }}>
+                  {i < step ? '✓' : i + 1}
+                </div>
+                <span style={s.stepLabel}>{st}</span>
+              </button>
+            ))}
           </div>
-        )}
 
-        {step === 1 && (
-          <div style={s.stepWrap}>
-            <h2 style={s.stepTitle}>Escolha o Barbeiro</h2>
-            <div style={s.barberList}>
-              {barbershop.barbers.map(b => (
-                <button key={b.id} onClick={() => { setSelected({ ...selected, barber: b }); setStep(2) }}
-                  style={{ ...s.barberCard, ...(selected.barber?.id === b.id ? s.barberCardSelected : {}) }}>
-                  <div style={s.barberAvatar}>{b.name[0].toUpperCase()}</div>
-                  <div>
-                    <p style={s.barberName}>{b.name}</p>
-                    <p style={s.barberRole}>Barbeiro</p>
+          <div style={s.content}>
+            {step === 0 && (
+              <div style={s.stepWrap}>
+                <h2 style={s.stepTitle}>Escolha o Serviço</h2>
+                {barbershop.services.length === 0 ? (
+                  <div style={s.emptyBox}><p>Nenhum serviço disponível no momento.</p></div>
+                ) : (
+                  <div style={s.serviceList}>
+                    {barbershop.services.map(sv => (
+                      <button key={sv.id} onClick={() => { setSelected({ ...selected, service: sv }); setStep(1) }}
+                        style={{ ...s.serviceCard, ...(selected.service?.id === sv.id ? s.serviceCardSelected : {}) }}>
+                        <div style={s.serviceInfo}>
+                          <span style={s.serviceName}>{sv.name}</span>
+                          <span style={s.serviceMeta}>{sv.duration} min</span>
+                        </div>
+                        <span style={s.servicePrice}>R$ {Number(sv.price).toFixed(2)}</span>
+                      </button>
+                    ))}
                   </div>
-                  {b.pix_qr && <span style={s.pixBadge}>Pix ✓</span>}
-                </button>
-              ))}
-            </div>
-            <button onClick={() => setStep(0)} style={s.backBtn}>← Voltar</button>
-          </div>
-        )}
-
-        {step === 2 && (
-          <div style={s.stepWrap}>
-            <h2 style={s.stepTitle}>Escolha a Data</h2>
-            <div style={s.dateScroll}>
-              {getDates().map((d, i) => (
-                <button key={i} onClick={() => { setSelected({ ...selected, date: formatDateValue(d), time: null }); setStep(3) }}
-                  style={{ ...s.dateCard, ...(selected.date === formatDateValue(d) ? s.dateCardSelected : {}) }}>
-                  <span style={s.dateWeek}>{d.toLocaleDateString('pt-BR', { weekday: 'short' }).replace('.', '')}</span>
-                  <span style={s.dateNum}>{d.getDate()}</span>
-                  <span style={s.dateMon}>{d.toLocaleDateString('pt-BR', { month: 'short' }).replace('.', '')}</span>
-                </button>
-              ))}
-            </div>
-            <button onClick={() => setStep(1)} style={s.backBtn}>← Voltar</button>
-          </div>
-        )}
-
-        {step === 3 && (
-          <div style={s.stepWrap}>
-            <h2 style={s.stepTitle}>Escolha o Horário</h2>
-            {loadingTimes ? (
-              <div style={s.emptyBox}>Buscando horários...</div>
-            ) : availableTimes.length === 0 ? (
-              <div style={s.emptyBox}>Nenhum horário disponível para este dia.</div>
-            ) : (
-              <div style={s.timeGrid}>
-                {availableTimes.map(t => (
-                  <button key={t} onClick={() => { setSelected({ ...selected, time: t }); setStep(4) }}
-                    style={{ ...s.timeBtn, ...(selected.time === t ? s.timeBtnSelected : {}) }}>
-                    {t}
-                  </button>
-                ))}
+                )}
               </div>
             )}
-            <button onClick={() => setStep(2)} style={s.backBtn}>← Voltar</button>
-          </div>
-        )}
 
-        {step === 4 && (
-          <div style={s.stepWrap}>
-            <h2 style={s.stepTitle}>Confirme seu Agendamento</h2>
-            <div style={s.confirmCard}>
-              <div style={s.confirmRow}>
-                <span style={s.confirmLabel}>Serviço</span>
-                <span style={s.confirmVal}>{selected.service?.name}</span>
+            {step === 1 && (
+              <div style={s.stepWrap}>
+                <h2 style={s.stepTitle}>Escolha o Barbeiro</h2>
+                <div style={s.barberList}>
+                  {barbershop.barbers.map(b => (
+                    <button key={b.id} onClick={() => { setSelected({ ...selected, barber: b }); setStep(2) }}
+                      style={{ ...s.barberCard, ...(selected.barber?.id === b.id ? s.barberCardSelected : {}) }}>
+                      <div style={s.barberAvatar}>{b.name[0].toUpperCase()}</div>
+                      <div>
+                        <p style={s.barberName}>{b.name}</p>
+                        <p style={s.barberRole}>Barbeiro</p>
+                      </div>
+                      {b.pix_qr && <span style={s.pixBadge}>Pix ✓</span>}
+                    </button>
+                  ))}
+                </div>
+                <button onClick={() => setStep(0)} style={s.backBtn}>← Voltar</button>
               </div>
-              <div style={s.confirmRow}>
-                <span style={s.confirmLabel}>Barbeiro</span>
-                <span style={s.confirmVal}>{selected.barber?.name}</span>
+            )}
+
+            {step === 2 && (
+              <div style={s.stepWrap}>
+                <h2 style={s.stepTitle}>Escolha a Data</h2>
+                <div style={s.dateScroll}>
+                  {getDates().map((d, i) => (
+                    <button key={i} onClick={() => { setSelected({ ...selected, date: formatDateValue(d), time: null }); setStep(3) }}
+                      style={{ ...s.dateCard, ...(selected.date === formatDateValue(d) ? s.dateCardSelected : {}) }}>
+                      <span style={s.dateWeek}>{d.toLocaleDateString('pt-BR', { weekday: 'short' }).replace('.', '')}</span>
+                      <span style={s.dateNum}>{d.getDate()}</span>
+                      <span style={s.dateMon}>{d.toLocaleDateString('pt-BR', { month: 'short' }).replace('.', '')}</span>
+                    </button>
+                  ))}
+                </div>
+                <button onClick={() => setStep(1)} style={s.backBtn}>← Voltar</button>
               </div>
-              <div style={s.confirmRow}>
-                <span style={s.confirmLabel}>Data</span>
-                <span style={s.confirmVal}>
-                  {selected.date && new Date(selected.date + 'T12:00:00').toLocaleDateString('pt-BR', { weekday: 'long', day: '2-digit', month: 'long' })}
-                </span>
+            )}
+
+            {step === 3 && (
+              <div style={s.stepWrap}>
+                <h2 style={s.stepTitle}>Escolha o Horário</h2>
+                {loadingTimes ? (
+                  <div style={s.emptyBox}>Buscando horários...</div>
+                ) : availableTimes.length === 0 ? (
+                  <div style={s.emptyBox}>Nenhum horário disponível para este dia.</div>
+                ) : (
+                  <div style={s.timeGrid}>
+                    {availableTimes.map(t => (
+                      <button key={t} onClick={() => { setSelected({ ...selected, time: t }); setStep(4) }}
+                        style={{ ...s.timeBtn, ...(selected.time === t ? s.timeBtnSelected : {}) }}>
+                        {t}
+                      </button>
+                    ))}
+                  </div>
+                )}
+                <button onClick={() => setStep(2)} style={s.backBtn}>← Voltar</button>
               </div>
-              <div style={s.confirmRow}>
-                <span style={s.confirmLabel}>Horário</span>
-                <span style={s.confirmVal}>{selected.time}</span>
+            )}
+
+            {step === 4 && (
+              <div style={s.stepWrap}>
+                <h2 style={s.stepTitle}>Confirme seu Agendamento</h2>
+                <div style={s.confirmCard}>
+                  <div style={s.confirmRow}>
+                    <span style={s.confirmLabel}>Serviço</span>
+                    <span style={s.confirmVal}>{selected.service?.name}</span>
+                  </div>
+                  <div style={s.confirmRow}>
+                    <span style={s.confirmLabel}>Barbeiro</span>
+                    <span style={s.confirmVal}>{selected.barber?.name}</span>
+                  </div>
+                  <div style={s.confirmRow}>
+                    <span style={s.confirmLabel}>Data</span>
+                    <span style={s.confirmVal}>
+                      {selected.date && new Date(selected.date + 'T12:00:00').toLocaleDateString('pt-BR', { weekday: 'long', day: '2-digit', month: 'long' })}
+                    </span>
+                  </div>
+                  <div style={s.confirmRow}>
+                    <span style={s.confirmLabel}>Horário</span>
+                    <span style={s.confirmVal}>{selected.time}</span>
+                  </div>
+                  <div style={{ ...s.confirmRow, borderBottom: 'none' }}>
+                    <span style={s.confirmLabel}>Valor</span>
+                    <span style={{ ...s.confirmVal, color: '#f59e0b', fontWeight: '700' }}>
+                      R$ {Number(selected.service?.price).toFixed(2)}
+                    </span>
+                  </div>
+                </div>
+                <input style={s.input} placeholder="Seu nome completo" value={selected.client_name}
+                  onChange={e => setSelected({ ...selected, client_name: e.target.value })} />
+                <input style={s.input} placeholder="WhatsApp (ex: 11999999999)" value={selected.client_phone}
+                  onChange={e => setSelected({ ...selected, client_phone: e.target.value })} type="tel" />
+                <button onClick={confirm} disabled={submitting || !selected.client_name || !selected.client_phone}
+                  style={{ ...s.confirmBtn, opacity: (!selected.client_name || !selected.client_phone) ? 0.5 : 1 }}>
+                  {submitting ? 'Confirmando...' : 'Confirmar Agendamento'}
+                </button>
+                <button onClick={() => setStep(3)} style={s.backBtn}>← Voltar</button>
               </div>
-              <div style={{ ...s.confirmRow, borderBottom: 'none' }}>
-                <span style={s.confirmLabel}>Valor</span>
-                <span style={{ ...s.confirmVal, color: '#f59e0b', fontWeight: '700' }}>
-                  R$ {Number(selected.service?.price).toFixed(2)}
-                </span>
+            )}
+          </div>
+        </>
+      )}
+
+      {/* ========================================= */}
+      {/* SEÇÃO: MEUS AGENDAMENTOS */}
+      {/* ========================================= */}
+      {showMyAppointments && (
+        <div style={s.myAppointmentsSection}>
+          <h2 style={s.stepTitle}>Meus Agendamentos</h2>
+          <p style={{ color: '#71717a', fontSize: '14px', marginBottom: '16px' }}>
+            Informe os dados que usou no agendamento para consultar.
+          </p>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', maxWidth: '400px', margin: '0 auto' }}>
+            <input
+              style={s.input}
+              placeholder="Seu nome completo"
+              value={appointmentName}
+              onChange={e => setAppointmentName(e.target.value)}
+            />
+            <input
+              style={s.input}
+              placeholder="WhatsApp (ex: 11999999999)"
+              value={appointmentPhone}
+              onChange={e => setAppointmentPhone(e.target.value)}
+              type="tel"
+            />
+            <button
+              onClick={fetchMyAppointments}
+              disabled={loadingAppointments}
+              style={{ ...s.confirmBtn, background: '#27272a', color: '#fff', marginBottom: '16px' }}
+            >
+              {loadingAppointments ? 'Buscando...' : '🔍 Buscar meus agendamentos'}
+            </button>
+          </div>
+
+          {myAppointments.length === 0 && !loadingAppointments && (
+            <div style={s.emptyBox}>Nenhum agendamento ativo encontrado.</div>
+          )}
+
+          {myAppointments.map(app => (
+            <div key={app.id} style={s.appointmentCard}>
+              <div style={s.appointmentInfo}>
+                <div>
+                  <strong style={{ color: '#fff' }}>{app.service_name}</strong>
+                  <span style={{ color: '#71717a', fontSize: '13px', display: 'block' }}>
+                    {app.barber_name} • {new Date(app.appointment_date).toLocaleDateString('pt-BR', { weekday: 'short', day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' })}
+                  </span>
+                </div>
+                <button
+                  onClick={() => cancelMyAppointment(app.cancel_token)}
+                  disabled={cancellingId === app.cancel_token}
+                  style={{
+                    background: '#7f1d1d',
+                    color: '#f87171',
+                    border: '1px solid #450a0a',
+                    borderRadius: '8px',
+                    padding: '6px 14px',
+                    fontSize: '12px',
+                    fontWeight: '600',
+                    cursor: 'pointer',
+                    opacity: cancellingId === app.cancel_token ? 0.6 : 1,
+                  }}
+                >
+                  {cancellingId === app.cancel_token ? 'Cancelando...' : 'Cancelar'}
+                </button>
               </div>
             </div>
-            <input style={s.input} placeholder="Seu nome completo" value={selected.client_name}
-              onChange={e => setSelected({ ...selected, client_name: e.target.value })} />
-            <input style={s.input} placeholder="WhatsApp (ex: 11999999999)" value={selected.client_phone}
-              onChange={e => setSelected({ ...selected, client_phone: e.target.value })} type="tel" />
-            <button onClick={confirm} disabled={submitting || !selected.client_name || !selected.client_phone}
-              style={{ ...s.confirmBtn, opacity: (!selected.client_name || !selected.client_phone) ? 0.5 : 1 }}>
-              {submitting ? 'Confirmando...' : 'Confirmar Agendamento'}
-            </button>
-            <button onClick={() => setStep(3)} style={s.backBtn}>← Voltar</button>
-          </div>
-        )}
-      </div>
+          ))}
+        </div>
+      )}
 
+      {/* Equipe (sempre visível) */}
       <div style={s.teamSection}>
         <h2 style={s.teamTitle}>Nossa Equipe</h2>
         <div style={s.teamList}>
@@ -383,6 +554,7 @@ export default function Booking() {
   )
 }
 
+// Componente PixCopyBox (inalterado)
 function PixCopyBox({ pixKey }) {
   const [copied, setCopied] = useState(false)
   const copy = () => {
@@ -403,79 +575,38 @@ function PixCopyBox({ pixKey }) {
   )
 }
 
+// Estilos (adicionar novos)
 const s = {
-  page: { minHeight: '100dvh', width: '100%', background: '#09090b', fontFamily: 'system-ui, sans-serif', display: 'flex', flexDirection: 'column', margin: 0, padding: 0, boxSizing: 'border-box', position: 'relative', overflowX: 'hidden', overflowY: 'auto', WebkitOverflowScrolling: 'touch' },
-  splash: { minHeight: '100vh', background: '#09090b', display: 'flex', alignItems: 'center', justifyContent: 'center' },
-  splashSpinner: { width: '36px', height: '36px', border: '3px solid #27272a', borderTop: '3px solid #f59e0b', borderRadius: '50%', animation: 'spin 1s linear infinite' },
-  hero: { width: '100%', boxSizing: 'border-box', background: 'linear-gradient(180deg, #18181b 0%, #09090b 100%)', padding: '32px 20px 24px', textAlign: 'center', borderBottom: '0.5px solid #27272a' },
-  heroAvatar: { fontSize: '52px', marginBottom: '12px' },
-  heroLogo: { width: '120px', height: '120px', borderRadius: '20px', objectFit: 'contain', background: '#27272a', padding: '6px', display: 'block', margin: '0 auto 16px' },
-  heroName: { fontSize: '28px', fontWeight: '800', color: '#fff', margin: '0 0 8px' },
-  heroDesc: { fontSize: '15px', color: '#a1a1aa', margin: '0 0 10px' },
-  heroAddr: { fontSize: '13px', color: '#71717a', margin: '0 0 4px', display: 'flex', alignItems: 'center', justifyContent: 'center' },
-  heroHours: { fontSize: '13px', color: '#71717a', margin: 0 },
-  stepsBar: { display: 'flex', overflowX: 'auto', padding: '16px 12px', gap: '4px', borderBottom: '0.5px solid #27272a', background: '#18181b', scrollbarWidth: 'none' },
-  stepBtn: { display: 'flex', alignItems: 'center', gap: '6px', padding: '6px 10px', borderRadius: '20px', border: 'none', background: 'transparent', color: '#52525b', fontSize: '12px', whiteSpace: 'nowrap', cursor: 'default' },
-  stepBtnActive: { background: '#f59e0b22', color: '#f59e0b' },
-  stepBtnDone: { color: '#4ade80' },
-  stepCircle: { width: '22px', height: '22px', borderRadius: '50%', background: '#27272a', color: '#71717a', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '11px', fontWeight: '700', flexShrink: 0 },
-  stepCircleActive: { background: '#f59e0b', color: '#09090b' },
-  stepCircleDone: { background: '#14532d', color: '#4ade80' },
-  stepLabel: { fontSize: '12px', fontWeight: '500' },
-  content: { width: '100%', maxWidth: '480px', margin: '0 auto', padding: '24px 16px', boxSizing: 'border-box' },
-  stepWrap: { display: 'flex', flexDirection: 'column', gap: '12px' },
-  stepTitle: { fontSize: '20px', fontWeight: '700', color: '#fff', margin: '0 0 4px' },
-  serviceList: { display: 'flex', flexDirection: 'column', gap: '10px' },
-  serviceCard: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '16px', background: '#18181b', border: '0.5px solid #27272a', borderRadius: '12px', cursor: 'pointer', width: '100%', textAlign: 'left' },
-  serviceCardSelected: { borderColor: '#f59e0b', background: '#f59e0b11' },
-  serviceInfo: { display: 'flex', flexDirection: 'column', gap: '2px' },
-  serviceName: { fontSize: '15px', fontWeight: '600', color: '#fff' },
-  serviceMeta: { fontSize: '12px', color: '#71717a' },
-  servicePrice: { fontSize: '16px', fontWeight: '700', color: '#f59e0b' },
-  barberList: { display: 'flex', flexDirection: 'column', gap: '10px' },
-  barberCard: { display: 'flex', alignItems: 'center', gap: '14px', padding: '14px', background: '#18181b', border: '0.5px solid #27272a', borderRadius: '12px', cursor: 'pointer', width: '100%', textAlign: 'left' },
-  barberCardSelected: { borderColor: '#f59e0b', background: '#f59e0b11' },
-  barberAvatar: { width: '44px', height: '44px', borderRadius: '50%', background: '#f59e0b', color: '#09090b', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '18px', fontWeight: '700', flexShrink: 0 },
-  barberName: { fontSize: '15px', fontWeight: '600', color: '#fff', margin: 0 },
-  barberRole: { fontSize: '12px', color: '#71717a', margin: '2px 0 0' },
-  pixBadge: { marginLeft: 'auto', fontSize: '11px', color: '#4ade80', background: '#14532d', padding: '3px 8px', borderRadius: '20px' },
-  dateScroll: { display: 'flex', gap: '10px', overflowX: 'auto', paddingBottom: '8px', scrollbarWidth: 'none' },
-  dateCard: { display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '12px 14px', background: '#18181b', border: '0.5px solid #27272a', borderRadius: '12px', cursor: 'pointer', minWidth: '64px', flexShrink: 0 },
-  dateCardSelected: { borderColor: '#f59e0b', background: '#f59e0b11' },
-  dateWeek: { fontSize: '11px', color: '#71717a', textTransform: 'uppercase', marginBottom: '4px' },
-  dateNum: { fontSize: '24px', fontWeight: '700', color: '#fff' },
-  dateMon: { fontSize: '11px', color: '#71717a', marginTop: '2px' },
-  timeGrid: { display: 'flex', flexWrap: 'wrap', gap: '10px' },
-  timeBtn: { padding: '12px 16px', background: '#18181b', border: '0.5px solid #27272a', borderRadius: '10px', color: '#fff', fontSize: '14px', fontWeight: '500', cursor: 'pointer', minWidth: '72px', textAlign: 'center' },
-  timeBtnSelected: { borderColor: '#f59e0b', background: '#f59e0b11', color: '#f59e0b' },
-  confirmCard: { background: '#18181b', border: '0.5px solid #27272a', borderRadius: '12px', overflow: 'hidden', marginBottom: '16px' },
-  confirmRow: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '14px 16px', borderBottom: '0.5px solid #27272a' },
-  confirmLabel: { fontSize: '13px', color: '#71717a' },
-  confirmVal: { fontSize: '14px', color: '#fff', fontWeight: '500', textAlign: 'right', maxWidth: '60%' },
-  input: { width: '100%', background: '#18181b', border: '0.5px solid #27272a', borderRadius: '10px', padding: '14px', color: '#fff', fontSize: '15px', boxSizing: 'border-box', marginBottom: '10px', display: 'block' },
-  confirmBtn: { width: '100%', background: '#f59e0b', color: '#09090b', border: 'none', padding: '16px', borderRadius: '12px', fontSize: '16px', fontWeight: '700', cursor: 'pointer', marginBottom: '10px' },
-  backBtn: { background: 'none', border: 'none', color: '#71717a', fontSize: '14px', cursor: 'pointer', padding: '8px 0' },
-  emptyBox: { textAlign: 'center', color: '#71717a', padding: '40px 20px', background: '#18181b', borderRadius: '12px', fontSize: '14px' },
-  teamSection: { maxWidth: '480px', margin: '0 auto', padding: '32px 16px' },
-  teamTitle: { fontSize: '18px', fontWeight: '700', color: '#fff', margin: '0 0 16px' },
-  teamList: { display: 'flex', gap: '12px', flexWrap: 'wrap' },
-  teamCard: { background: '#18181b', border: '0.5px solid #27272a', borderRadius: '12px', padding: '16px', textAlign: 'center', minWidth: '100px', flex: '1 1 auto' },
-  teamAvatar: { width: '56px', height: '56px', borderRadius: '50%', background: '#27272a', color: '#f59e0b', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '20px', fontWeight: '700', margin: '0 auto 8px', overflow: 'hidden' },
-  teamAvatarImg: { width: '56px', height: '56px', borderRadius: '50%', objectFit: 'cover', display: 'block' },
-  teamName: { fontSize: '13px', fontWeight: '600', color: '#fff', margin: '4px 0 0 0' },
-  teamRole: { fontSize: '11px', color: '#71717a', margin: '2px 0 0' },
-  successWrap: { maxWidth: '400px', margin: '60px auto', textAlign: 'center', padding: '20px' },
-  successIcon: { fontSize: '64px', marginBottom: '16px' },
-  successTitle: { fontSize: '28px', fontWeight: '800', color: '#fff', margin: '0 0 8px' },
-  successSub: { fontSize: '16px', color: '#a1a1aa', margin: '0 0 8px' },
-  successDate: { fontSize: '15px', color: '#f59e0b', fontWeight: '600', margin: '0 0 16px' },
-  successNote: { fontSize: '13px', color: '#71717a', margin: '0 0 8px' },
-  newBtn: { background: '#f59e0b', color: '#09090b', border: 'none', padding: '14px 28px', borderRadius: '10px', fontSize: '15px', fontWeight: '700', cursor: 'pointer', marginTop: '20px' },
-  pixSection: { marginTop: '8px', marginBottom: '8px' },
-  pixDivider: { height: '1px', background: '#27272a', margin: '20px 0' },
-  pixTitle: { fontSize: '18px', fontWeight: '700', color: '#fff', margin: '0 0 6px' },
-  pixSubtitle: { fontSize: '13px', color: '#a1a1aa', margin: '0 0 16px' },
-  pixQrWrap: { background: '#fff', borderRadius: '12px', padding: '12px', display: 'inline-block', marginBottom: '12px' },
-  pixQrImg: { width: '180px', height: '180px', objectFit: 'contain', display: 'block' },
-  pixNote: { fontSize: '12px', color: '#52525b', margin: 0 },
+  // ... (mantenha todos os estilos existentes)
+  // Adicione os novos estilos abaixo:
+  tabBtn: {
+    padding: '10px 20px',
+    borderRadius: '20px',
+    border: 'none',
+    fontSize: '14px',
+    fontWeight: '600',
+    cursor: 'pointer',
+    transition: '0.2s',
+  },
+  myAppointmentsSection: {
+    maxWidth: '480px',
+    margin: '0 auto',
+    padding: '24px 16px',
+    width: '100%',
+    boxSizing: 'border-box',
+  },
+  appointmentCard: {
+    background: '#18181b',
+    border: '0.5px solid #27272a',
+    borderRadius: '12px',
+    padding: '16px',
+    marginBottom: '12px',
+  },
+  appointmentInfo: {
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    gap: '12px',
+  },
+  // ... outros estilos que você já tem
 }
