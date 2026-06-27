@@ -11,12 +11,17 @@ const STATUS_PT = {
 
 function formatDate(dateStr) {
   if (!dateStr) return '-'
-  const date = new Date(dateStr.replace(' ', 'T'))
-  return date.toLocaleDateString('pt-BR', {
-    day: '2-digit', month: '2-digit', year: 'numeric',
-  }) + ' às ' + date.toLocaleTimeString('pt-BR', {
-    hour: '2-digit', minute: '2-digit',
-  })
+
+  // Remove o Z e os microssegundos para não converter fuso
+  const formatted = dateStr
+    .replace('T', ' ')
+    .replace('Z', '')
+    .split('.')[0]
+
+  const [datePart, timePart] = formatted.split(' ')
+  const [year, month, day] = datePart.split('-')
+
+  return `${day}/${month}/${year} às ${timePart.substring(0, 5)}`
 }
 
 function combineDatetime(datePart, timePart) {
