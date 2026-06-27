@@ -498,7 +498,7 @@ export default function Booking() {
           {myAppointments.length === 0 && !loadingAppointments && (
             <div style={s.emptyBox}>Nenhum agendamento ativo encontrado.</div>
           )}
-
+          {console.log(myAppointments)}
           {myAppointments.map(app => (
             <div key={app.id} style={s.appointmentCard}>
               <div style={s.appointmentInfo}>
