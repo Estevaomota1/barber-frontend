@@ -150,7 +150,7 @@ function formatAppointmentDate(dateStr) {
       setLoadingAppointments(false)
     }
   }
-
+//c onvertendo a data do agendamento para o formato desejado
   // Cancelar um agendamento da lista (por token)
   const cancelMyAppointment = async (token) => {
     if (!confirm('Tem certeza que deseja cancelar este agendamento? O horário será liberado.')) return
