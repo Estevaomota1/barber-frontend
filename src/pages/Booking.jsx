@@ -180,7 +180,7 @@ function formatAppointmentDate(dateStr) {
   const getDates = () => {
     const dates = []
     const today = new Date()
-    for (let i = 1; i <= 30; i++) {
+    for (let i = 0; i <= 30; i++) {
       const d = new Date(today)
       d.setDate(today.getDate() + i)
       if (d.getDay() !== 0) dates.push(d)
