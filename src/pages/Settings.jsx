@@ -5,14 +5,16 @@ const API = 'https://barber-saas-1-fpjl.onrender.com/api'
  
 export default function Settings( ) {
   const [form, setForm] = useState({
-    name: '',
-    phone: '',
-    address: '',
-    description: '',
-    opening_time: '09:00',
-    closing_time: '18:00',
-    logo: '',
-  })
+  name: '',  phone: '',  address: '',  description: '',  opening_time: '07:00',  closing_time: '18:00',  logo: '',
+  working_hours: {    monday: {      active: true,      open: '07:00',      close: '18:00'    },
+  tuesday: {      active: true,      open: '07:00',      close: '18:00'    },
+  wednesday: {      active: true,      open: '07:00',      close: '18:00'    },
+  thursday: {      active: true,      open: '07:00',      close: '18:00'    },
+  friday: {      active: true,      open: '07:00',      close: '18:00'    },
+  saturday: {      active: true,      open: '07:00',      close: '18:00'    },
+  sunday: {      active: true,      open: '07:00',     close: '18:00'   }
+  }
+})
   const [barbers, setBarbers] = useState([])
   const [loading, setLoading] = useState(true)
   const [saved, setSaved] = useState(false)
@@ -166,72 +168,139 @@ export default function Settings( ) {
           </div>
         </div>
  
-        {/* Informações da Barbearia */}
-        <div style={{ ...s.card, marginTop: '20px' }}>
-          <h2 style={s.sectionTitle}>
-            <i className="ti ti-building-store" style={{ marginRight: '8px', color: '#f59e0b' }}></i>
-            Informações da Barbearia
-          </h2>
- 
-          <label style={s.label}>Nome da Barbearia</label>
-          <input
-            style={s.input}
-            value={form.name}
-            onChange={e => setForm({ ...form, name: e.target.value })}
-            placeholder="Ex: Barbearia do João"
-          />
- 
-          <label style={s.label}>Telefone / WhatsApp</label>
-          <input
-            style={s.input}
-            value={form.phone}
-            onChange={e => setForm({ ...form, phone: e.target.value })}
-            placeholder="Ex: (11) 99999-9999"
-          />
- 
-          <label style={s.label}>Endereço</label>
-          <input
-            style={s.input}
-            value={form.address}
-            onChange={e => setForm({ ...form, address: e.target.value })}
-            placeholder="Ex: Av. Principal, 123 - Bairro - Cidade/UF"
-          />
- 
-          <label style={s.label}>Descrição</label>
-          <textarea
-            style={{ ...s.input, height: '80px', resize: 'vertical' }}
-            value={form.description}
-            onChange={e => setForm({ ...form, description: e.target.value })}
-            placeholder="Frase de apresentação da barbearia..."
-          />
- 
-          <div style={s.row}>
-            <div style={{ flex: 1 }}>
-              <label style={s.label}>Horário de Abertura</label>
-              <input
-                style={s.input}
-                type="time"
-                value={form.opening_time}
-                onChange={e => setForm({ ...form, opening_time: e.target.value })}
-              />
-            </div>
-            <div style={{ flex: 1 }}>
-              <label style={s.label}>Horário de Fechamento</label>
-              <input
-                style={s.input}
-                type="time"
-                value={form.closing_time}
-                onChange={e => setForm({ ...form, closing_time: e.target.value })}
-              />
-            </div>
-          </div>
- 
-          <button onClick={save} style={s.saveBtn}>
-            <i className={`ti ${saved ? 'ti-check' : 'ti-device-floppy'}`} style={{ marginRight: '8px' }}></i>
-            {saved ? 'Salvo!' : 'Salvar Configurações'}
-          </button>
-        </div>
- 
+        
+       {/* Informações da Barbearia */}
+{/* Informações da Barbearia */}
+<div style={{ ...s.card, marginTop: '20px' }}>
+  <h2 style={s.sectionTitle}>
+    <i className="ti ti-building-store" style={{ marginRight: '8px', color: '#f59e0b' }}></i>
+    Informações da Barbearia
+  </h2>
+
+  <label style={s.label}>Nome da Barbearia</label>
+  <input
+    style={s.input}
+    value={form.name}
+    onChange={e => setForm({ ...form, name: e.target.value })}
+    placeholder="Ex: Barbearia do João"
+  />
+
+  <label style={s.label}>Telefone / WhatsApp</label>
+  <input
+    style={s.input}
+    value={form.phone}
+    onChange={e => setForm({ ...form, phone: e.target.value })}
+    placeholder="Ex: (11) 99999-9999"
+  />
+
+  <label style={s.label}>Endereço</label>
+  <input
+    style={s.input}
+    value={form.address}
+    onChange={e => setForm({ ...form, address: e.target.value })}
+    placeholder="Ex: Av. Principal, 123 - Bairro - Cidade/UF"
+  />
+
+  <label style={s.label}>Descrição</label>
+  <textarea
+    style={{ ...s.input, height: '80px', resize: 'vertical' }}
+    value={form.description}
+    onChange={e => setForm({ ...form, description: e.target.value })}
+    placeholder="Frase de apresentação da barbearia..."
+  />
+
+  <h3 style={{ color: "#fff", marginTop: 20, marginBottom: 15 }}>
+    Horário de Funcionamento
+  </h3>
+
+  {[
+    ["monday", "Segunda"],
+    ["tuesday", "Terça"],
+    ["wednesday", "Quarta"],
+    ["thursday", "Quinta"],
+    ["friday", "Sexta"],
+    ["saturday", "Sábado"],
+    ["sunday", "Domingo"],
+  ].map(([key, label]) => (
+    <div
+      key={key}
+      style={{
+        display: "flex",
+        alignItems: "center",
+        gap: 12,
+        marginBottom: 12,
+      }}
+    >
+      <label style={{ width: 90, color: "#fff" }}>
+        {label}
+      </label>
+
+      <input
+        type="checkbox"
+        checked={form.working_hours?.[key]?.active ?? true}
+        onChange={(e) =>
+          setForm({
+            ...form,
+            working_hours: {
+              ...form.working_hours,
+              [key]: {
+                ...form.working_hours?.[key],
+                active: e.target.checked,
+              },
+            },
+          })
+        }
+      />
+
+      <input
+        style={s.input}
+        type="time"
+        value={form.working_hours?.[key]?.open ?? "09:00"}
+        onChange={(e) =>
+          setForm({
+            ...form,
+            working_hours: {
+              ...form.working_hours,
+              [key]: {
+                ...form.working_hours?.[key],
+                open: e.target.value,
+              },
+            },
+          })
+        }
+      />
+
+      <span style={{ color: "#aaa" }}>até</span>
+
+      <input
+        style={s.input}
+        type="time"
+        value={form.working_hours?.[key]?.close ?? "18:00"}
+        onChange={(e) =>
+          setForm({
+            ...form,
+            working_hours: {
+              ...form.working_hours,
+              [key]: {
+                ...form.working_hours?.[key],
+                close: e.target.value,
+              },
+            },
+          })
+        }
+      />
+    </div>
+  ))}
+
+  {/* BOTÃO SALVAR – único, no final do card */}
+  <button onClick={save} style={s.saveBtn}>
+    <i
+      className={`ti ${saved ? 'ti-check' : 'ti-device-floppy'}`}
+      style={{ marginRight: '8px' }}
+    ></i>
+    {saved ? 'Salvo!' : 'Salvar Configurações'}
+  </button>
+</div>
         {/* QR Code Pix por Barbeiro */}
         <div style={{ ...s.card, marginTop: '20px' }}>
           <h2 style={s.sectionTitle}>
