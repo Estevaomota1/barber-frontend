@@ -31,16 +31,24 @@ export default function Settings( ) {
   useEffect(() => {
     fetch(`${API}/my-barbershop`, { headers })
       .then(r => r.json())
-      .then(d => {
-        setForm({
-          name:         d.name         || '',
-          phone:        d.phone        || '',
-          address:      d.address      || '',
-          description:  d.description  || '',
-          opening_time: d.opening_time || '09:00',
-          closing_time: d.closing_time || '18:00',
-          logo:         d.logo         || '',
-        })
+      .then(d => {setForm({
+    name:          d.name         || '',
+    phone:         d.phone        || '',
+    address:       d.address      || '',
+    description:   d.description  || '',
+    opening_time:  d.opening_time || '09:00',
+    closing_time:  d.closing_time || '18:00',
+    logo:          d.logo         || '',
+    working_hours: d.working_hours || {
+      monday:    { active: true, open: '07:00', close: '18:00' },
+      tuesday:   { active: true, open: '07:00', close: '18:00' },
+      wednesday: { active: true, open: '07:00', close: '18:00' },
+      thursday:  { active: true, open: '07:00', close: '18:00' },
+      friday:    { active: true, open: '07:00', close: '18:00' },
+      saturday:  { active: true, open: '07:00', close: '18:00' },
+      sunday:    { active: false, open: '07:00', close: '18:00' },
+    },
+  })
         setBarbers(d.barbers || [])
         setLoading(false)
       })

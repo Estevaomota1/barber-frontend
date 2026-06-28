@@ -244,7 +244,7 @@ function formatAppointmentDate(dateStr) {
         >
           Fazer outro agendamento
         </button>
-
+          /* Botão para voltar à tela de agendamento */
         {/* Cancelamento do agendamento recém-criado */}
         {cancelToken && !cancelDone && (
           <div style={{ marginTop: '20px' }}>
