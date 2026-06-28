@@ -12,6 +12,7 @@ export default function Booking() {
     service: null, barber: null, date: null, time: null,
     client_name: '', client_phone: ''
   })
+  
   const [availableTimes, setAvailableTimes] = useState([])
   const [loadingTimes, setLoadingTimes] = useState(false)
   const [success, setSuccess] = useState(false)
@@ -28,7 +29,26 @@ export default function Booking() {
   const [appointmentPhone, setAppointmentPhone] = useState('')
   const [appointmentName, setAppointmentName] = useState('')
   const [cancellingId, setCancellingId] = useState(null)
+function formatAppointmentDate(dateStr) {
+  if (!dateStr) return "-";
 
+  const formatted = dateStr
+    .replace("T", " ")
+    .replace("Z", "")
+    .split(".")[0];
+
+  const [datePart, timePart] = formatted.split(" ");
+
+  return (
+    new Date(datePart + "T12:00:00").toLocaleDateString("pt-BR", {
+      weekday: "short",
+      day: "2-digit",
+      month: "short",
+    }) +
+    " às " +
+    timePart.substring(0, 5)
+  );
+}
   // Buscar dados da barbearia
   useEffect(() => {
     fetch(`${API}/booking/${slug}`)
@@ -494,18 +514,18 @@ export default function Booking() {
               {loadingAppointments ? 'Buscando...' : '🔍 Buscar meus agendamentos'}
             </button>
           </div>
-
+          
           {myAppointments.length === 0 && !loadingAppointments && (
             <div style={s.emptyBox}>Nenhum agendamento ativo encontrado.</div>
           )}
-          {console.log(myAppointments)}
+          {console.log(JSON.stringify(myAppointments, null, 2))}
           {myAppointments.map(app => (
             <div key={app.id} style={s.appointmentCard}>
               <div style={s.appointmentInfo}>
                 <div>
                   <strong style={{ color: '#fff' }}>{app.service_name}</strong>
                   <span style={{ color: '#71717a', fontSize: '13px', display: 'block' }}>
-                    {app.barber_name} • {new Date(app.appointment_date).toLocaleDateString('pt-BR', { weekday: 'short', day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' })}
+                    {app.barber_name} • {formatAppointmentDate(app.appointment_date)}
                   </span>
                 </div>
                 <button
