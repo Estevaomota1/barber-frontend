@@ -355,9 +355,13 @@ export default function Appointments() {
                             {(apt.client?.name || apt.client_name)?.charAt(0).toUpperCase() || '?'}
                           </div>
                           <div>
-                            <span style={styles.clientName}>
-                              {apt.client?.name || apt.client_name || 'Walk-in'}
-                            </span>
+                                                                      <span style={styles.clientName}>
+                                            {apt.client?.name || apt.client_name || 'Walk-in'}
+                                          </span>
+
+                                          <p style={{ color: 'red', fontWeight: 'bold' }}>
+                                            BARBEIRO: {apt.barber?.name}
+                                          </p>
                             {apt.barber && (
                               <div className="ap-col-barber" style={{ fontSize: '12px', color: '#71717a', marginTop: '2px' }}>
                                 ✂️ {apt.barber.name}
