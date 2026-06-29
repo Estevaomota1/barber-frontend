@@ -347,61 +347,80 @@ export default function Appointments() {
                 </thead>
                 <tbody>
                   {appointments.map((apt) => (
-                   
-                    <tr key={apt.id} style={styles.tr}>
-                      <td style={styles.td}>
-                        <div style={styles.clientInfo}>
-                          <div style={styles.avatar}>
-                            {(apt.client?.name || apt.client_name)?.charAt(0).toUpperCase() || '?'}
-                          </div>
-                          <div>
-                                                                      <span style={styles.clientName}>
-                                            {apt.client?.name || apt.client_name || 'Walk-in'}
-                                          </span>
+  <tr key={apt.id} style={styles.tr}>
+    <td style={styles.td}>
+      <div style={styles.clientInfo}>
+        <div style={styles.avatar}>
+          {(apt.client?.name || apt.client_name)?.charAt(0).toUpperCase() || '?'}
+        </div>
 
-                                          <p style={{ color: 'red', fontWeight: 'bold' }}>
-                                            BARBEIRO: {apt.barber?.name}
-                                          </p>
-                            {apt.barber && (
-                              <div className="ap-col-barber" style={{ fontSize: '12px', color: '#71717a', marginTop: '2px' }}>
-                                ✂️ {apt.barber.name}
-                                {(apt.service?.name || apt.service_name) && ` • ${apt.service?.name || apt.service_name}`}
-                              </div>
-                            )}
-                          </div>
-                        </div>
-                      </td>
-                      <td style={styles.td}>
-                        <div style={styles.dateTime}>
-                          <i className="ti ti-calendar" style={{ color: '#f59e0b', marginRight: '6px', flexShrink: 0 }}></i>
-                          {formatDate(apt.appointment_date)}
-                        </div>
-                        {apt.price > 0 && (
-                          <div style={{ fontSize: '12px', color: '#f59e0b', marginTop: '4px' }}>
-                            R$ {Number(apt.price).toFixed(2)}
-                          </div>
-                        )}
-                      </td>
-                      <td style={styles.td}>
-                        <select
-                          className="ap-select"
-                          style={{ ...styles.statusSelect, ...(statusStyles[apt.status] || statusStyles.pending) }}
-                          value={apt.status}
-                          onChange={e => handleStatus(apt.id, e.target.value)}
-                        >
-                          <option value="pending">Pendente</option>
-                          <option value="confirmed">Confirmado</option>
-                          <option value="cancelled">Cancelado</option>
-                          <option value="completed">Concluído</option>
-                        </select>
-                      </td>
-                      <td style={{ ...styles.td, textAlign: 'right' }}>
-                        <button onClick={() => handleDelete(apt.id)} style={styles.iconBtnDelete} title="Excluir">
-                          <i className="ti ti-trash"></i>
-                        </button>
-                      </td>
-                    </tr>
-                  ))}
+        <div>
+          <span style={styles.clientName}>
+            {apt.client?.name || apt.client_name || 'Walk-in'}
+          </span>
+
+          {apt.barber && (
+            <div
+              className="ap-col-barber"
+              style={{
+                fontSize: '12px',
+                color: '#71717a',
+                marginTop: '2px'
+              }}
+            >
+               {apt.barber?.name}
+              {(apt.service?.name || apt.service_name) &&
+                ` • ${apt.service?.name || apt.service_name}`}
+            </div>
+          )}
+        </div>
+      </div>
+    </td>
+
+    <td style={styles.td}>
+      <div style={styles.dateTime}>
+        <i
+          className="ti ti-calendar"
+          style={{ color: '#f59e0b', marginRight: '6px', flexShrink: 0 }}
+        ></i>
+        {formatDate(apt.appointment_date)}
+      </div>
+
+      {apt.price > 0 && (
+        <div style={{ fontSize: '12px', color: '#f59e0b', marginTop: '4px' }}>
+          R$ {Number(apt.price).toFixed(2)}
+        </div>
+      )}
+    </td>
+
+    <td style={styles.td}>
+      <select
+        className="ap-select"
+        style={{
+          ...styles.statusSelect,
+          ...(statusStyles[apt.status] || statusStyles.pending)
+        }}
+        value={apt.status}
+        onChange={e => handleStatus(apt.id, e.target.value)}
+      >
+        <option value="pending">Pendente</option>
+        <option value="confirmed">Confirmado</option>
+        <option value="cancelled">Cancelado</option>
+        <option value="completed">Concluído</option>
+      </select>
+    </td>
+
+    <td style={{ ...styles.td, textAlign: 'right' }}>
+      <button
+        onClick={() => handleDelete(apt.id)}
+        style={styles.iconBtnDelete}
+        title="Excluir"
+      >
+        <i className="ti ti-trash"></i>
+      </button>
+    </td>
+  </tr>
+))}
                 </tbody>
               </table>
             </div>
