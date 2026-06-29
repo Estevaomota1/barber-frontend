@@ -144,7 +144,7 @@ export default function Appointments() {
       <span style={{ color: '#a1a1aa', marginTop: '12px' }}>Carregando agenda...</span>
     </div>
   )
-
+  console.log(appointments);
   return (
     <div style={styles.pageWrapper}>
       <style>{`
@@ -347,6 +347,7 @@ export default function Appointments() {
                 </thead>
                 <tbody>
                   {appointments.map((apt) => (
+                   
                     <tr key={apt.id} style={styles.tr}>
                       <td style={styles.td}>
                         <div style={styles.clientInfo}>
