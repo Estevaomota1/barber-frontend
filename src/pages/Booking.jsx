@@ -183,7 +183,7 @@ function formatAppointmentDate(dateStr) {
     for (let i = 0; i <= 30; i++) {
       const d = new Date(today)
       d.setDate(today.getDate() + i)
-      if (d.getDay() !== 0) dates.push(d)
+      dates.push(d)
     }
     return dates
   }
