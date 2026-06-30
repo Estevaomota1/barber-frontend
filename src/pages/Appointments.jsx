@@ -155,7 +155,7 @@ export default function Appointments() {
         .ap-date-input:focus { border-color: #f59e0b !important; outline: none; }
         .ap-date-time-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
         .ap-action-btn { min-height: 44px; }
-        @media (max-width: 640px) { .ap-table-wrap { font-size: 13px; } .ap-col-barber { display: none; } }
+        @media (max-width: 640px) {  .ap-table-wrap {    font-size: 13px;  }}
       `}</style>
 
       <Navbar />
