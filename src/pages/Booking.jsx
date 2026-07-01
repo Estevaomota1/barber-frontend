@@ -315,7 +315,9 @@ function formatAppointmentDate(dateStr) {
         {barbershop.address && (
           <p style={s.heroAddr}><span style={{ marginRight: '6px' }}>📍</span>{barbershop.address}</p>
         )}
-        <p style={s.heroHours}>🕐 {barbershop.opening_time} às {barbershop.closing_time}</p>
+        <p style={s.heroHours}>
+  🕐 {barbershop.working_hours?.open || barbershop.opening_time || '07:00'} às {barbershop.working_hours?.close || barbershop.closing_time || '18:00'}
+</p>
       </div>
 
       {/* Botão para alternar entre agendamento e meus agendamentos */}
