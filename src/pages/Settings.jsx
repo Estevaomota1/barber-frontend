@@ -378,6 +378,8 @@ export default function Settings() {
                       <PixKeyField barber={barber} onSave={(key) => savePixKey(barber.id, key)} />
                     </div>
                   )}
+
+                  <BarberBlocksSection barber={barber} headers={headers} API={API} />
                 </div>
               ))}
             </div>
@@ -549,7 +551,125 @@ function PixKeyField({ barber, onSave }) {
     </div>
   )
 }
+function BarberBlocksSection({ barber, headers, API }) {
+  const [blocks, setBlocks] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [type, setType] = useState('once')
+  const [date, setDate] = useState('')
+  const [dayOfWeek, setDayOfWeek] = useState('monday')
+  const [startTime, setStartTime] = useState('12:00')
+  const [endTime, setEndTime] = useState('13:00')
+  const [reason, setReason] = useState('')
+  const [saving, setSaving] = useState(false)
 
+  const dayLabels = {
+    monday: 'Segunda', tuesday: 'Terça', wednesday: 'Quarta',
+    thursday: 'Quinta', friday: 'Sexta', saturday: 'Sábado', sunday: 'Domingo',
+  }
+
+  const loadBlocks = () => {
+    setLoading(true)
+    fetch(`${API}/barbers/${barber.id}/blocks`, { headers })
+      .then(r => r.json())
+      .then(d => setBlocks(d.blocks || []))
+      .finally(() => setLoading(false))
+  }
+
+  useEffect(() => { loadBlocks() }, [barber.id])
+
+  const addBlock = async () => {
+    if (type === 'once' && !date) return alert('Escolha uma data.')
+    setSaving(true)
+    try {
+      const res = await fetch(`${API}/barbers/${barber.id}/blocks`, {
+        method: 'POST',
+        headers,
+        body: JSON.stringify({
+          type,
+          date: type === 'once' ? date : undefined,
+          day_of_week: type === 'recurring' ? dayOfWeek : undefined,
+          start_time: startTime,
+          end_time: endTime,
+          reason,
+        }),
+      })
+      const data = await res.json()
+      if (data.success) {
+        setReason('')
+        loadBlocks()
+      } else {
+        alert('Erro ao salvar bloqueio.')
+      }
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  const removeBlock = async (blockId) => {
+    if (!confirm('Remover este bloqueio?')) return
+    await fetch(`${API}/barbers/${barber.id}/blocks/${blockId}`, { method: 'DELETE', headers })
+    loadBlocks()
+  }
+
+  return (
+    <div style={{ background: '#09090b', border: '0.5px solid #27272a', borderRadius: '10px', padding: '16px', marginTop: '12px' }}>
+      <p style={{ color: '#fff', fontWeight: 600, fontSize: 14, marginBottom: 10 }}>
+        Bloqueios de horário — {barber.name}
+      </p>
+
+      <div style={{ display: 'flex', gap: 8, marginBottom: 10 }}>
+        <select value={type} onChange={e => setType(e.target.value)}
+          style={{ background: '#18181b', color: '#fff', border: '0.5px solid #27272a', borderRadius: 8, padding: 8 }}>
+          <option value="once">Data específica</option>
+          <option value="recurring">Toda semana</option>
+        </select>
+
+        {type === 'once' ? (
+          <input type="date" value={date} onChange={e => setDate(e.target.value)}
+            style={{ background: '#18181b', color: '#fff', border: '0.5px solid #27272a', borderRadius: 8, padding: 8 }} />
+        ) : (
+          <select value={dayOfWeek} onChange={e => setDayOfWeek(e.target.value)}
+            style={{ background: '#18181b', color: '#fff', border: '0.5px solid #27272a', borderRadius: 8, padding: 8 }}>
+            {Object.entries(dayLabels).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
+          </select>
+        )}
+
+        <input type="time" value={startTime} onChange={e => setStartTime(e.target.value)}
+          style={{ background: '#18181b', color: '#fff', border: '0.5px solid #27272a', borderRadius: 8, padding: 8 }} />
+        <input type="time" value={endTime} onChange={e => setEndTime(e.target.value)}
+          style={{ background: '#18181b', color: '#fff', border: '0.5px solid #27272a', borderRadius: 8, padding: 8 }} />
+      </div>
+
+      <input placeholder="Motivo (ex: almoço, folga)" value={reason} onChange={e => setReason(e.target.value)}
+        style={{ width: '100%', background: '#18181b', color: '#fff', border: '0.5px solid #27272a', borderRadius: 8, padding: 8, marginBottom: 10, boxSizing: 'border-box' }} />
+
+      <button onClick={addBlock} disabled={saving}
+        style={{ background: '#f59e0b', color: '#09090b', border: 'none', borderRadius: 8, padding: '8px 16px', fontWeight: 700, cursor: 'pointer' }}>
+        {saving ? 'Salvando...' : '+ Adicionar bloqueio'}
+      </button>
+
+      <div style={{ marginTop: 14 }}>
+        {loading ? (
+          <p style={{ color: '#71717a', fontSize: 13 }}>Carregando...</p>
+        ) : blocks.length === 0 ? (
+          <p style={{ color: '#71717a', fontSize: 13 }}>Nenhum bloqueio cadastrado.</p>
+        ) : blocks.map(b => (
+          <div key={b.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px 0', borderTop: '0.5px solid #27272a' }}>
+            <span style={{ color: '#a1a1aa', fontSize: 13 }}>
+              {b.date ? new Date(b.date + 'T12:00:00').toLocaleDateString('pt-BR') : dayLabels[b.day_of_week] + ' (toda semana)'}
+              {' • '}{b.start_time?.substring(0,5)}–{b.end_time?.substring(0,5)}
+              {b.reason ? ` • ${b.reason}` : ''}
+            </span>
+            <button onClick={() => removeBlock(b.id)}
+              style={{ background: 'none', border: 'none', color: '#f87171', cursor: 'pointer', fontSize: 12 }}>
+              Remover
+            </button>
+          </div>
+        ))}
+      </div>
+    </div>
+  )
+}
 const s = {
   page: { minHeight: '100vh', background: '#09090b' },
   container: { maxWidth: '700px', margin: '0 auto', padding: '32px 20px' },
