@@ -551,6 +551,7 @@ function PixKeyField({ barber, onSave }) {
     </div>
   )
 }
+
 function BarberBlocksSection({ barber, headers, API }) {
   const [blocks, setBlocks] = useState([])
   const [loading, setLoading] = useState(true)
@@ -612,56 +613,51 @@ function BarberBlocksSection({ barber, headers, API }) {
   }
 
   return (
-    <div style={{ background: '#09090b', border: '0.5px solid #27272a', borderRadius: '10px', padding: '16px', marginTop: '12px' }}>
-      <p style={{ color: '#fff', fontWeight: 600, fontSize: 14, marginBottom: 10 }}>
-        Bloqueios de horário — {barber.name}
-      </p>
+    <div style={s.blockCard}>
+      <p style={s.blockTitle}>Bloqueios de horário — {barber.name}</p>
 
-      <div style={{ display: 'flex', gap: 8, marginBottom: 10 }}>
-        <select value={type} onChange={e => setType(e.target.value)}
-          style={{ background: '#18181b', color: '#fff', border: '0.5px solid #27272a', borderRadius: 8, padding: 8 }}>
+      <div style={s.blockRow}>
+        <select value={type} onChange={e => setType(e.target.value)} style={s.blockSelect}>
           <option value="once">Data específica</option>
           <option value="recurring">Toda semana</option>
         </select>
 
         {type === 'once' ? (
-          <input type="date" value={date} onChange={e => setDate(e.target.value)}
-            style={{ background: '#18181b', color: '#fff', border: '0.5px solid #27272a', borderRadius: 8, padding: 8 }} />
+          <input type="date" value={date} onChange={e => setDate(e.target.value)} style={s.blockInput} />
         ) : (
-          <select value={dayOfWeek} onChange={e => setDayOfWeek(e.target.value)}
-            style={{ background: '#18181b', color: '#fff', border: '0.5px solid #27272a', borderRadius: 8, padding: 8 }}>
+          <select value={dayOfWeek} onChange={e => setDayOfWeek(e.target.value)} style={s.blockSelect}>
             {Object.entries(dayLabels).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
           </select>
         )}
 
-        <input type="time" value={startTime} onChange={e => setStartTime(e.target.value)}
-          style={{ background: '#18181b', color: '#fff', border: '0.5px solid #27272a', borderRadius: 8, padding: 8 }} />
-        <input type="time" value={endTime} onChange={e => setEndTime(e.target.value)}
-          style={{ background: '#18181b', color: '#fff', border: '0.5px solid #27272a', borderRadius: 8, padding: 8 }} />
+        <input type="time" value={startTime} onChange={e => setStartTime(e.target.value)} style={s.blockInput} />
+        <input type="time" value={endTime} onChange={e => setEndTime(e.target.value)} style={s.blockInput} />
       </div>
 
-      <input placeholder="Motivo (ex: almoço, folga)" value={reason} onChange={e => setReason(e.target.value)}
-        style={{ width: '100%', background: '#18181b', color: '#fff', border: '0.5px solid #27272a', borderRadius: 8, padding: 8, marginBottom: 10, boxSizing: 'border-box' }} />
+      <input
+        placeholder="Motivo (ex: almoço, folga)"
+        value={reason}
+        onChange={e => setReason(e.target.value)}
+        style={s.blockReasonInput}
+      />
 
-      <button onClick={addBlock} disabled={saving}
-        style={{ background: '#f59e0b', color: '#09090b', border: 'none', borderRadius: 8, padding: '8px 16px', fontWeight: 700, cursor: 'pointer' }}>
+      <button onClick={addBlock} disabled={saving} style={s.blockAddBtn}>
         {saving ? 'Salvando...' : '+ Adicionar bloqueio'}
       </button>
 
-      <div style={{ marginTop: 14 }}>
+      <div style={{ marginTop: '14px' }}>
         {loading ? (
-          <p style={{ color: '#71717a', fontSize: 13 }}>Carregando...</p>
+          <p style={{ color: '#71717a', fontSize: '13px' }}>Carregando...</p>
         ) : blocks.length === 0 ? (
-          <p style={{ color: '#71717a', fontSize: 13 }}>Nenhum bloqueio cadastrado.</p>
+          <p style={{ color: '#71717a', fontSize: '13px' }}>Nenhum bloqueio cadastrado.</p>
         ) : blocks.map(b => (
-          <div key={b.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px 0', borderTop: '0.5px solid #27272a' }}>
-            <span style={{ color: '#a1a1aa', fontSize: 13 }}>
+          <div key={b.id} style={s.blockListItem}>
+            <span style={s.blockListText}>
               {b.date ? new Date(b.date + 'T12:00:00').toLocaleDateString('pt-BR') : dayLabels[b.day_of_week] + ' (toda semana)'}
-              {' • '}{b.start_time?.substring(0,5)}–{b.end_time?.substring(0,5)}
+              {' • '}{b.start_time?.substring(0, 5)}–{b.end_time?.substring(0, 5)}
               {b.reason ? ` • ${b.reason}` : ''}
             </span>
-            <button onClick={() => removeBlock(b.id)}
-              style={{ background: 'none', border: 'none', color: '#f87171', cursor: 'pointer', fontSize: 12 }}>
+            <button onClick={() => removeBlock(b.id)} style={s.blockRemoveBtn}>
               Remover
             </button>
           </div>
@@ -670,6 +666,7 @@ function BarberBlocksSection({ barber, headers, API }) {
     </div>
   )
 }
+
 const s = {
   page: { minHeight: '100vh', background: '#09090b' },
   container: { maxWidth: '700px', margin: '0 auto', padding: '32px 20px' },
@@ -824,5 +821,88 @@ const s = {
     cursor: 'pointer',
     display: 'flex',
     alignItems: 'center',
+  },
+
+  blockCard: {
+    background: '#09090b',
+    border: '0.5px solid #27272a',
+    borderRadius: '10px',
+    padding: '16px',
+    marginTop: '12px',
+  },
+  blockTitle: {
+    color: '#fff',
+    fontWeight: 600,
+    fontSize: '14px',
+    marginBottom: '12px',
+  },
+  blockRow: {
+    display: 'flex',
+    flexWrap: 'wrap',
+    gap: '8px',
+    marginBottom: '10px',
+  },
+  blockSelect: {
+    background: '#18181b',
+    color: '#fff',
+    border: '0.5px solid #27272a',
+    borderRadius: '8px',
+    padding: '8px',
+    fontSize: '13px',
+    flex: '1 1 120px',
+    minWidth: '110px',
+  },
+  blockInput: {
+    background: '#18181b',
+    color: '#fff',
+    border: '0.5px solid #27272a',
+    borderRadius: '8px',
+    padding: '8px',
+    fontSize: '13px',
+    flex: '1 1 110px',
+    minWidth: '100px',
+    boxSizing: 'border-box',
+  },
+  blockReasonInput: {
+    width: '100%',
+    background: '#18181b',
+    color: '#fff',
+    border: '0.5px solid #27272a',
+    borderRadius: '8px',
+    padding: '8px 12px',
+    fontSize: '13px',
+    marginBottom: '10px',
+    boxSizing: 'border-box',
+  },
+  blockAddBtn: {
+    background: '#f59e0b',
+    color: '#09090b',
+    border: 'none',
+    borderRadius: '8px',
+    padding: '8px 16px',
+    fontSize: '13px',
+    fontWeight: '700',
+    cursor: 'pointer',
+  },
+  blockListItem: {
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    gap: '8px',
+    padding: '8px 0',
+    borderTop: '0.5px solid #27272a',
+    flexWrap: 'wrap',
+  },
+  blockListText: {
+    color: '#a1a1aa',
+    fontSize: '13px',
+  },
+  blockRemoveBtn: {
+    background: 'none',
+    border: 'none',
+    color: '#f87171',
+    cursor: 'pointer',
+    fontSize: '12px',
+    whiteSpace: 'nowrap',
   },
 }
