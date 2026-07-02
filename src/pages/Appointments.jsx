@@ -28,6 +28,14 @@ function combineDatetime(datePart, timePart) {
   if (!datePart || !timePart) return ''
   return `${datePart} ${timePart}:00`
 }
+function formatDuration(minutes) {
+  if (!minutes) return '-'
+  const h = Math.floor(minutes / 60)
+  const m = minutes % 60
+  if (h === 0) return `${m}min`
+  if (m === 0) return `${h}h`
+  return `${h}h${String(m).padStart(2, '0')}`
+}
 
 export default function Appointments() {
   const [appointments, setAppointments] = useState([])
@@ -225,7 +233,7 @@ export default function Appointments() {
               {/* Preview do serviço */}
               {selectedService && (
                 <div style={{ background: 'rgba(245,158,11,0.06)', border: '1px solid rgba(245,158,11,0.15)', borderRadius: '8px', padding: '10px 14px', fontSize: '13px', color: '#a1a1aa', display: 'flex', gap: '16px' }}>
-                  <span>⏱ {selectedService.duration} min</span>
+                  <span>⏱ {formatDuration(selectedService.duration)}</span>
                   <span>💰 R$ {Number(selectedService.price).toFixed(2)}</span>
                 </div>
               )}
@@ -298,7 +306,7 @@ export default function Appointments() {
             </form>
           </div>
         )}
-
+        
         {/* Filter */}
         <div style={styles.filterContainer}>
           <div style={styles.filterHeader}>
