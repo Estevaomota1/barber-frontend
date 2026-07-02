@@ -3,6 +3,16 @@ import Navbar from '../components/Navbar'
 
 const API = 'https://barber-saas-1-fpjl.onrender.com/api'
 
+function formatDuration(minutes) {
+  if (!minutes) return '-'
+  const m = Number(minutes)
+  const h = Math.floor(m / 60)
+  const min = m % 60
+  if (h === 0) return `${min}min`
+  if (min === 0) return `${h}h`
+  return `${h}h${String(min).padStart(2, '0')}`
+}
+
 export default function Services() {
   const [services, setServices] = useState([])
   const [loading, setLoading] = useState(true)
@@ -129,7 +139,7 @@ export default function Services() {
                   <span style={s.cardPrice}>R$ {Number(sv.price).toFixed(2)}</span>
                   <span style={s.cardDuration}>
                     <i className="ti ti-clock" style={{ marginRight: '4px' }}></i>
-                    {sv.duration} min
+                    {formatDuration(sv.duration)}
                   </span>
                 </div>
                 {!sv.active && <span style={s.inactiveBadge}>Inativo</span>}
