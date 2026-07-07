@@ -71,7 +71,7 @@ export default function Login() {
           </form>
         </div>
 
-        <p style={s.footer}>© 2026 BarberSaaS. Todos os direitos reservados.</p>
+        <p style={s.footer}>© 2026 BarberPro. Todos os direitos reservados.</p>
       </div>
     </div>
   )
