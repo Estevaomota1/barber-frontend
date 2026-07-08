@@ -13,7 +13,7 @@ export default function Settings() {
     working_hours: {
       open: '07:00',
       close: '18:00',
-      working_days: [], // lista de dias da semana (ex: ['monday', 'tuesday', ...])
+      working_days: [],
     },
   })
 
@@ -34,9 +34,7 @@ export default function Settings() {
     fetch(`${API}/my-barbershop`, { headers })
       .then((r) => r.json())
       .then((d) => {
-        // Se o backend ainda retornar o formato antigo, convertemos
         let workingHours = d.working_hours || {}
-        // Se tiver 'monday' (formato antigo), convertemos para o novo
         if (workingHours.monday !== undefined) {
           const days = []
           const weekdays = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday']
@@ -49,7 +47,6 @@ export default function Settings() {
             working_days: days,
           }
         } else {
-          // Já está no novo formato
           workingHours = {
             open: workingHours.open || '07:00',
             close: workingHours.close || '18:00',
@@ -235,7 +232,6 @@ export default function Settings() {
 
           <h3 style={{ color: '#fff', marginTop: 20, marginBottom: 15 }}>Horário de Funcionamento</h3>
 
-          {/* Horário padrão (único) */}
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '16px' }}>
             <label style={{ color: '#fff', width: '100px' }}>Horário padrão</label>
             <input
@@ -269,7 +265,6 @@ export default function Settings() {
             />
           </div>
 
-          {/* Dias de trabalho (checkboxes) */}
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: '12px', marginBottom: '20px' }}>
             {[
               ['monday', 'Seg'],
@@ -303,7 +298,6 @@ export default function Settings() {
             ))}
           </div>
 
-          {/* Botão Salvar */}
           <button onClick={save} style={s.saveBtn}>
             <i
               className={`ti ${saved ? 'ti-check' : 'ti-device-floppy'}`}
@@ -500,7 +494,6 @@ function PixKeyField({ barber, onSave }) {
   const [key, setKey] = useState(barber.pix_key || '')
   const [saved, setSaved] = useState(false)
 
-  // Sincroniza quando o barber.pix_key muda no pai
   useEffect(() => {
     setKey(barber.pix_key || '')
   }, [barber.pix_key])
@@ -558,8 +551,8 @@ function BarberBlocksSection({ barber, headers, API }) {
   const [type, setType] = useState('once')
   const [date, setDate] = useState('')
   const [dayOfWeek, setDayOfWeek] = useState('monday')
-  const [startTime, setStartTime] = useState('12:00')
-  const [endTime, setEndTime] = useState('13:00')
+  const [startTime, setStartTime] = useState(null)
+  const [endTime, setEndTime] = useState(null)
   const [reason, setReason] = useState('')
   const [saving, setSaving] = useState(false)
 
@@ -567,6 +560,40 @@ function BarberBlocksSection({ barber, headers, API }) {
     monday: 'Segunda', tuesday: 'Terça', wednesday: 'Quarta',
     thursday: 'Quinta', friday: 'Sexta', saturday: 'Sábado', sunday: 'Domingo',
   }
+  const dayShort = {
+    monday: 'SEG', tuesday: 'TER', wednesday: 'QUA',
+    thursday: 'QUI', friday: 'SEX', saturday: 'SÁB', sunday: 'DOM',
+  }
+
+  const getNext14Days = () => {
+    const days = []
+    const today = new Date()
+    for (let i = 0; i < 14; i++) {
+      const d = new Date(today)
+      d.setDate(today.getDate() + i)
+      days.push(d)
+    }
+    return days
+  }
+  const formatDateValue = (d) =>
+    d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0')
+
+  const buildSlots = () => {
+    const slots = []
+    let h = 6, m = 0
+    while (h < 22) {
+      slots.push(`${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`)
+      m += 30
+      if (m === 60) { m = 0; h++ }
+    }
+    return slots
+  }
+  const allSlots = buildSlots()
+  const periods = [
+    { label: 'Manhã', slots: allSlots.filter(t => t < '12:00') },
+    { label: 'Tarde', slots: allSlots.filter(t => t >= '12:00' && t < '18:00') },
+    { label: 'Noite', slots: allSlots.filter(t => t >= '18:00') },
+  ]
 
   const loadBlocks = () => {
     setLoading(true)
@@ -578,8 +605,23 @@ function BarberBlocksSection({ barber, headers, API }) {
 
   useEffect(() => { loadBlocks() }, [barber.id])
 
+  const handleSlotClick = (slot) => {
+    if (!startTime || (startTime && endTime)) {
+      setStartTime(slot)
+      setEndTime(null)
+    } else if (slot > startTime) {
+      setEndTime(slot)
+    } else {
+      setStartTime(slot)
+      setEndTime(null)
+    }
+  }
+
+  const isInRange = (slot) => startTime && endTime && slot > startTime && slot < endTime
+
   const addBlock = async () => {
     if (type === 'once' && !date) return alert('Escolha uma data.')
+    if (!startTime || !endTime) return alert('Selecione o horário de início e fim clicando nos chips.')
     setSaving(true)
     try {
       const res = await fetch(`${API}/barbers/${barber.id}/blocks`, {
@@ -597,6 +639,8 @@ function BarberBlocksSection({ barber, headers, API }) {
       const data = await res.json()
       if (data.success) {
         setReason('')
+        setStartTime(null)
+        setEndTime(null)
         loadBlocks()
       } else {
         alert('Erro ao salvar bloqueio.')
@@ -616,36 +660,96 @@ function BarberBlocksSection({ barber, headers, API }) {
     <div style={s.blockCard}>
       <p style={s.blockTitle}>Bloqueios de horário — {barber.name}</p>
 
-      <div style={s.blockRow}>
-        <select value={type} onChange={e => setType(e.target.value)} style={s.blockSelect}>
-          <option value="once">Data específica</option>
-          <option value="recurring">Toda semana</option>
-        </select>
-
-        {type === 'once' ? (
-          <input type="date" value={date} onChange={e => setDate(e.target.value)} style={s.blockInput} />
-        ) : (
-          <select value={dayOfWeek} onChange={e => setDayOfWeek(e.target.value)} style={s.blockSelect}>
-            {Object.entries(dayLabels).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
-          </select>
-        )}
-
-        <input type="time" value={startTime} onChange={e => setStartTime(e.target.value)} style={s.blockInput} />
-        <input type="time" value={endTime} onChange={e => setEndTime(e.target.value)} style={s.blockInput} />
+      <div style={s.blockTypeTabs}>
+        <button
+          onClick={() => setType('once')}
+          style={{ ...s.blockTypeTab, ...(type === 'once' ? s.blockTypeTabActive : {}) }}
+        >
+          Data específica
+        </button>
+        <button
+          onClick={() => setType('recurring')}
+          style={{ ...s.blockTypeTab, ...(type === 'recurring' ? s.blockTypeTabActive : {}) }}
+        >
+          Toda semana
+        </button>
       </div>
+
+      {type === 'once' ? (
+        <div style={s.blockDateTabsWrap}>
+          {getNext14Days().map((d, i) => {
+            const value = formatDateValue(d)
+            return (
+              <button
+                key={i}
+                onClick={() => setDate(value)}
+                style={{ ...s.blockDateTab, ...(date === value ? s.blockDateTabActive : {}) }}
+              >
+                <span>{d.toLocaleDateString('pt-BR', { weekday: 'short' }).replace('.', '').toUpperCase()}</span>
+                <span>{String(d.getDate()).padStart(2, '0')}/{String(d.getMonth() + 1).padStart(2, '0')}</span>
+              </button>
+            )
+          })}
+        </div>
+      ) : (
+        <div style={s.blockDateTabsWrap}>
+          {Object.entries(dayLabels).map(([k, v]) => (
+            <button
+              key={k}
+              onClick={() => setDayOfWeek(k)}
+              style={{ ...s.blockDateTab, ...(dayOfWeek === k ? s.blockDateTabActive : {}) }}
+            >
+              <span>{v}</span>
+            </button>
+          ))}
+        </div>
+      )}
+
+      {periods.map(period => (
+        <div key={period.label}>
+          <p style={s.blockSectionLabel}>{period.label}</p>
+          <div style={s.blockChipGrid}>
+            {period.slots.map(slot => {
+              const isStart = slot === startTime
+              const isEnd = slot === endTime
+              const inRange = isInRange(slot)
+              return (
+                <button
+                  key={slot}
+                  onClick={() => handleSlotClick(slot)}
+                  style={{
+                    ...s.blockChip,
+                    ...(isStart ? s.blockChipStart : {}),
+                    ...(isEnd ? s.blockChipEnd : {}),
+                    ...(inRange ? s.blockChipInRange : {}),
+                  }}
+                >
+                  {slot}
+                </button>
+              )
+            })}
+          </div>
+        </div>
+      ))}
+
+      {startTime && (
+        <div style={s.blockRangePreview}>
+          🔒 Bloqueando de {startTime} {endTime ? `até ${endTime}` : '— clique no horário final'}
+        </div>
+      )}
 
       <input
         placeholder="Motivo (ex: almoço, folga)"
         value={reason}
         onChange={e => setReason(e.target.value)}
-        style={s.blockReasonInput}
+        style={{ ...s.blockReasonInput, marginTop: '14px' }}
       />
 
       <button onClick={addBlock} disabled={saving} style={s.blockAddBtn}>
         {saving ? 'Salvando...' : '+ Adicionar bloqueio'}
       </button>
 
-      <div style={{ marginTop: '14px' }}>
+      <div style={{ marginTop: '18px' }}>
         {loading ? (
           <p style={{ color: '#71717a', fontSize: '13px' }}>Carregando...</p>
         ) : blocks.length === 0 ? (
@@ -823,6 +927,7 @@ const s = {
     alignItems: 'center',
   },
 
+  // Estilos originais de bloqueio (mantidos para compatibilidade com a lista)
   blockCard: {
     background: '#09090b',
     border: '0.5px solid #27272a',
@@ -904,5 +1009,109 @@ const s = {
     cursor: 'pointer',
     fontSize: '12px',
     whiteSpace: 'nowrap',
+  },
+
+  // Novos estilos para o seletor de chips (bloqueios)
+  blockTypeTabs: {
+    display: 'flex',
+    gap: '8px',
+    marginBottom: '14px',
+  },
+  blockTypeTab: {
+    flex: 1,
+    padding: '10px',
+    borderRadius: '10px',
+    border: '1px solid #27272a',
+    background: '#18181b',
+    color: '#a1a1aa',
+    fontSize: '13px',
+    fontWeight: '600',
+    cursor: 'pointer',
+    textAlign: 'center',
+  },
+  blockTypeTabActive: {
+    borderColor: '#f59e0b',
+    background: 'rgba(245,158,11,0.1)',
+    color: '#f59e0b',
+  },
+  blockDateTabsWrap: {
+    display: 'flex',
+    gap: '6px',
+    overflowX: 'auto',
+    paddingBottom: '8px',
+    marginBottom: '14px',
+    scrollbarWidth: 'none',
+  },
+  blockDateTab: {
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    gap: '2px',
+    padding: '8px 12px',
+    borderRadius: '10px',
+    border: '1px solid #27272a',
+    background: '#18181b',
+    color: '#71717a',
+    fontSize: '11px',
+    fontWeight: '600',
+    cursor: 'pointer',
+    minWidth: '56px',
+    flexShrink: 0,
+  },
+  blockDateTabActive: {
+    borderColor: '#f59e0b',
+    background: 'rgba(245,158,11,0.1)',
+    color: '#f59e0b',
+  },
+  blockSectionLabel: {
+    fontSize: '12px',
+    color: '#71717a',
+    fontWeight: '600',
+    margin: '14px 0 8px',
+    textTransform: 'uppercase',
+    letterSpacing: '0.04em',
+  },
+  blockChipGrid: {
+    display: 'grid',
+    gridTemplateColumns: 'repeat(auto-fill, minmax(72px, 1fr))',
+    gap: '8px',
+  },
+  blockChip: {
+    padding: '10px 8px',
+    borderRadius: '10px',
+    border: '1px solid #27272a',
+    background: '#18181b',
+    color: '#e4e4e7',
+    fontSize: '13px',
+    fontWeight: '500',
+    cursor: 'pointer',
+    textAlign: 'center',
+  },
+  blockChipStart: {
+    borderColor: '#f59e0b',
+    background: 'rgba(245,158,11,0.15)',
+    color: '#f59e0b',
+    fontWeight: '700',
+  },
+  blockChipEnd: {
+    borderColor: '#f59e0b',
+    background: 'rgba(245,158,11,0.15)',
+    color: '#f59e0b',
+    fontWeight: '700',
+  },
+  blockChipInRange: {
+    borderColor: 'rgba(245,158,11,0.4)',
+    background: 'rgba(245,158,11,0.06)',
+    color: '#fbbf24',
+  },
+  blockRangePreview: {
+    marginTop: '12px',
+    padding: '10px 14px',
+    background: 'rgba(245,158,11,0.08)',
+    border: '1px solid rgba(245,158,11,0.2)',
+    borderRadius: '8px',
+    fontSize: '13px',
+    color: '#fbbf24',
+    fontWeight: '600',
   },
 }

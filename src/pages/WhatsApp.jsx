@@ -182,9 +182,9 @@ export default function WhatsApp() {
           )}
         </div>
 
-        {/* Info cards ... */}
       </div>
     </div>
+     
   )
 }
 const styles = {
