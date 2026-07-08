@@ -373,7 +373,13 @@ export default function Settings() {
                     </div>
                   )}
 
-                  <BarberBlocksSection barber={barber} headers={headers} API={API} />
+                  {/* Passando workingHours para o componente de bloqueios */}
+                  <BarberBlocksSection
+                    barber={barber}
+                    headers={headers}
+                    API={API}
+                    workingHours={form.working_hours}
+                  />
                 </div>
               ))}
             </div>
@@ -545,7 +551,8 @@ function PixKeyField({ barber, onSave }) {
   )
 }
 
-function BarberBlocksSection({ barber, headers, API }) {
+function BarberBlocksSection({ barber, headers, API, workingHours }) {
+  const [expanded, setExpanded] = useState(false)
   const [blocks, setBlocks] = useState([])
   const [loading, setLoading] = useState(true)
   const [type, setType] = useState('once')
@@ -555,14 +562,11 @@ function BarberBlocksSection({ barber, headers, API }) {
   const [endTime, setEndTime] = useState(null)
   const [reason, setReason] = useState('')
   const [saving, setSaving] = useState(false)
+  const [openPeriod, setOpenPeriod] = useState('Manhã')
 
   const dayLabels = {
     monday: 'Segunda', tuesday: 'Terça', wednesday: 'Quarta',
     thursday: 'Quinta', friday: 'Sexta', saturday: 'Sábado', sunday: 'Domingo',
-  }
-  const dayShort = {
-    monday: 'SEG', tuesday: 'TER', wednesday: 'QUA',
-    thursday: 'QUI', friday: 'SEX', saturday: 'SÁB', sunday: 'DOM',
   }
 
   const getNext14Days = () => {
@@ -578,10 +582,15 @@ function BarberBlocksSection({ barber, headers, API }) {
   const formatDateValue = (d) =>
     d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0')
 
+  // Usa o expediente real da barbearia
+  const openHour = workingHours?.open || '07:00'
+  const closeHour = workingHours?.close || '18:00'
+
   const buildSlots = () => {
     const slots = []
-    let h = 6, m = 0
-    while (h < 22) {
+    let [h, m] = openHour.split(':').map(Number)
+    const [endH, endM] = closeHour.split(':').map(Number)
+    while (h < endH || (h === endH && m < endM)) {
       slots.push(`${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`)
       m += 30
       if (m === 60) { m = 0; h++ }
@@ -593,7 +602,7 @@ function BarberBlocksSection({ barber, headers, API }) {
     { label: 'Manhã', slots: allSlots.filter(t => t < '12:00') },
     { label: 'Tarde', slots: allSlots.filter(t => t >= '12:00' && t < '18:00') },
     { label: 'Noite', slots: allSlots.filter(t => t >= '18:00') },
-  ]
+  ].filter(p => p.slots.length > 0)
 
   const loadBlocks = () => {
     setLoading(true)
@@ -603,7 +612,7 @@ function BarberBlocksSection({ barber, headers, API }) {
       .finally(() => setLoading(false))
   }
 
-  useEffect(() => { loadBlocks() }, [barber.id])
+  useEffect(() => { if (expanded) loadBlocks() }, [barber.id, expanded])
 
   const handleSlotClick = (slot) => {
     if (!startTime || (startTime && endTime)) {
@@ -658,115 +667,136 @@ function BarberBlocksSection({ barber, headers, API }) {
 
   return (
     <div style={s.blockCard}>
-      <p style={s.blockTitle}>Bloqueios de horário — {barber.name}</p>
-
-      <div style={s.blockTypeTabs}>
-        <button
-          onClick={() => setType('once')}
-          style={{ ...s.blockTypeTab, ...(type === 'once' ? s.blockTypeTabActive : {}) }}
-        >
-          Data específica
-        </button>
-        <button
-          onClick={() => setType('recurring')}
-          style={{ ...s.blockTypeTab, ...(type === 'recurring' ? s.blockTypeTabActive : {}) }}
-        >
-          Toda semana
-        </button>
+      <div style={s.blockCardHeader} onClick={() => setExpanded(!expanded)}>
+        <p style={{ ...s.blockTitle, margin: 0 }}>Bloqueios de horário — {barber.name}</p>
+        <span style={s.blockCollapseIcon}>{expanded ? '▲ Fechar' : '▼ Abrir'}</span>
       </div>
 
-      {type === 'once' ? (
-        <div style={s.blockDateTabsWrap}>
-          {getNext14Days().map((d, i) => {
-            const value = formatDateValue(d)
+      {expanded && (
+        <div style={{ marginTop: '14px' }}>
+          {/* Tipo: data específica ou toda semana */}
+          <div style={s.blockTypeTabs}>
+            <button
+              onClick={() => setType('once')}
+              style={{ ...s.blockTypeTab, ...(type === 'once' ? s.blockTypeTabActive : {}) }}
+            >
+              Data específica
+            </button>
+            <button
+              onClick={() => setType('recurring')}
+              style={{ ...s.blockTypeTab, ...(type === 'recurring' ? s.blockTypeTabActive : {}) }}
+            >
+              Toda semana
+            </button>
+          </div>
+
+          {/* Seletor de data ou dia da semana */}
+          {type === 'once' ? (
+            <div style={s.blockDateTabsWrap}>
+              {getNext14Days().map((d, i) => {
+                const value = formatDateValue(d)
+                return (
+                  <button
+                    key={i}
+                    onClick={() => setDate(value)}
+                    style={{ ...s.blockDateTab, ...(date === value ? s.blockDateTabActive : {}) }}
+                  >
+                    <span>{d.toLocaleDateString('pt-BR', { weekday: 'short' }).replace('.', '').toUpperCase()}</span>
+                    <span>{String(d.getDate()).padStart(2, '0')}/{String(d.getMonth() + 1).padStart(2, '0')}</span>
+                  </button>
+                )
+              })}
+            </div>
+          ) : (
+            <div style={s.blockDateTabsWrap}>
+              {Object.entries(dayLabels).map(([k, v]) => (
+                <button
+                  key={k}
+                  onClick={() => setDayOfWeek(k)}
+                  style={{ ...s.blockDateTab, ...(dayOfWeek === k ? s.blockDateTabActive : {}) }}
+                >
+                  <span>{v}</span>
+                </button>
+              ))}
+            </div>
+          )}
+
+          {/* Períodos em accordion */}
+          {periods.map(period => {
+            const isOpen = openPeriod === period.label
             return (
-              <button
-                key={i}
-                onClick={() => setDate(value)}
-                style={{ ...s.blockDateTab, ...(date === value ? s.blockDateTabActive : {}) }}
-              >
-                <span>{d.toLocaleDateString('pt-BR', { weekday: 'short' }).replace('.', '').toUpperCase()}</span>
-                <span>{String(d.getDate()).padStart(2, '0')}/{String(d.getMonth() + 1).padStart(2, '0')}</span>
-              </button>
+              <div key={period.label}>
+                <div
+                  style={{ ...s.blockPeriodHeader, ...(isOpen ? s.blockPeriodHeaderActive : {}) }}
+                  onClick={() => setOpenPeriod(isOpen ? null : period.label)}
+                >
+                  <span style={s.blockPeriodLabel}>{period.label}</span>
+                  <span style={s.blockPeriodChevron}>{isOpen ? '▲' : '▼'}</span>
+                </div>
+                {isOpen && (
+                  <div style={{ ...s.blockChipGrid, marginTop: '8px', marginBottom: '4px' }}>
+                    {period.slots.map(slot => {
+                      const isStart = slot === startTime
+                      const isEnd = slot === endTime
+                      const inRange = isInRange(slot)
+                      return (
+                        <button
+                          key={slot}
+                          onClick={() => handleSlotClick(slot)}
+                          style={{
+                            ...s.blockChip,
+                            ...(isStart ? s.blockChipStart : {}),
+                            ...(isEnd ? s.blockChipEnd : {}),
+                            ...(inRange ? s.blockChipInRange : {}),
+                          }}
+                        >
+                          {slot}
+                        </button>
+                      )
+                    })}
+                  </div>
+                )}
+              </div>
             )
           })}
-        </div>
-      ) : (
-        <div style={s.blockDateTabsWrap}>
-          {Object.entries(dayLabels).map(([k, v]) => (
-            <button
-              key={k}
-              onClick={() => setDayOfWeek(k)}
-              style={{ ...s.blockDateTab, ...(dayOfWeek === k ? s.blockDateTabActive : {}) }}
-            >
-              <span>{v}</span>
-            </button>
-          ))}
-        </div>
-      )}
 
-      {periods.map(period => (
-        <div key={period.label}>
-          <p style={s.blockSectionLabel}>{period.label}</p>
-          <div style={s.blockChipGrid}>
-            {period.slots.map(slot => {
-              const isStart = slot === startTime
-              const isEnd = slot === endTime
-              const inRange = isInRange(slot)
-              return (
-                <button
-                  key={slot}
-                  onClick={() => handleSlotClick(slot)}
-                  style={{
-                    ...s.blockChip,
-                    ...(isStart ? s.blockChipStart : {}),
-                    ...(isEnd ? s.blockChipEnd : {}),
-                    ...(inRange ? s.blockChipInRange : {}),
-                  }}
-                >
-                  {slot}
+          {startTime && (
+            <div style={s.blockRangePreview}>
+              🔒 Bloqueando de {startTime} {endTime ? `até ${endTime}` : '— clique no horário final'}
+            </div>
+          )}
+
+          <input
+            placeholder="Motivo (ex: almoço, folga)"
+            value={reason}
+            onChange={e => setReason(e.target.value)}
+            style={{ ...s.blockReasonInput, marginTop: '14px' }}
+          />
+
+          <button onClick={addBlock} disabled={saving} style={s.blockAddBtn}>
+            {saving ? 'Salvando...' : '+ Adicionar bloqueio'}
+          </button>
+
+          <div style={{ marginTop: '18px' }}>
+            {loading ? (
+              <p style={{ color: '#71717a', fontSize: '13px' }}>Carregando...</p>
+            ) : blocks.length === 0 ? (
+              <p style={{ color: '#71717a', fontSize: '13px' }}>Nenhum bloqueio cadastrado.</p>
+            ) : blocks.map(b => (
+              <div key={b.id} style={s.blockListItem}>
+                <span style={s.blockListText}>
+                  {b.date ? new Date(b.date + 'T12:00:00').toLocaleDateString('pt-BR') : dayLabels[b.day_of_week] + ' (toda semana)'}
+                  {' • '}{b.start_time?.substring(0, 5)}–{b.end_time?.substring(0, 5)}
+                  {b.reason ? ` • ${b.reason}` : ''}
+                </span>
+                <button onClick={() => removeBlock(b.id)} style={s.blockRemoveBtn}>
+                  Remover
                 </button>
-              )
-            })}
+              </div>
+            ))}
           </div>
-        </div>
-      ))}
-
-      {startTime && (
-        <div style={s.blockRangePreview}>
-          🔒 Bloqueando de {startTime} {endTime ? `até ${endTime}` : '— clique no horário final'}
         </div>
       )}
-
-      <input
-        placeholder="Motivo (ex: almoço, folga)"
-        value={reason}
-        onChange={e => setReason(e.target.value)}
-        style={{ ...s.blockReasonInput, marginTop: '14px' }}
-      />
-
-      <button onClick={addBlock} disabled={saving} style={s.blockAddBtn}>
-        {saving ? 'Salvando...' : '+ Adicionar bloqueio'}
-      </button>
-
-      <div style={{ marginTop: '18px' }}>
-        {loading ? (
-          <p style={{ color: '#71717a', fontSize: '13px' }}>Carregando...</p>
-        ) : blocks.length === 0 ? (
-          <p style={{ color: '#71717a', fontSize: '13px' }}>Nenhum bloqueio cadastrado.</p>
-        ) : blocks.map(b => (
-          <div key={b.id} style={s.blockListItem}>
-            <span style={s.blockListText}>
-              {b.date ? new Date(b.date + 'T12:00:00').toLocaleDateString('pt-BR') : dayLabels[b.day_of_week] + ' (toda semana)'}
-              {' • '}{b.start_time?.substring(0, 5)}–{b.end_time?.substring(0, 5)}
-              {b.reason ? ` • ${b.reason}` : ''}
-            </span>
-            <button onClick={() => removeBlock(b.id)} style={s.blockRemoveBtn}>
-              Remover
-            </button>
-          </div>
-        ))}
-      </div>
     </div>
   )
 }
@@ -927,7 +957,6 @@ const s = {
     alignItems: 'center',
   },
 
-  // Estilos originais de bloqueio (mantidos para compatibilidade com a lista)
   blockCard: {
     background: '#09090b',
     border: '0.5px solid #27272a',
@@ -1011,7 +1040,7 @@ const s = {
     whiteSpace: 'nowrap',
   },
 
-  // Novos estilos para o seletor de chips (bloqueios)
+  // Estilos do seletor de chips
   blockTypeTabs: {
     display: 'flex',
     gap: '8px',
@@ -1113,5 +1142,43 @@ const s = {
     fontSize: '13px',
     color: '#fbbf24',
     fontWeight: '600',
+  },
+
+  // Novos estilos para accordion mobile
+  blockCardHeader: {
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    cursor: 'pointer',
+  },
+  blockCollapseIcon: {
+    color: '#71717a',
+    fontSize: '13px',
+  },
+  blockPeriodHeader: {
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    padding: '10px 12px',
+    background: '#18181b',
+    border: '1px solid #27272a',
+    borderRadius: '8px',
+    cursor: 'pointer',
+    marginTop: '8px',
+  },
+  blockPeriodHeaderActive: {
+    borderColor: 'rgba(245,158,11,0.4)',
+    background: 'rgba(245,158,11,0.06)',
+  },
+  blockPeriodLabel: {
+    fontSize: '12px',
+    color: '#a1a1aa',
+    fontWeight: '600',
+    textTransform: 'uppercase',
+    letterSpacing: '0.04em',
+  },
+  blockPeriodChevron: {
+    color: '#71717a',
+    fontSize: '12px',
   },
 }
