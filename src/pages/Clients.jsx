@@ -135,8 +135,8 @@ export default function Clients() {
         {/* Header Section */}
         <div style={styles.header}>
           <div>
-            <h1 style={styles.pageTitle}>Clientes & Agendamentos</h1>
-            <p style={styles.pageSubtitle}>Gerencie sua base de clientes e horários marcados</p>
+            <h1 style={styles.pageTitle}>Clientes</h1>
+            <p style={styles.pageSubtitle}>Gerencie sua base de clientes</p>
           </div>
           <button 
             onClick={() => showForm ? handleCancel() : setShowForm(true)} 
