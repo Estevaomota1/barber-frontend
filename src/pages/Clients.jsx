@@ -145,7 +145,7 @@ export default function Clients() {
             {showForm ? (
               <><i className="ti ti-x" style={{ marginRight: '6px' }}></i> Cancelar</>
             ) : (
-              <><i className="ti ti-plus" style={{ marginRight: '6px' }}></i> Novo Agendamento</>
+              <><i className="ti ti-plus" style={{ marginRight: '6px' }}></i> Novo Cadastro</>
             )}
           </button>
         </div>
@@ -154,7 +154,7 @@ export default function Clients() {
         {showForm && (
           <div style={styles.card}>
             <h2 style={styles.cardTitle}>
-              {editing ? 'Editar Informações' : 'Cadastrar Novo Agendamento'}
+              {editing ? 'Editar Informações' : 'Cadastrar Novo Cliente'}
             </h2>
             
             {error && <div style={styles.errorAlert}>{error}</div>}
