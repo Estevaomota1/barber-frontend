@@ -97,7 +97,7 @@ function formatAppointmentDate(dateStr) {
         setCancelToken(data.cancel_token)
         setSuccess(true)
       } else {
-        alert('Erro ao agendar, POR FAVOR!: ' + (data.error || data.message || 'Tente novamente.'))
+        alert('Este horário já está ocupado. Escolha outro horário ' + (data.error || data.message || 'Tente novamente.'))
       }
     } catch(e) {
       console.error(e)
