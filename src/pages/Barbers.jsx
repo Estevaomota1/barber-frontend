@@ -293,308 +293,51 @@ export default function Barbers() {
   )
 }
 
-const styles = {
-  pageWrapper: {
-    minHeight: '100vh',
-    background: '#09090b',
-    color: '#fff',
-    fontFamily: 'Inter, system-ui, sans-serif'
-  },
-  container: {
-    maxWidth: '1000px',
-    margin: '0 auto',
-    padding: '40px 20px'
-  },
-  header: {
-    display: 'flex',
-    justifyContent: 'space-between',
-    alignItems: 'flex-end',
-    marginBottom: '32px',
-    gap: '20px',
-    flexWrap: 'wrap'
-  },
-  pageTitle: {
-    fontSize: '28px',
-    fontWeight: '600',
-    margin: '0 0 8px 0',
-    color: '#fff'
-  },
-  pageSubtitle: {
-    fontSize: '14px',
-    color: '#a1a1aa',
-    margin: 0
-  },
-  card: {
-    background: '#18181b',
-    border: '0.5px solid #27272a',
-    borderRadius: '12px',
-    padding: '24px',
-    marginBottom: '32px'
-  },
-  cardTitle: {
-    fontSize: '16px',
-    fontWeight: '500',
-    margin: '0 0 20px 0',
-    color: '#fff'
-  },
-  form: {
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '20px'
-  },
-  formGrid: {
-    display: 'grid',
-    gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))',
-    gap: '16px'
-  },
-  inputGroup: {
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '8px'
-  },
-  label: {
-    fontSize: '13px',
-    color: '#a1a1aa',
-    fontWeight: '500'
-  },
-  inputWrapper: {
-    display: 'flex',
-    alignItems: 'center',
-    background: '#09090b',
-    border: '0.5px solid #3f3f46',
-    borderRadius: '8px',
-    padding: '0 12px',
-    gap: '10px'
-  },
-  inputIcon: {
-    fontSize: '16px',
-    color: '#52525b'
-  },
-  input: {
-    background: 'transparent',
-    border: 'none',
-    outline: 'none',
-    color: '#fff',
-    fontSize: '14px',
-    padding: '12px 0',
-    width: '100%',
-    fontFamily: 'inherit'
-  },
-  formActions: {
-    display: 'flex',
-    justifyContent: 'flex-end',
-    marginTop: '8px'
-  },
-  btnPrimary: {
-    display: 'inline-flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    background: '#f59e0b',
-    color: '#09090b',
-    border: 'none',
-    borderRadius: '8px',
-    padding: '10px 20px',
-    fontSize: '14px',
-    fontWeight: '600',
-    cursor: 'pointer',
-    transition: 'all 0.2s'
-  },
-  btnSecondary: {
-    display: 'inline-flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    background: '#27272a',
-    color: '#fff',
-    border: '0.5px solid #3f3f46',
-    borderRadius: '8px',
-    padding: '10px 20px',
-    fontSize: '14px',
-    fontWeight: '500',
-    cursor: 'pointer'
-  },
-  teamGrid: {
-    display: 'grid',
-    gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))',
-    gap: '20px'
-  },
-  barberCard: {
-    background: '#18181b',
-    border: '0.5px solid #27272a',
-    borderRadius: '16px',
-    padding: '20px',
-    transition: 'transform 0.2s, border-color 0.2s',
-    position: 'relative',
-    overflow: 'hidden'
-  },
-  barberHeader: {
-    display: 'flex',
-    justifyContent: 'space-between',
-    alignItems: 'flex-start',
-    marginBottom: '16px'
-  },
-  avatar: {
-    width: '56px',
-    height: '56px',
-    background: 'linear-gradient(135deg, #27272a 0%, #09090b 100%)',
-    borderRadius: '14px',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    fontSize: '20px',
-    fontWeight: '600',
-    color: '#f59e0b',
-    border: '0.5px solid #3f3f46',
-    overflow: 'hidden',
-    flexShrink: 0
-  },
-  avatarImg: {
-    width: '56px',
-    height: '56px',
-    borderRadius: '14px',
-    objectFit: 'cover'
-  },
-  barberActions: {
-    display: 'flex',
-    gap: '6px'
-  },
-  iconBtn: {
-    width: '32px',
-    height: '32px',
-    borderRadius: '8px',
-    border: '0.5px solid #3f3f46',
-    background: '#09090b',
-    color: '#a1a1aa',
-    cursor: 'pointer',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    transition: 'all 0.2s'
-  },
-  iconBtnDelete: {
-    width: '32px',
-    height: '32px',
-    borderRadius: '8px',
-    border: '0.5px solid #450a0a',
-    background: '#09090b',
-    color: '#f87171',
-    cursor: 'pointer',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center'
-  },
-  barberInfo: {
-    marginBottom: '20px'
-  },
-  barberName: {
-    fontSize: '18px',
-    fontWeight: '600',
-    color: '#fff',
-    margin: '0 0 6px 0'
-  },
-  barberContact: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: '8px',
-    fontSize: '13px',
-    color: '#71717a'
-  },
-  barberFooter: {
-    display: 'flex',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingTop: '16px',
-    borderTop: '0.5px solid #27272a'
-  },
-  statusBadge: {
-    fontSize: '11px',
-    fontWeight: '600',
-    color: '#4ade80',
-    background: '#14271e',
-    padding: '2px 8px',
-    borderRadius: '12px',
-    textTransform: 'uppercase'
-  },
-  rating: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: '4px',
-    background: '#27272a',
-    padding: '2px 8px',
-    borderRadius: '12px'
-  },
-  errorAlert: {
-    background: '#2a1414',
-    border: '0.5px solid #7f1d1d',
-    color: '#f87171',
-    borderRadius: '8px',
-    padding: '12px 16px',
-    marginBottom: '20px',
-    fontSize: '13px'
-  },
-  loadingContainer: {
-    minHeight: '100vh',
-    background: '#09090b',
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'center',
-    justifyContent: 'center'
-  },
-  spinner: {
-    width: '32px',
-    height: '32px',
-    border: '3px solid #27272a',
-    borderTop: '3px solid #f59e0b',
-    borderRadius: '50%',
-    animation: 'spin 1s linear infinite'
-  },
-  photoUploadContainer: {
-    display: 'flex',
-    justifyContent: 'center',
-    alignItems: 'center',
-    width: '100%'
-  },
-  photoPreview: {
-    position: 'relative',
-    width: '120px',
-    height: '120px',
-    borderRadius: '50%',
-    overflow: 'hidden',
-    border: '2px solid #3f3f46'
-  },
-  photoPreviewImg: {
-    width: '100%',
-    height: '100%',
-    objectFit: 'cover'
-  },
-  removePhotoBtn: {
-    position: 'absolute',
-    top: '4px',
-    right: '4px',
-    width: '28px',
-    height: '28px',
-    borderRadius: '50%',
-    background: '#dc2626',
-    color: '#fff',
-    border: 'none',
-    cursor: 'pointer',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    fontSize: '16px'
-  },
-  photoPlaceholder: {
-    width: '120px',
-    height: '120px',
-    borderRadius: '50%',
-    background: '#09090b',
-    border: '2px dashed #3f3f46',
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'center',
-    justifyContent: 'center',
-    cursor: 'pointer',
-    transition: 'all 0.2s'
-  }
+const styles = {  pageWrapper: {    minHeight: '100vh',    background: '#09090b',    color: '#fff',    fontFamily: 'Inter, system-ui, sans-serif'  },
+  container: {    maxWidth: '1000px',    margin: '0 auto',    padding: '40px 20px'  },
+  header: {    display: 'flex',    justifyContent: 'space-between',    alignItems: 'flex-end',    marginBottom: '32px',    gap: '20px',    flexWrap: 'wrap'  },
+  pageTitle: {    fontSize: '28px',    fontWeight: '600',    margin: '0 0 8px 0',    color: '#fff'  },
+  pageSubtitle: {    fontSize: '14px',    color: '#a1a1aa',    margin: 0  },
+  card: {    background: '#18181b',    border: '0.5px solid #27272a',    borderRadius: '12px',    padding: '24px',    marginBottom: '32px'  },
+  cardTitle: {    fontSize: '16px',    fontWeight: '500',    margin: '0 0 20px 0',    color: '#fff'  },
+  form: {    display: 'flex',    flexDirection: 'column',    gap: '20px'  },
+  formGrid: {    display: 'grid',    gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))',    gap: '16px'  },
+  inputGroup: {    display: 'flex',    flexDirection: 'column',    gap: '8px'  },
+  label: {    fontSize: '13px',    color: '#a1a1aa',    fontWeight: '500'  },
+  inputWrapper: {    display: 'flex',    alignItems: 'center',    background: '#09090b',    border: '0.5px solid #3f3f46',    borderRadius: '8px',    padding: '0 12px',    gap: '10px'  },
+  inputIcon: {    fontSize: '16px',    color: '#52525b'  },
+  input: {    background: 'transparent',    border: 'none',    outline: 'none',    color: '#fff',    fontSize: '14px',    padding: '12px 0',    width: '100%',    fontFamily: 'inherit'  },
+  formActions: {    display: 'flex',    justifyContent: 'flex-end',    marginTop: '8px'  },
+  btnPrimary: {    display: 'inline-flex',    alignItems: 'center',    justifyContent: 'center',    background: '#f59e0b',    color: '#09090b',    border: 'none',    borderRadius: '8px',padding: '10px 20px',    fontSize: '14px',    fontWeight: '600',    cursor: 'pointer',    transition: 'all 0.2s'  },
+  btnSecondary: {    display: 'inline-flex',    alignItems: 'center',    justifyContent: 'center',    background: '#27272a',    color: '#fff',    border: '0.5px solid #3f3f46',
+  borderRadius: '8px',    padding: '10px 20px',    fontSize: '14px',    fontWeight: '500',    cursor: 'pointer'  },
+  teamGrid: {    display: 'grid',    gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))',    gap: '20px'  },
+  barberCard: {    background: '#18181b',    border: '0.5px solid #27272a',    borderRadius: '16px',    padding: '20px',    transition: 'transform 0.2s, border-color 0.2s',    position: 'relative',    overflow: 'hidden'  },
+  barberHeader: {    display: 'flex',    justifyContent: 'space-between',    alignItems: 'flex-start',    marginBottom: '16px'  },
+  avatar: {    width: '56px',    height: '56px',    background: 'linear-gradient(135deg, #27272a 0%, #09090b 100%)',    borderRadius: '14px',    display: 'flex',    alignItems: 'center',
+    justifyContent: 'center',    fontSize: '20px',    fontWeight: '600',    color: '#f59e0b',    border: '0.5px solid #3f3f46',    overflow: 'hidden',    flexShrink: 0  },
+  avatarImg: {    width: '56px',    height: '56px',    borderRadius: '14px',    objectFit: 'cover'  },
+  barberActions: {    display: 'flex',    gap: '6px'  },
+  iconBtn: {    width: '32px',    height: '32px',    borderRadius: '8px',    border: '0.5px solid #3f3f46',    background: '#09090b',color: '#a1a1aa',cursor: 'pointer', display: 'flex',
+    alignItems: 'center',    justifyContent: 'center',    transition: 'all 0.2s'  },
+  iconBtnDelete: {    width: '32px',    height: '32px',    borderRadius: '8px',    border: '0.5px solid #450a0a',    background: '#09090b',    color: '#f87171',    cursor: 'pointer',
+    display: 'flex',    alignItems: 'center',    justifyContent: 'center'  },
+  barberInfo: {    marginBottom: '20px'  },
+  barberName: {    fontSize: '18px',    fontWeight: '600',    color: '#fff',    margin: '0 0 6px 0'  },
+  barberContact: {    display: 'flex',    alignItems: 'center',    gap: '8px',    fontSize: '13px',    color: '#71717a'  },
+  barberFooter: {    display: 'flex',    justifyContent: 'space-between',    alignItems: 'center',    paddingTop: '16px',    borderTop: '0.5px solid #27272a'  },
+  statusBadge: {    fontSize: '11px',    fontWeight: '600',    color: '#4ade80',    background: '#14271e',    padding: '2px 8px',    borderRadius: '12px',    textTransform: 'uppercase'  },
+  rating: {    display: 'flex',    alignItems: 'center',    gap: '4px',    background: '#27272a',    padding: '2px 8px',    borderRadius: '12px'  },
+  errorAlert: {    background: '#2a1414',    border: '0.5px solid #7f1d1d',    color: '#f87171',    borderRadius: '8px',    padding: '12px 16px',    marginBottom: '20px',    fontSize: '13px'  },
+  loadingContainer: {    minHeight: '100vh',    background: '#09090b',    display: 'flex',    flexDirection: 'column',    alignItems: 'center',    justifyContent: 'center'  },
+  spinner: {    width: '32px',    height: '32px',    border: '3px solid #27272a',    borderTop: '3px solid #f59e0b',    borderRadius: '50%',    animation: 'spin 1s linear infinite'  },
+  photoUploadContainer: {    display: 'flex',    justifyContent: 'center',    alignItems: 'center',    width: '100%'  },
+  photoPreview: {    position: 'relative',    width: '120px',    height: '120px',    borderRadius: '50%',    overflow: 'hidden',    border: '2px solid #3f3f46'  },
+  photoPreviewImg: {    width: '100%',    height: '100%',    objectFit: 'cover'  },
+  removePhotoBtn: {    position: 'absolute',    top: '4px',    right: '4px',    width: '28px',    height: '28px',    borderRadius: '50%',    background: '#dc2626',    color: '#fff',    border: 'none',
+    cursor: 'pointer',    display: 'flex',    alignItems: 'center',    justifyContent: 'center',    fontSize: '16px'  },
+  photoPlaceholder: {    width: '120px',    height: '120px',    borderRadius: '50%',    background: '#09090b',    border: '2px dashed #3f3f46',    display: 'flex',
+    flexDirection: 'column',    alignItems: 'center',    justifyContent: 'center',    cursor: 'pointer',    transition: 'all 0.2s'  }
 }
 
 const styleSheet = document.createElement('style')
