@@ -16,7 +16,7 @@ export default function Orders() {
 
   const [form, setForm] = useState({ appointment_id: '', barber_id: '', client_id: '', notes: '' })
   const [itemForm, setItemForm] = useState({ name: '', type: 'service', price: '', quantity: 1 })
-
+  const [editingOrder, setEditingOrder] = useState(null)
   const token = localStorage.getItem('token')
   const headers = {
     'Authorization': `Bearer ${token}`,
@@ -60,6 +60,51 @@ export default function Orders() {
       })
       setShowModal(false)
       setForm({ appointment_id: '', barber_id: '', client_id: '', notes: '' })
+      fetchAll()
+    } catch (err) {
+      console.error(err)
+    }
+  }
+
+  const openEdit = (order) => {
+    setEditingOrder(order)
+    setForm({
+      appointment_id: order.appointment_id || '',
+      barber_id: order.barber_id || '',
+      client_id: order.client_id || '',
+      notes: order.notes || '',
+    })
+    setShowModal(true)
+  }
+
+  const saveOrder = async () => {
+    try {
+      if (editingOrder) {
+        await fetch(`${API}/orders/${editingOrder.id}`, {
+          method: 'PUT',
+          headers,
+          body: JSON.stringify(form),
+        })
+      } else {
+        await fetch(`${API}/orders`, {
+          method: 'POST',
+          headers,
+          body: JSON.stringify(form),
+        })
+      }
+      setShowModal(false)
+      setEditingOrder(null)
+      setForm({ appointment_id: '', barber_id: '', client_id: '', notes: '' })
+      fetchAll()
+    } catch (err) {
+      console.error(err)
+    }
+  }
+
+  const deleteOrder = async (orderId) => {
+    if (!confirm('Excluir esta comanda? Essa ação não pode ser desfeita.')) return
+    try {
+      await fetch(`${API}/orders/${orderId}`, { method: 'DELETE', headers })
       fetchAll()
     } catch (err) {
       console.error(err)
@@ -113,7 +158,7 @@ export default function Orders() {
             <h1 style={styles.title}>Comandas</h1>
             <p style={styles.subtitle}>Gerencie as comandas dos atendimentos</p>
           </div>
-          <button onClick={() => setShowModal(true)} style={styles.newBtn}>
+          <button onClick={() => { setEditingOrder(null); setForm({ appointment_id: '', barber_id: '', client_id: '', notes: '' }); setShowModal(true) }} style={styles.newBtn}>
             <i className="ti ti-plus" style={{ marginRight: '6px' }}></i>
             Nova Comanda
           </button>
@@ -159,11 +204,17 @@ export default function Orders() {
                         <button onClick={() => { setSelectedOrder(order); setShowItemModal(true) }} style={styles.addItemBtn}>
                           + Item
                         </button>
+                        <button onClick={() => openEdit(order)} style={styles.editBtn}>
+                          <i className="ti ti-pencil"></i>
+                        </button>
                         <button onClick={() => closeOrder(order.id)} style={styles.closeBtn}>
                           Fechar Comanda
                         </button>
                       </>
                     )}
+                    <button onClick={() => deleteOrder(order.id)} style={styles.deleteBtn}>
+                      <i className="ti ti-trash"></i>
+                    </button>
                   </div>
                 </div>
 
@@ -207,7 +258,7 @@ export default function Orders() {
       {showModal && (
         <div style={styles.overlay}>
           <div style={styles.modal}>
-            <h2 style={styles.modalTitle}>Nova Comanda</h2>
+            <h2 style={styles.modalTitle}>{editingOrder ? `Editar Comanda #${editingOrder.id}` : 'Nova Comanda'}</h2>
 
             <label style={styles.label}>Agendamento</label>
             <select style={styles.input} value={form.appointment_id} onChange={e => setForm({ ...form, appointment_id: e.target.value })}>
@@ -233,8 +284,8 @@ export default function Orders() {
             <input style={styles.input} value={form.notes} onChange={e => setForm({ ...form, notes: e.target.value })} placeholder="Opcional" />
 
             <div style={styles.modalBtns}>
-              <button onClick={() => setShowModal(false)} style={styles.cancelBtn}>Cancelar</button>
-              <button onClick={createOrder} style={styles.confirmBtn}>Criar Comanda</button>
+              <button onClick={() => { setShowModal(false); setEditingOrder(null); setForm({ appointment_id: '', barber_id: '', client_id: '', notes: '' }) }} style={styles.cancelBtn}>Cancelar</button>
+              <button onClick={saveOrder} style={styles.confirmBtn}>{editingOrder ? 'Salvar Alterações' : 'Criar Comanda'}</button>
             </div>
           </div>
         </div>
@@ -289,6 +340,8 @@ const styles = {
   badgeClosed: { background: '#27272a', color: '#a1a1aa', padding: '3px 10px', borderRadius: '20px', fontSize: '12px' },
   addItemBtn: { background: '#27272a', color: '#e4e4e7', border: 'none', padding: '6px 12px', borderRadius: '6px', fontSize: '12px', cursor: 'pointer' },
   closeBtn: { background: '#f59e0b', color: '#09090b', border: 'none', padding: '6px 12px', borderRadius: '6px', fontSize: '12px', fontWeight: '600', cursor: 'pointer' },
+  editBtn: { background: '#27272a', color: '#a1a1aa', border: 'none', width: '30px', height: '30px', borderRadius: '6px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' },
+  deleteBtn: { background: '#2a1414', color: '#f87171', border: '0.5px solid #7f1d1d', width: '30px', height: '30px', borderRadius: '6px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' },
   orderInfo: { display: 'flex', gap: '20px', marginBottom: '12px' },
   infoItem: { fontSize: '14px', color: '#a1a1aa', display: 'flex', alignItems: 'center' },
   itemsList: { background: '#09090b', borderRadius: '8px', padding: '12px', display: 'flex', flexDirection: 'column', gap: '8px' },
