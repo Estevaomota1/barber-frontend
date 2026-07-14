@@ -77,75 +77,113 @@ export default function Orders() {
     setShowModal(true)
   }
 
-  const saveOrder = async () => {
+ const saveOrder = async () => {
     try {
-      if (editingOrder) {
-        await fetch(`${API}/orders/${editingOrder.id}`, {
-          method: 'PUT',
-          headers,
-          body: JSON.stringify(form),
-        })
-      } else {
-        await fetch(`${API}/orders`, {
-          method: 'POST',
-          headers,
-          body: JSON.stringify(form),
-        })
+      const res = editingOrder
+        ? await fetch(`${API}/orders/${editingOrder.id}`, {
+            method: 'PUT',
+            headers,
+            body: JSON.stringify(form),
+          })
+        : await fetch(`${API}/orders`, {
+            method: 'POST',
+            headers,
+            body: JSON.stringify(form),
+          })
+
+      const data = await res.json()
+
+      if (!data.success) {
+        alert(data.error || data.message || 'Erro ao salvar comanda.')
+        return
       }
+
       setShowModal(false)
       setEditingOrder(null)
       setForm({ appointment_id: '', barber_id: '', client_id: '', notes: '' })
       fetchAll()
     } catch (err) {
       console.error(err)
+      alert('Erro ao salvar comanda.')
     }
   }
-
-  const deleteOrder = async (orderId) => {
+const deleteOrder = async (orderId) => {
     if (!confirm('Excluir esta comanda? Essa ação não pode ser desfeita.')) return
     try {
-      await fetch(`${API}/orders/${orderId}`, { method: 'DELETE', headers })
+      const res = await fetch(`${API}/orders/${orderId}`, { method: 'DELETE', headers })
+      const data = await res.json()
+
+      if (!data.success) {
+        alert(data.error || data.message || 'Erro ao excluir comanda.')
+        return
+      }
+
       fetchAll()
     } catch (err) {
       console.error(err)
+      alert('Erro ao excluir comanda.')
     }
   }
 
-  const addItem = async () => {
+const addItem = async () => {
     try {
-      await fetch(`${API}/orders/${selectedOrder.id}/items`, {
+      const res = await fetch(`${API}/orders/${selectedOrder.id}/items`, {
         method: 'POST',
         headers,
         body: JSON.stringify(itemForm),
       })
+      const data = await res.json()
+
+      if (!data.success) {
+        alert(data.error || data.message || 'Erro ao adicionar item.')
+        return
+      }
+
       setShowItemModal(false)
       setItemForm({ name: '', type: 'service', price: '', quantity: 1 })
       fetchAll()
     } catch (err) {
       console.error(err)
+      alert('Erro ao adicionar item.')
     }
   }
 
-  const removeItem = async (orderId, itemId) => {
+const removeItem = async (orderId, itemId) => {
     if (!confirm('Remover item?')) return
     try {
-      await fetch(`${API}/orders/${orderId}/items/${itemId}`, { method: 'DELETE', headers })
+      const res = await fetch(`${API}/orders/${orderId}/items/${itemId}`, { method: 'DELETE', headers })
+      const data = await res.json()
+
+      if (!data.success) {
+        alert(data.error || data.message || 'Erro ao remover item.')
+        return
+      }
+
       fetchAll()
     } catch (err) {
       console.error(err)
+      alert('Erro ao remover item.')
     }
   }
 
   const closeOrder = async (orderId) => {
     if (!confirm('Fechar comanda e gerar comissão?')) return
     try {
-      await fetch(`${API}/orders/${orderId}/close`, { method: 'PATCH', headers })
+      const res = await fetch(`${API}/orders/${orderId}/close`, { method: 'PATCH', headers })
+      const data = await res.json()
+
+      if (!data.success) {
+        alert(data.error || data.message || 'Erro ao fechar comanda.')
+        return
+      }
+
       fetchAll()
     } catch (err) {
       console.error(err)
+      alert('Erro ao fechar comanda.')
     }
   }
-
+//teste
   const filtered = filter === 'all' ? orders : orders.filter(o => o.status === filter)
 
   return (
