@@ -9,6 +9,9 @@ export default function Commissions() {
   const [totalBarbershop, setTotalBarbershop] = useState(0)
   const [loading, setLoading] = useState(true)
   const [filter, setFilter] = useState('all')
+  const [showEditModal, setShowEditModal] = useState(false)
+  const [editingCommission, setEditingCommission] = useState(null)
+  const [editForm, setEditForm] = useState({ commission_rate: '' })
 
   const token = localStorage.getItem('token')
   const headers = {
@@ -35,15 +38,83 @@ export default function Commissions() {
 
   useEffect(() => { fetchCommissions() }, [filter])
 
-  const markAsPaid = async (id) => {
+const markAsPaid = async (id) => {
     try {
-      await fetch(`${API}/commissions/${id}/pay`, {
+      const res = await fetch(`${API}/commissions/${id}/pay`, {
         method: 'PATCH',
         headers,
       })
+      const data = await res.json()
+      if (!data.success) {
+        alert(data.error || data.message || 'Erro ao marcar como pago.')
+        return
+      }
       fetchCommissions()
     } catch (err) {
       console.error(err)
+      alert('Erro ao marcar como pago.')
+    }
+  }
+
+  const revertPayment = async (id) => {
+    if (!confirm('Reverter esta comissão para "Pendente"? Use isso se ela foi marcada como paga por engano.')) return
+    try {
+      const res = await fetch(`${API}/commissions/${id}/unpay`, {
+        method: 'PATCH',
+        headers,
+      })
+      const data = await res.json()
+      if (!data.success) {
+        alert(data.error || data.message || 'Erro ao reverter pagamento.')
+        return
+      }
+      fetchCommissions()
+    } catch (err) {
+      console.error(err)
+      alert('Erro ao reverter pagamento.')
+    }
+  }
+
+  const openEdit = (commission) => {
+    setEditingCommission(commission)
+    setEditForm({ commission_rate: commission.commission_rate })
+    setShowEditModal(true)
+  }
+
+  const saveEdit = async () => {
+    try {
+      const res = await fetch(`${API}/commissions/${editingCommission.id}`, {
+        method: 'PUT',
+        headers,
+        body: JSON.stringify(editForm),
+      })
+      const data = await res.json()
+      if (!data.success) {
+        alert(data.error || data.message || 'Erro ao salvar comissão.')
+        return
+      }
+      setShowEditModal(false)
+      setEditingCommission(null)
+      fetchCommissions()
+    } catch (err) {
+      console.error(err)
+      alert('Erro ao salvar comissão.')
+    }
+  }
+
+  const deleteCommission = async (id) => {
+    if (!confirm('Excluir esta comissão? Essa ação não pode ser desfeita.')) return
+    try {
+      const res = await fetch(`${API}/commissions/${id}`, { method: 'DELETE', headers })
+      const data = await res.json()
+      if (!data.success) {
+        alert(data.error || data.message || 'Erro ao excluir comissão.')
+        return
+      }
+      fetchCommissions()
+    } catch (err) {
+      console.error(err)
+      alert('Erro ao excluir comissão.')
     }
   }
 
@@ -121,19 +192,59 @@ export default function Commissions() {
                       </span>
                     </td>
                     <td style={styles.td}>
-                      {c.status === 'pending' && (
-                        <button onClick={() => markAsPaid(c.id)} style={styles.payBtn}>
-                          Marcar Pago
-                        </button>
-                      )}
+                      <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
+                        {c.status === 'pending' && (
+                          <>
+                            <button onClick={() => markAsPaid(c.id)} style={styles.payBtn}>
+                              Marcar Pago
+                            </button>
+                            <button onClick={() => openEdit(c)} style={styles.editBtn}>
+                              <i className="ti ti-pencil"></i>
+                            </button>
+                            <button onClick={() => deleteCommission(c.id)} style={styles.deleteBtn}>
+                              <i className="ti ti-trash"></i>
+                            </button>
+                          </>
+                        )}
+                        {c.status === 'paid' && (
+                          <button onClick={() => revertPayment(c.id)} style={styles.revertBtn}>
+                            Reverter
+                          </button>
+                        )}
+                      </div>
                     </td>
                   </tr>
                 ))}
               </tbody>
             </table>
           </div>
-        )}
+       )}
       </div>
+
+      {showEditModal && editingCommission && (
+        <div style={styles.overlay}>
+          <div style={styles.modal}>
+            <h2 style={styles.modalTitle}>Editar Comissão</h2>
+            <p style={{ fontSize: '13px', color: '#71717a', margin: '0 0 16px' }}>
+              {editingCommission.barber?.name} — R$ {Number(editingCommission.service_price).toFixed(2)}
+            </p>
+
+            <label style={styles.label}>Percentual de Comissão (%)</label>
+            <input
+              style={styles.input}
+              type="number"
+              value={editForm.commission_rate}
+              onChange={e => setEditForm({ commission_rate: e.target.value })}
+              placeholder="Ex: 50"
+            />
+
+            <div style={styles.modalBtns}>
+              <button onClick={() => { setShowEditModal(false); setEditingCommission(null) }} style={styles.cancelBtn}>Cancelar</button>
+              <button onClick={saveEdit} style={styles.confirmBtn}>Salvar</button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
@@ -159,5 +270,16 @@ const styles = {
   badgePaid: { background: '#14532d', color: '#4ade80', padding: '3px 10px', borderRadius: '20px', fontSize: '12px' },
   badgePending: { background: '#422006', color: '#fb923c', padding: '3px 10px', borderRadius: '20px', fontSize: '12px' },
   payBtn: { background: '#f59e0b', color: '#09090b', border: 'none', padding: '6px 12px', borderRadius: '6px', fontSize: '12px', fontWeight: '600', cursor: 'pointer' },
+  editBtn: { background: '#27272a', color: '#a1a1aa', border: 'none', width: '28px', height: '28px', borderRadius: '6px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' },
+  deleteBtn: { background: '#2a1414', color: '#f87171', border: '0.5px solid #7f1d1d', width: '28px', height: '28px', borderRadius: '6px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' },
+  revertBtn: { background: '#27272a', color: '#fb923c', border: '0.5px solid #7c2d12', padding: '6px 12px', borderRadius: '6px', fontSize: '12px', fontWeight: '600', cursor: 'pointer' },
   empty: { textAlign: 'center', color: '#71717a', padding: '60px', background: '#18181b', borderRadius: '12px' },
+  overlay: { position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.7)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 200 },
+  modal: { background: '#18181b', border: '0.5px solid #27272a', borderRadius: '16px', padding: '28px', width: '100%', maxWidth: '400px' },
+  modalTitle: { fontSize: '20px', fontWeight: '700', color: '#fff', margin: '0 0 4px' },
+  label: { display: 'block', fontSize: '13px', color: '#a1a1aa', marginBottom: '6px', marginTop: '14px' },
+  input: { width: '100%', background: '#09090b', border: '0.5px solid #27272a', borderRadius: '8px', padding: '10px 12px', color: '#fff', fontSize: '14px', boxSizing: 'border-box' },
+  modalBtns: { display: 'flex', gap: '10px', marginTop: '24px' },
+  cancelBtn: { flex: 1, padding: '10px', borderRadius: '8px', border: '0.5px solid #27272a', background: '#09090b', color: '#a1a1aa', fontSize: '14px', cursor: 'pointer' },
+  confirmBtn: { flex: 1, padding: '10px', borderRadius: '8px', border: 'none', background: '#f59e0b', color: '#09090b', fontSize: '14px', fontWeight: '600', cursor: 'pointer' },
 }
