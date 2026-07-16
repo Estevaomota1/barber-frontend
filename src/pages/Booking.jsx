@@ -260,7 +260,7 @@ function onlyDigits(value, maxLength = 11) {
         >
           Fazer outro agendamento
         </button>
-          /* Botão para voltar à tela de agendamento */
+         
         {/* Cancelamento do agendamento recém-criado */}
         {cancelToken && !cancelDone && (
           <div style={{ marginTop: '20px' }}>
@@ -518,12 +518,14 @@ function onlyDigits(value, maxLength = 11) {
               value={appointmentName}
               onChange={e => setAppointmentName(e.target.value)}
             />
-            <input
+             <input
               style={s.input}
               placeholder="WhatsApp (ex: 11999999999)"
               value={appointmentPhone}
-              onChange={e => setAppointmentPhone(e.target.value)}
+              onChange={e => setAppointmentPhone(onlyDigits(e.target.value))}
               type="tel"
+              inputMode="numeric"
+              maxLength={11}
             />
             <button
               onClick={fetchMyAppointments}
