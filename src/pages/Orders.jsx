@@ -183,6 +183,24 @@ const removeItem = async (orderId, itemId) => {
       alert('Erro ao fechar comanda.')
     }
   }
+
+  // ===== NOVA FUNÇÃO REOPEN =====
+  const reopenOrder = async (orderId) => {
+    if (!confirm('Reabrir esta comanda? Ela voltará ao status "Aberta".')) return
+    try {
+      const res = await fetch(`${API}/orders/${orderId}/reopen`, { method: 'PATCH', headers })
+      const data = await res.json()
+      if (!data.success) {
+        alert(data.error || data.message || 'Erro ao reabrir comanda.')
+        return
+      }
+      fetchAll()
+    } catch (err) {
+      console.error(err)
+      alert('Erro ao reabrir comanda.')
+    }
+  }
+
 //teste
   const filtered = filter === 'all' ? orders : orders.filter(o => o.status === filter)
 
@@ -248,11 +266,16 @@ const removeItem = async (orderId, itemId) => {
                         <button onClick={() => closeOrder(order.id)} style={styles.closeBtn}>
                           Fechar Comanda
                         </button>
+                        <button onClick={() => deleteOrder(order.id)} style={styles.deleteBtn}>
+                          <i className="ti ti-trash"></i>
+                        </button>
                       </>
                     )}
-                    <button onClick={() => deleteOrder(order.id)} style={styles.deleteBtn}>
-                      <i className="ti ti-trash"></i>
-                    </button>
+                    {order.status === 'closed' && (
+                      <button onClick={() => reopenOrder(order.id)} style={styles.revertBtn}>
+                        Reabrir
+                      </button>
+                    )}
                   </div>
                 </div>
 
@@ -380,6 +403,8 @@ const styles = {
   closeBtn: { background: '#f59e0b', color: '#09090b', border: 'none', padding: '6px 12px', borderRadius: '6px', fontSize: '12px', fontWeight: '600', cursor: 'pointer' },
   editBtn: { background: '#27272a', color: '#a1a1aa', border: 'none', width: '30px', height: '30px', borderRadius: '6px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' },
   deleteBtn: { background: '#2a1414', color: '#f87171', border: '0.5px solid #7f1d1d', width: '30px', height: '30px', borderRadius: '6px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' },
+  // NOVO ESTILO para o botão Reabrir
+  revertBtn: { background: '#27272a', color: '#fb923c', border: '0.5px solid #7c2d12', padding: '6px 12px', borderRadius: '6px', fontSize: '12px', fontWeight: '600', cursor: 'pointer' },
   orderInfo: { display: 'flex', gap: '20px', marginBottom: '12px' },
   infoItem: { fontSize: '14px', color: '#a1a1aa', display: 'flex', alignItems: 'center' },
   itemsList: { background: '#09090b', borderRadius: '8px', padding: '12px', display: 'flex', flexDirection: 'column', gap: '8px' },
