@@ -28,6 +28,38 @@ function combineDatetime(datePart, timePart) {
   if (!datePart || !timePart) return ''
   return `${datePart} ${timePart}:00`
 }
+
+// ===== NOVAS FUNÇÕES AUXILIARES =====
+function formatTimeOnly(dateStr) {
+  if (!dateStr) return '-'
+  const formatted = dateStr.replace('T', ' ').replace('Z', '').split('.')[0]
+  const [, timePart] = formatted.split(' ')
+  return timePart ? timePart.substring(0, 5) : '-'
+}
+
+function formatDateHeader(dateStr) {
+  if (!dateStr) return '-'
+  const formatted = dateStr.replace('T', ' ').replace('Z', '').split('.')[0]
+  const [datePart] = formatted.split(' ')
+  return new Date(datePart + 'T12:00:00').toLocaleDateString('pt-BR', { weekday: 'long', day: '2-digit', month: 'long' })
+}
+
+function getNext14Days() {
+  const days = []
+  const today = new Date()
+  for (let i = 0; i < 14; i++) {
+    const d = new Date(today)
+    d.setDate(today.getDate() + i)
+    days.push(d)
+  }
+  return days
+}
+
+function formatDateValue(d) {
+  return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0')
+}
+// ===== FIM DAS NOVAS FUNÇÕES =====
+
 function formatDuration(minutes) {
   if (!minutes) return '-'
   const h = Math.floor(minutes / 60)
@@ -307,6 +339,30 @@ export default function Appointments() {
           </div>
         )}
         
+        {/* ===== NOVA FAIXA DE DIAS (DAY STRIP) ===== */}
+        <div style={styles.dayStrip}>
+          <button
+            onClick={handleClearFilter}
+            style={{ ...styles.dayChip, ...(filterDate === '' ? styles.dayChipActive : {}) }}
+          >
+            <span style={styles.dayChipLabel}>Todos</span>
+          </button>
+          {getNext14Days().map((d, i) => {
+            const value = formatDateValue(d)
+            const isActive = filterDate === value
+            return (
+              <button
+                key={i}
+                onClick={() => { setFilterDate(value); loadData(value) }}
+                style={{ ...styles.dayChip, ...(isActive ? styles.dayChipActive : {}) }}
+              >
+                <span style={styles.dayChipWeek}>{d.toLocaleDateString('pt-BR', { weekday: 'short' }).replace('.', '').toUpperCase()}</span>
+                <span style={styles.dayChipNum}>{d.getDate()}</span>
+              </button>
+            )
+          })}
+        </div>
+
         {/* Filter */}
         <div style={styles.filterContainer}>
           <div style={styles.filterHeader}>
@@ -330,7 +386,7 @@ export default function Appointments() {
           </div>
         </div>
 
-        {/* List */}
+        {/* ===== LISTA DE AGENDAMENTOS EM CARDS ===== */}
         <div style={styles.card}>
           <div style={styles.cardHeader}>
             <h2 style={styles.cardTitle}>Lista de Horários</h2>
@@ -343,94 +399,73 @@ export default function Appointments() {
               <p>Nenhum agendamento encontrado para este período.</p>
             </div>
           ) : (
-            <div style={{ overflowX: 'auto' }} className="ap-table-wrap">
-              <table style={styles.table}>
-                <thead>
-                  <tr>
-                    <th style={styles.th}>Cliente</th>
-                    <th style={styles.th}>Data e Hora</th>
-                    <th style={styles.th}>Status</th>
-                    <th style={{ ...styles.th, textAlign: 'right' }}>Ações</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {appointments.map((apt) => (
-  <tr key={apt.id} style={styles.tr}>
-    <td style={styles.td}>
-      <div style={styles.clientInfo}>
-        <div style={styles.avatar}>
-          {(apt.client?.name || apt.client_name)?.charAt(0).toUpperCase() || '?'}
-        </div>
+            <div style={styles.agendaList}>
+              {Object.entries(
+                appointments.reduce((groups, apt) => {
+                  const key = formatDateHeader(apt.appointment_date)
+                  if (!groups[key]) groups[key] = []
+                  groups[key].push(apt)
+                  return groups
+                }, {})
+              ).map(([dateLabel, apts]) => (
+                <div key={dateLabel} style={styles.agendaGroup}>
+                  <p style={styles.agendaGroupTitle}>{dateLabel}</p>
+                  {apts.map((apt) => (
+                    <div key={apt.id} style={styles.agendaCard}>
+                      <div style={styles.agendaTime}>
+                        <span style={styles.agendaTimeText}>{formatTimeOnly(apt.appointment_date)}</span>
+                      </div>
 
-        <div>
-          <span style={styles.clientName}>
-            {apt.client?.name || apt.client_name || 'Walk-in'}
-          </span>
+                      <div style={styles.agendaInfo}>
+                        <div style={styles.agendaClientRow}>
+                          <div style={styles.avatar}>
+                            {(apt.client?.name || apt.client_name)?.charAt(0).toUpperCase() || '?'}
+                          </div>
+                          <div>
+                            <span style={styles.clientName}>
+                              {apt.client?.name || apt.client_name || 'Walk-in'}
+                            </span>
+                            {apt.barber && (
+                              <div style={{ fontSize: '12px', color: '#71717a', marginTop: '2px' }}>
+                                {apt.barber?.name}
+                                {(apt.service?.name || apt.service_name) &&
+                                  ` • ${apt.service?.name || apt.service_name}`}
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                        {apt.price > 0 && (
+                          <span style={styles.agendaPrice}>R$ {Number(apt.price).toFixed(2)}</span>
+                        )}
+                      </div>
 
-          {apt.barber && (
-            <div
-              className="ap-col-barber"
-              style={{
-                fontSize: '12px',
-                color: '#71717a',
-                marginTop: '2px'
-              }}
-            >
-               {apt.barber?.name}
-              {(apt.service?.name || apt.service_name) &&
-                ` • ${apt.service?.name || apt.service_name}`}
-            </div>
-          )}
-        </div>
-      </div>
-    </td>
-
-    <td style={styles.td}>
-      <div style={styles.dateTime}>
-        <i
-          className="ti ti-calendar"
-          style={{ color: '#f59e0b', marginRight: '6px', flexShrink: 0 }}
-        ></i>
-        {formatDate(apt.appointment_date)}
-      </div>
-
-      {apt.price > 0 && (
-        <div style={{ fontSize: '12px', color: '#f59e0b', marginTop: '4px' }}>
-          R$ {Number(apt.price).toFixed(2)}
-        </div>
-      )}
-    </td>
-
-    <td style={styles.td}>
-      <select
-        className="ap-select"
-        style={{
-          ...styles.statusSelect,
-          ...(statusStyles[apt.status] || statusStyles.pending)
-        }}
-        value={apt.status}
-        onChange={e => handleStatus(apt.id, e.target.value)}
-      >
-        <option value="pending">Pendente</option>
-        <option value="confirmed">Confirmado</option>
-        <option value="cancelled">Cancelado</option>
-        <option value="completed">Concluído</option>
-      </select>
-    </td>
-
-    <td style={{ ...styles.td, textAlign: 'right' }}>
-      <button
-        onClick={() => handleDelete(apt.id)}
-        style={styles.iconBtnDelete}
-        title="Excluir"
-      >
-        <i className="ti ti-trash"></i>
-      </button>
-    </td>
-  </tr>
-))}
-                </tbody>
-              </table>
+                      <div style={styles.agendaActions}>
+                        <select
+                          className="ap-select"
+                          style={{
+                            ...styles.statusSelect,
+                            ...(statusStyles[apt.status] || statusStyles.pending)
+                          }}
+                          value={apt.status}
+                          onChange={e => handleStatus(apt.id, e.target.value)}
+                        >
+                          <option value="pending">Pendente</option>
+                          <option value="confirmed">Confirmado</option>
+                          <option value="cancelled">Cancelado</option>
+                          <option value="completed">Concluído</option>
+                        </select>
+                        <button
+                          onClick={() => handleDelete(apt.id)}
+                          style={styles.iconBtnDelete}
+                          title="Excluir"
+                        >
+                          <i className="ti ti-trash"></i>
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ))}
             </div>
           )}
         </div>
@@ -438,6 +473,7 @@ export default function Appointments() {
     </div>
   )
 }
+
 const styles = {
   pageWrapper: { minHeight: '100vh', background: '#09090b', color: '#fff', fontFamily: 'Inter, system-ui, sans-serif' },
   container: { maxWidth: '1000px', margin: '0 auto', padding: '40px 20px' },
@@ -466,6 +502,27 @@ const styles = {
   filterSubtitle: { fontSize: '12px', color: '#71717a', margin: '2px 0 0 0' },
   filterActions: { display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' },
   premiumClearBtn: { background: 'rgba(248,113,113,0.1)', border: '1px solid rgba(248,113,113,0.2)', color: '#f87171', padding: '10px 14px', borderRadius: '8px', fontSize: '13px', fontWeight: '600', cursor: 'pointer', display: 'flex', alignItems: 'center', whiteSpace: 'nowrap' },
+
+  // ===== NOVOS ESTILOS =====
+  dayStrip: { display: 'flex', gap: '8px', overflowX: 'auto', paddingBottom: '8px', marginBottom: '20px', scrollbarWidth: 'none' },
+  dayChip: { display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '2px', padding: '10px 14px', borderRadius: '12px', border: '1px solid #27272a', background: '#18181b', color: '#71717a', fontSize: '12px', fontWeight: '600', cursor: 'pointer', minWidth: '56px', flexShrink: 0 },
+  dayChipActive: { borderColor: '#f59e0b', background: 'rgba(245,158,11,0.1)', color: '#f59e0b' },
+  dayChipLabel: { fontSize: '13px', padding: '4px 0' },
+  dayChipWeek: { fontSize: '10px', textTransform: 'uppercase' },
+  dayChipNum: { fontSize: '18px', fontWeight: '700', color: '#fff' },
+  agendaList: { display: 'flex', flexDirection: 'column', gap: '20px' },
+  agendaGroup: { display: 'flex', flexDirection: 'column', gap: '10px' },
+  agendaGroupTitle: { fontSize: '13px', fontWeight: '700', color: '#f59e0b', textTransform: 'capitalize', margin: '0 0 4px', paddingBottom: '8px', borderBottom: '0.5px solid #27272a' },
+  agendaCard: { display: 'flex', alignItems: 'center', gap: '14px', background: '#09090b', border: '0.5px solid #27272a', borderRadius: '10px', padding: '14px', flexWrap: 'wrap' },
+  agendaTime: { display: 'flex', flexDirection: 'column', alignItems: 'center', minWidth: '54px', flexShrink: 0 },
+  agendaTimeText: { fontSize: '16px', fontWeight: '700', color: '#fff' },
+  agendaInfo: { flex: '1 1 200px', display: 'flex', flexDirection: 'column', gap: '6px', minWidth: '160px' },
+  agendaClientRow: { display: 'flex', alignItems: 'center', gap: '10px' },
+  agendaPrice: { fontSize: '12px', color: '#f59e0b', fontWeight: '600' },
+  agendaActions: { display: 'flex', alignItems: 'center', gap: '8px', flexShrink: 0, marginLeft: 'auto' },
+  // ===== FIM NOVOS ESTILOS =====
+
+  // Estilos existentes (mantidos)
   table: { width: '100%', borderCollapse: 'collapse', textAlign: 'left' },
   th: { fontSize: '12px', textTransform: 'uppercase', color: '#71717a', fontWeight: '600', padding: '10px 14px', letterSpacing: '0.05em' },
   tr: { borderBottom: '0.5px solid #27272a' },
