@@ -29,6 +29,7 @@ export default function Booking() {
   const [appointmentPhone, setAppointmentPhone] = useState('')
   const [appointmentName, setAppointmentName] = useState('')
   const [cancellingId, setCancellingId] = useState(null)
+
 function formatAppointmentDate(dateStr) {
   if (!dateStr) return "-";
 
@@ -49,6 +50,17 @@ function formatAppointmentDate(dateStr) {
     timePart.substring(0, 5)
   );
 }
+
+function isValidPhone(phone) {
+  const digits = phone.replace(/\D/g, '')
+  return digits.length === 10 || digits.length === 11
+}
+
+// ========== FUNÇÃO NOVA: onlyDigits ==========
+function onlyDigits(value, maxLength = 11) {
+  return value.replace(/\D/g, '').slice(0, maxLength)
+}
+
   // Buscar dados da barbearia
   useEffect(() => {
     fetch(`${API}/booking/${slug}`)
@@ -399,7 +411,7 @@ function formatAppointmentDate(dateStr) {
                         <p style={s.barberName}>{b.name}</p>
                         <p style={s.barberRole}>Barbeiro</p>
                       </div>
-                      {b.pix_qr && <span style={s.pixBadge}>Pix ✓</span>}
+                     
                     </button>
                   ))}
                 </div>
@@ -477,7 +489,8 @@ function formatAppointmentDate(dateStr) {
                 <input style={s.input} placeholder="Seu nome completo" value={selected.client_name}
                   onChange={e => setSelected({ ...selected, client_name: e.target.value })} />
                 <input style={s.input} placeholder="WhatsApp (ex: 11999999999)" value={selected.client_phone}
-                  onChange={e => setSelected({ ...selected, client_phone: e.target.value })} type="tel" />
+                  onChange={e => setSelected({ ...selected, client_phone: onlyDigits(e.target.value) })}
+                  type="tel" inputMode="numeric" maxLength={11} />
                 <button onClick={confirm} disabled={submitting || !selected.client_name || !selected.client_phone}
                   style={{ ...s.confirmBtn, opacity: (!selected.client_name || !selected.client_phone) ? 0.5 : 1 }}>
                   {submitting ? 'Confirmando...' : 'Confirmar Agendamento'}
@@ -681,4 +694,3 @@ const s = {
   appointmentCard: { background: '#18181b',  border: '0.5px solid #27272a',  borderRadius: '12px',  padding: '16px',  marginBottom: '12px',},
   appointmentInfo: { display: 'flex',  justifyContent: 'space-between',  alignItems: 'center',  gap: '12px',},
 }
-
