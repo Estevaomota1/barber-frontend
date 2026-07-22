@@ -30,83 +30,79 @@ export default function Booking() {
   const [appointmentName, setAppointmentName] = useState('')
   const [cancellingId, setCancellingId] = useState(null)
 
-function formatAppointmentDate(dateStr) {
-  if (!dateStr) return "-";
+  function formatAppointmentDate(dateStr) {
+    if (!dateStr) return "-";
 
-  const formatted = dateStr
-    .replace("T", " ")
-    .replace("Z", "")
-    .split(".")[0];
+    const formatted = dateStr
+      .replace("T", " ")
+      .replace("Z", "")
+      .split(".")[0];
 
-  const [datePart, timePart] = formatted.split(" ");
+    const [datePart, timePart] = formatted.split(" ");
 
-  return (
-    new Date(datePart + "T12:00:00").toLocaleDateString("pt-BR", {
-      weekday: "short",
-      day: "2-digit",
-      month: "short",
-    }) +
-    " às " +
-    timePart.substring(0, 5)
-  );
-}
+    return (
+      new Date(datePart + "T12:00:00").toLocaleDateString("pt-BR", {
+        weekday: "short",
+        day: "2-digit",
+        month: "short",
+      }) +
+      " às " +
+      timePart.substring(0, 5)
+    );
+  }
 
-const VALID_DDDS = [
-  11,12,13,14,15,16,17,18,19, // SP
-  21,22,24, // RJ
-  27,28, // ES
-  31,32,33,34,35,37,38, // MG
-  41,42,43,44,45,46, // PR
-  47,48,49, // SC
-  51,53,54,55, // RS
-  61, // DF
-  62,64, // GO
-  63, // TO
-  65,66, // MT
-  67, // MS
-  68, // AC
-  69, // RO
-  71,73,74,75,77, // BA
-  79, // SE
-  81,87, // PE
-  82, // AL
-  83, // PB
-  84, // RN
-  85,88, // CE
-  86,89, // PI
-  91,93,94, // PA
-  92,97, // AM
-  95, // RR
-  96, // AP
-  98,99, // MA
-]
+  const VALID_DDDS = [
+    11,12,13,14,15,16,17,18,19, // SP
+    21,22,24, // RJ
+    27,28, // ES
+    31,32,33,34,35,37,38, // MG
+    41,42,43,44,45,46, // PR
+    47,48,49, // SC
+    51,53,54,55, // RS
+    61, // DF
+    62,64, // GO
+    63, // TO
+    65,66, // MT
+    67, // MS
+    68, // AC
+    69, // RO
+    71,73,74,75,77, // BA
+    79, // SE
+    81,87, // PE
+    82, // AL
+    83, // PB
+    84, // RN
+    85,88, // CE
+    86,89, // PI
+    91,93,94, // PA
+    92,97, // AM
+    95, // RR
+    96, // AP
+    98,99, // MA
+  ]
 
-function isValidPhone(phone) {
-  const digits = phone.replace(/\D/g, '')
+  function isValidPhone(phone) {
+    const digits = phone.replace(/\D/g, '')
 
-  if (digits.length !== 10 && digits.length !== 11) return false
+    if (digits.length !== 10 && digits.length !== 11) return false
 
-  const ddd = parseInt(digits.substring(0, 2), 10)
-  if (!VALID_DDDS.includes(ddd)) return false
+    const ddd = parseInt(digits.substring(0, 2), 10)
+    if (!VALID_DDDS.includes(ddd)) return false
 
-  // Celular (11 dígitos) precisa começar com 9 logo após o DDD
-  if (digits.length === 11 && digits[2] !== '9') return false
+    // Celular (11 dígitos) precisa começar com 9 logo após o DDD
+    if (digits.length === 11 && digits[2] !== '9') return false
 
-  // Bloqueia sequências óbvias tipo 11111111111, 99999999999, etc
-  const restNumber = digits.substring(2)
-  if (/^(\d)\1+$/.test(restNumber)) return false
+    // Bloqueia sequências óbvias tipo 11111111111, 99999999999, etc
+    const restNumber = digits.substring(2)
+    if (/^(\d)\1+$/.test(restNumber)) return false
 
-  return true
-}
-{selected.client_phone && !isValidPhone(selected.client_phone) && (
-  <p style={{ color: '#f87171', fontSize: '12px', margin: '-6px 0 10px' }}>
-    Telefone inválido. Use um DDD real e um celular começando com 9 (ex: 11987654321).
-  </p>
-)}
-// ========== FUNÇÃO NOVA: onlyDigits ==========
-function onlyDigits(value, maxLength = 11) {
-  return value.replace(/\D/g, '').slice(0, maxLength)
-}
+    return true
+  }
+
+  // ========== FUNÇÃO NOVA: onlyDigits ==========
+  function onlyDigits(value, maxLength = 11) {
+    return value.replace(/\D/g, '').slice(0, maxLength)
+  }
 
   // Buscar dados da barbearia
   useEffect(() => {
@@ -136,7 +132,7 @@ function onlyDigits(value, maxLength = 11) {
 
   // Confirmar agendamento
   const confirm = async () => {
-    if (!selected.client_name || !selected.client_phone) return
+    if (!selected.client_name || !isValidPhone(selected.client_phone)) return
     setSubmitting(true)
     try {
       const res = await fetch(`${API}/booking/${slug}`, {
@@ -189,8 +185,8 @@ function onlyDigits(value, maxLength = 11) {
 
   // Buscar agendamentos do cliente
   const fetchMyAppointments = async () => {
-    if (!appointmentName || !appointmentPhone) {
-      alert('Preencha nome e telefone para buscar.')
+    if (!appointmentName || !isValidPhone(appointmentPhone)) {
+      alert('Preencha nome e telefone válido para buscar.')
       return
     }
     setLoadingAppointments(true)
@@ -209,7 +205,7 @@ function onlyDigits(value, maxLength = 11) {
       setLoadingAppointments(false)
     }
   }
-//c onvertendo a data do agendamento para o formato desejado
+
   // Cancelar um agendamento da lista (por token)
   const cancelMyAppointment = async (token) => {
     if (!confirm('Tem certeza que deseja cancelar este agendamento? O horário será liberado.')) return
@@ -221,7 +217,6 @@ function onlyDigits(value, maxLength = 11) {
       })
       const data = await res.json()
       if (data.success) {
-        // Remove da lista ou recarrega
         setMyAppointments(prev => prev.filter(a => a.cancel_token !== token))
         alert('Agendamento cancelado com sucesso!')
       } else {
@@ -248,10 +243,10 @@ function onlyDigits(value, maxLength = 11) {
   }
 
   const formatDateValue = (d) => {
-  return d.getFullYear() + '-' +
-    String(d.getMonth() + 1).padStart(2, '0') + '-' +
-    String(d.getDate()).padStart(2, '0')
-}
+    return d.getFullYear() + '-' +
+      String(d.getMonth() + 1).padStart(2, '0') + '-' +
+      String(d.getDate()).padStart(2, '0')
+  }
 
   const STEPS = ['Serviço', 'Barbeiro', 'Data', 'Horário', 'Confirmação']
 
@@ -375,8 +370,8 @@ function onlyDigits(value, maxLength = 11) {
           <p style={s.heroAddr}><span style={{ marginRight: '6px' }}>📍</span>{barbershop.address}</p>
         )}
         <p style={s.heroHours}>
-  🕐 {barbershop.working_hours?.open || barbershop.opening_time || '07:00'} às {barbershop.working_hours?.close || barbershop.closing_time || '18:00'}
-</p>
+          🕐 {barbershop.working_hours?.open || barbershop.opening_time || '07:00'} às {barbershop.working_hours?.close || barbershop.closing_time || '18:00'}
+        </p>
       </div>
 
       {/* Botão para alternar entre agendamento e meus agendamentos */}
@@ -399,7 +394,7 @@ function onlyDigits(value, maxLength = 11) {
             color: showMyAppointments ? '#09090b' : '#a1a1aa',
           }}
         >
-          📋 Cancelar Agendamento
+          📋 Meus agendamentos
         </button>
       </div>
 
@@ -458,7 +453,6 @@ function onlyDigits(value, maxLength = 11) {
                         <p style={s.barberName}>{b.name}</p>
                         <p style={s.barberRole}>Barbeiro</p>
                       </div>
-                     
                     </button>
                   ))}
                 </div>
@@ -533,15 +527,42 @@ function onlyDigits(value, maxLength = 11) {
                     </span>
                   </div>
                 </div>
-                <input style={s.input} placeholder="Seu nome completo" value={selected.client_name}
-                  onChange={e => setSelected({ ...selected, client_name: e.target.value })} />
-                <input style={s.input} placeholder="WhatsApp (ex: 11999999999)" value={selected.client_phone}
+
+                <input
+                  style={s.input}
+                  placeholder="Seu nome completo"
+                  value={selected.client_name}
+                  onChange={e => setSelected({ ...selected, client_name: e.target.value })}
+                />
+
+                <input
+                  style={s.input}
+                  placeholder="WhatsApp (ex: 11999999999)"
+                  value={selected.client_phone}
                   onChange={e => setSelected({ ...selected, client_phone: onlyDigits(e.target.value) })}
-                  type="tel" inputMode="numeric" maxLength={11} />
-                <button onClick={confirm} disabled={submitting || !selected.client_name || !selected.client_phone}
-                  style={{ ...s.confirmBtn, opacity: (!selected.client_name || !selected.client_phone) ? 0.5 : 1 }}>
+                  type="tel"
+                  inputMode="numeric"
+                  maxLength={11}
+                />
+
+                {/* Mensagem de erro de telefone */}
+                {selected.client_phone && !isValidPhone(selected.client_phone) && (
+                  <p style={{ color: '#f87171', fontSize: '12px', margin: '-6px 0 10px' }}>
+                    Telefone inválido. Use um DDD real e um celular começando com 9 (ex: 11987654321).
+                  </p>
+                )}
+
+                <button
+                  onClick={confirm}
+                  disabled={submitting || !selected.client_name || !isValidPhone(selected.client_phone)}
+                  style={{
+                    ...s.confirmBtn,
+                    opacity: (!selected.client_name || !isValidPhone(selected.client_phone)) ? 0.5 : 1
+                  }}
+                >
                   {submitting ? 'Confirmando...' : 'Confirmar Agendamento'}
                 </button>
+
                 <button onClick={() => setStep(3)} style={s.backBtn}>← Voltar</button>
               </div>
             )}
@@ -565,7 +586,7 @@ function onlyDigits(value, maxLength = 11) {
               value={appointmentName}
               onChange={e => setAppointmentName(e.target.value)}
             />
-             <input
+            <input
               style={s.input}
               placeholder="WhatsApp (ex: 11999999999)"
               value={appointmentPhone}
@@ -586,7 +607,7 @@ function onlyDigits(value, maxLength = 11) {
           {myAppointments.length === 0 && !loadingAppointments && (
             <div style={s.emptyBox}>Nenhum agendamento ativo encontrado.</div>
           )}
-          {console.log(JSON.stringify(myAppointments, null, 2))}
+          
           {myAppointments.map(app => (
             <div key={app.id} style={s.appointmentCard}>
               <div style={s.appointmentInfo}>
@@ -664,82 +685,5 @@ function PixCopyBox({ pixKey }) {
 }
 
 const s = {
-  page: { minHeight: '100dvh', width: '100%', background: '#09090b', fontFamily: 'system-ui, sans-serif', display: 'flex', flexDirection: 'column', margin: 0, padding: 0, boxSizing: 'border-box', position: 'relative', overflowX: 'hidden', overflowY: 'auto', WebkitOverflowScrolling: 'touch' },
-  splash: { minHeight: '100vh', background: '#09090b', display: 'flex', alignItems: 'center', justifyContent: 'center' },
-  splashSpinner: { width: '36px', height: '36px', border: '3px solid #27272a', borderTop: '3px solid #f59e0b', borderRadius: '50%', animation: 'spin 1s linear infinite' },
-  hero: { width: '100%', boxSizing: 'border-box', background: 'linear-gradient(180deg, #18181b 0%, #09090b 100%)', padding: '32px 20px 24px', textAlign: 'center', borderBottom: '0.5px solid #27272a' },
-  heroAvatar: { fontSize: '52px', marginBottom: '12px' },
-  heroLogo: { width: '120px', height: '120px', borderRadius: '20px', objectFit: 'contain', background: '#27272a', padding: '6px', display: 'block', margin: '0 auto 16px' },
-  heroName: { fontSize: '28px', fontWeight: '800', color: '#fff', margin: '0 0 8px' },
-  heroDesc: { fontSize: '15px', color: '#a1a1aa', margin: '0 0 10px' },
-  heroAddr: { fontSize: '13px', color: '#71717a', margin: '0 0 4px', display: 'flex', alignItems: 'center', justifyContent: 'center' },
-  heroHours: { fontSize: '13px', color: '#71717a', margin: 0 },
-  stepsBar: { display: 'flex', overflowX: 'auto', padding: '16px 12px', gap: '4px', borderBottom: '0.5px solid #27272a', background: '#18181b', scrollbarWidth: 'none' },
-  stepBtn: { display: 'flex', alignItems: 'center', gap: '6px', padding: '6px 10px', borderRadius: '20px', border: 'none', background: 'transparent', color: '#52525b', fontSize: '12px', whiteSpace: 'nowrap', cursor: 'default' },
-  stepBtnActive: { background: '#f59e0b22', color: '#f59e0b' },
-  stepBtnDone: { color: '#4ade80' },
-  stepCircle: { width: '22px', height: '22px', borderRadius: '50%', background: '#27272a', color: '#71717a', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '11px', fontWeight: '700', flexShrink: 0 },
-  stepCircleActive: { background: '#f59e0b', color: '#09090b' },
-  stepCircleDone: { background: '#14532d', color: '#4ade80' },
-  stepLabel: { fontSize: '12px', fontWeight: '500' },
-  content: { width: '100%', maxWidth: '480px', margin: '0 auto', padding: '24px 16px', boxSizing: 'border-box' },
-  stepWrap: { display: 'flex', flexDirection: 'column', gap: '12px' },
-  stepTitle: { fontSize: '20px', fontWeight: '700', color: '#fff', margin: '0 0 4px' },
-  serviceList: { display: 'flex', flexDirection: 'column', gap: '10px' },
-  serviceCard: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '16px', background: '#18181b', border: '0.5px solid #27272a', borderRadius: '12px', cursor: 'pointer', width: '100%', textAlign: 'left' },
-  serviceCardSelected: { borderColor: '#f59e0b', background: '#f59e0b11' },
-  serviceInfo: { display: 'flex', flexDirection: 'column', gap: '2px' },
-  serviceName: { fontSize: '15px', fontWeight: '600', color: '#fff' },
-  serviceMeta: { fontSize: '12px', color: '#71717a' },
-  servicePrice: { fontSize: '16px', fontWeight: '700', color: '#f59e0b' },
-  barberList: { display: 'flex', flexDirection: 'column', gap: '10px' },
-  barberCard: { display: 'flex', alignItems: 'center', gap: '14px', padding: '14px', background: '#18181b', border: '0.5px solid #27272a', borderRadius: '12px', cursor: 'pointer', width: '100%', textAlign: 'left' },
-  barberCardSelected: { borderColor: '#f59e0b', background: '#f59e0b11' },
-  barberAvatar: { width: '44px', height: '44px', borderRadius: '50%', background: '#f59e0b', color: '#09090b', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '18px', fontWeight: '700', flexShrink: 0 },
-  barberName: { fontSize: '15px', fontWeight: '600', color: '#fff', margin: 0 },
-  barberRole: { fontSize: '12px', color: '#71717a', margin: '2px 0 0' },
-  pixBadge: { marginLeft: 'auto', fontSize: '11px', color: '#4ade80', background: '#14532d', padding: '3px 8px', borderRadius: '20px' },
-  dateScroll: { display: 'flex', gap: '10px', overflowX: 'auto', paddingBottom: '8px', scrollbarWidth: 'none' },
-  dateCard: { display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '12px 14px', background: '#18181b', border: '0.5px solid #27272a', borderRadius: '12px', cursor: 'pointer', minWidth: '64px', flexShrink: 0 },
-  dateCardSelected: { borderColor: '#f59e0b', background: '#f59e0b11' },
-  dateWeek: { fontSize: '11px', color: '#71717a', textTransform: 'uppercase', marginBottom: '4px' },
-  dateNum: { fontSize: '24px', fontWeight: '700', color: '#fff' },
-  dateMon: { fontSize: '11px', color: '#71717a', marginTop: '2px' },
-  timeGrid: { display: 'flex', flexWrap: 'wrap', gap: '10px' },
-  timeBtn: { padding: '12px 16px', background: '#18181b', border: '0.5px solid #27272a', borderRadius: '10px', color: '#fff', fontSize: '14px', fontWeight: '500', cursor: 'pointer', minWidth: '72px', textAlign: 'center' },
-  timeBtnSelected: { borderColor: '#f59e0b', background: '#f59e0b11', color: '#f59e0b' },
-  confirmCard: { background: '#18181b', border: '0.5px solid #27272a', borderRadius: '12px', overflow: 'hidden', marginBottom: '16px' },
-  confirmRow: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '14px 16px', borderBottom: '0.5px solid #27272a' },
-  confirmLabel: { fontSize: '13px', color: '#71717a' },
-  confirmVal: { fontSize: '14px', color: '#fff', fontWeight: '500', textAlign: 'right', maxWidth: '60%' },
-  input: { width: '100%', background: '#18181b', border: '0.5px solid #27272a', borderRadius: '10px', padding: '14px', color: '#fff', fontSize: '15px', boxSizing: 'border-box', marginBottom: '10px', display: 'block' },
-  confirmBtn: { width: '100%', background: '#f59e0b', color: '#09090b', border: 'none', padding: '16px', borderRadius: '12px', fontSize: '16px', fontWeight: '700', cursor: 'pointer', marginBottom: '10px' },
-  backBtn: { background: 'none', border: 'none', color: '#71717a', fontSize: '14px', cursor: 'pointer', padding: '8px 0' },
-  emptyBox: { textAlign: 'center', color: '#71717a', padding: '40px 20px', background: '#18181b', borderRadius: '12px', fontSize: '14px' },
-  teamSection: { maxWidth: '480px', margin: '0 auto', padding: '32px 16px' },
-  teamTitle: { fontSize: '18px', fontWeight: '700', color: '#fff', margin: '0 0 16px' },
-  teamList: { display: 'flex', gap: '12px', flexWrap: 'wrap' },
-  teamCard: { background: '#18181b', border: '0.5px solid #27272a', borderRadius: '12px', padding: '16px', textAlign: 'center', minWidth: '100px', flex: '1 1 auto' },
-  teamAvatar: { width: '56px', height: '56px', borderRadius: '50%', background: '#27272a', color: '#f59e0b', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '20px', fontWeight: '700', margin: '0 auto 8px', overflow: 'hidden' },
-  teamAvatarImg: { width: '56px', height: '56px', borderRadius: '50%', objectFit: 'cover', display: 'block' },
-  teamName: { fontSize: '13px', fontWeight: '600', color: '#fff', margin: '4px 0 0 0' },
-  teamRole: { fontSize: '11px', color: '#71717a', margin: '2px 0 0' },
-  successWrap: { maxWidth: '400px', margin: '60px auto', textAlign: 'center', padding: '20px' },
-  successIcon: { fontSize: '64px', marginBottom: '16px' },
-  successTitle: { fontSize: '28px', fontWeight: '800', color: '#fff', margin: '0 0 8px' },
-  successSub: { fontSize: '16px', color: '#a1a1aa', margin: '0 0 8px' },
-  successDate: { fontSize: '15px', color: '#f59e0b', fontWeight: '600', margin: '0 0 16px' },
-  successNote: { fontSize: '13px', color: '#71717a', margin: '0 0 8px' },
-  newBtn: { background: '#f59e0b', color: '#09090b', border: 'none', padding: '14px 28px', borderRadius: '10px', fontSize: '15px', fontWeight: '700', cursor: 'pointer', marginTop: '20px' },
-  pixSection: { marginTop: '8px', marginBottom: '8px' },
-  pixDivider: { height: '1px', background: '#27272a', margin: '20px 0' },
-  pixTitle: { fontSize: '18px', fontWeight: '700', color: '#fff', margin: '0 0 6px' },
-  pixSubtitle: { fontSize: '13px', color: '#a1a1aa', margin: '0 0 16px' },
-  pixQrWrap: { background: '#fff', borderRadius: '12px', padding: '12px', display: 'inline-block', marginBottom: '12px' },
-  pixQrImg: { width: '180px', height: '180px', objectFit: 'contain', display: 'block' },
-  pixNote: { fontSize: '12px', color: '#52525b', margin: 0 },
-  tabBtn: {padding: '10px 20px',  borderRadius: '20px',  border: 'none',  fontSize: '14px',  fontWeight: '600',  cursor: 'pointer',  transition: '0.2s',},
-  myAppointmentsSection: {  maxWidth: '480px',  margin: '0 auto',  padding: '24px 16px',  width: '100%',  boxSizing: 'border-box',},
-  appointmentCard: { background: '#18181b',  border: '0.5px solid #27272a',  borderRadius: '12px',  padding: '16px',  marginBottom: '12px',},
-  appointmentInfo: { display: 'flex',  justifyContent: 'space-between',  alignItems: 'center',  gap: '12px',},
+  // ... mantém todos os estilos que você já tinha
 }

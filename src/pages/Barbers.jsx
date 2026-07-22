@@ -26,7 +26,7 @@ export default function Barbers() {
       setLoading(false)
     }
   }
-
+ 
   useEffect(() => { loadBarbers() }, [])
   
   function handleEdit(barber) {
