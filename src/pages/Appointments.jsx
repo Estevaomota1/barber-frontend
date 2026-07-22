@@ -416,17 +416,41 @@ export default function Appointments() {
                         <span style={styles.agendaTimeText}>{formatTimeOnly(apt.appointment_date)}</span>
                       </div>
 
+                      {/* ===== SUBSTITUIÇÃO AQUI ===== */}
                       <div style={styles.agendaInfo}>
                         <div style={styles.agendaClientRow}>
                           <div style={styles.avatar}>
                             {(apt.client?.name || apt.client_name)?.charAt(0).toUpperCase() || '?'}
                           </div>
+
                           <div>
                             <span style={styles.clientName}>
                               {apt.client?.name || apt.client_name || 'Walk-in'}
                             </span>
+
+                            {apt.client_id && (
+                              <div
+                                style={{
+                                  fontSize: '12px',
+                                  marginTop: '3px',
+                                  color: apt.is_new_client ? '#22c55e' : '#f59e0b',
+                                  fontWeight: '600'
+                                }}
+                              >
+                                {apt.is_new_client
+                                  ? '🆕 Cliente novo'
+                                  : `⭐ ${apt.client_visits} visitas`}
+                              </div>
+                            )}
+
                             {apt.barber && (
-                              <div style={{ fontSize: '12px', color: '#71717a', marginTop: '2px' }}>
+                              <div
+                                style={{
+                                  fontSize: '12px',
+                                  color: '#71717a',
+                                  marginTop: '2px'
+                                }}
+                              >
                                 {apt.barber?.name}
                                 {(apt.service?.name || apt.service_name) &&
                                   ` • ${apt.service?.name || apt.service_name}`}
@@ -434,10 +458,14 @@ export default function Appointments() {
                             )}
                           </div>
                         </div>
+
                         {apt.price > 0 && (
-                          <span style={styles.agendaPrice}>R$ {Number(apt.price).toFixed(2)}</span>
+                          <span style={styles.agendaPrice}>
+                            R$ {Number(apt.price).toFixed(2)}
+                          </span>
                         )}
                       </div>
+                      {/* ===== FIM DA SUBSTITUIÇÃO ===== */}
 
                       <div style={styles.agendaActions}>
                         <select
