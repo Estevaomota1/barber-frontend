@@ -394,7 +394,7 @@ export default function Booking() {
             color: showMyAppointments ? '#09090b' : '#a1a1aa',
           }}
         >
-          📋 Meus agendamentos
+          📋 Meus Agendamentos
         </button>
       </div>
 
