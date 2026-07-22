@@ -399,7 +399,7 @@ function onlyDigits(value, maxLength = 11) {
             color: showMyAppointments ? '#09090b' : '#a1a1aa',
           }}
         >
-          📋 Cancelar Agendamento
+          📋 Meus Agendamentos
         </button>
       </div>
 
