@@ -310,7 +310,7 @@ export default function Settings() {
             <option value={15}>De 15 em 15 minutos</option>
             <option value={30}>De 30 em 30 minutos</option>
           </select>
-          <p style={{ fontSize: '12px', color: '#71717a', margin: '-8px 0 20px' }}>
+          <p style={{ fontSize: '12px', color: '#f7f7f7', margin: '2px 5 20px' }}>
             Define de quanto em quanto tempo os horários aparecem na tela de agendamento do cliente.
           </p>
 
