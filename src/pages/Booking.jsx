@@ -99,9 +99,20 @@ export default function Booking() {
     return true
   }
 
-  // ========== FUNÇÃO NOVA: onlyDigits ==========
+  // ========== FUNÇÃO onlyDigits ==========
   function onlyDigits(value, maxLength = 11) {
     return value.replace(/\D/g, '').slice(0, maxLength)
+  }
+
+  // ========== FUNÇÃO formatDuration (NOVA) ==========
+  function formatDuration(minutes) {
+    if (!minutes) return '-'
+    const m = Number(minutes)
+    const h = Math.floor(m / 60)
+    const min = m % 60
+    if (h === 0) return `${min}min`
+    if (min === 0) return `${h}h`
+    return `${h}h${String(min).padStart(2, '0')}`
   }
 
   // Buscar dados da barbearia
@@ -217,7 +228,6 @@ export default function Booking() {
       })
       const data = await res.json()
       if (data.success) {
-        // Remove da lista ou recarrega
         setMyAppointments(prev => prev.filter(a => a.cancel_token !== token))
         alert('Agendamento cancelado com sucesso!')
       } else {
@@ -432,7 +442,7 @@ export default function Booking() {
                         style={{ ...s.serviceCard, ...(selected.service?.id === sv.id ? s.serviceCardSelected : {}) }}>
                         <div style={s.serviceInfo}>
                           <span style={s.serviceName}>{sv.name}</span>
-                          <span style={s.serviceMeta}>{sv.duration} min</span>
+                          <span style={s.serviceMeta}>{formatDuration(sv.duration)}</span> {/* ALTERADO */}
                         </div>
                         <span style={s.servicePrice}>R$ {Number(sv.price).toFixed(2)}</span>
                       </button>
@@ -533,7 +543,6 @@ export default function Booking() {
                 <input style={s.input} placeholder="WhatsApp (ex: 11999999999)" value={selected.client_phone}
                   onChange={e => setSelected({ ...selected, client_phone: onlyDigits(e.target.value) })}
                   type="tel" inputMode="numeric" maxLength={11} />
-                {/* VALIDAÇÃO DE TELEFONE – MOVIDA PARA CÁ */}
                 {selected.client_phone && !isValidPhone(selected.client_phone) && (
                   <p style={{ color: '#f87171', fontSize: '12px', margin: '-6px 0 10px' }}>
                     Telefone inválido. Use um DDD real e um celular começando com 9 (ex: 11987654321).
