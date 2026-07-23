@@ -10,6 +10,7 @@ export default function Settings() {
     address: '',
     description: '',
     logo: '',
+    slot_interval: 15,
     working_hours: {
       open: '07:00',
       close: '18:00',
@@ -62,6 +63,7 @@ export default function Settings() {
           opening_time: d.opening_time || '07:00',
           closing_time: d.closing_time || '18:00',
           logo: d.logo || '',
+          slot_interval: d.slot_interval || 15,
           working_hours: workingHours,
         })
         setBarbers(d.barbers || [])
@@ -298,6 +300,21 @@ export default function Settings() {
             ))}
           </div>
 
+          {/* Intervalo de horários exibido ao cliente */}
+          <label style={s.label}>Intervalo entre horários (para o cliente escolher)</label>
+          <select
+            style={s.input}
+            value={form.slot_interval}
+            onChange={(e) => setForm({ ...form, slot_interval: parseInt(e.target.value, 10) })}
+          >
+            <option value={15}>De 15 em 15 minutos</option>
+            <option value={30}>De 30 em 30 minutos</option>
+          </select>
+          <p style={{ fontSize: '12px', color: '#71717a', margin: '-8px 0 20px' }}>
+            Define de quanto em quanto tempo os horários aparecem na tela de agendamento do cliente.
+          </p>
+
+          {/* Botão Salvar */}
           <button onClick={save} style={s.saveBtn}>
             <i
               className={`ti ${saved ? 'ti-check' : 'ti-device-floppy'}`}
