@@ -30,83 +30,79 @@ export default function Booking() {
   const [appointmentName, setAppointmentName] = useState('')
   const [cancellingId, setCancellingId] = useState(null)
 
-function formatAppointmentDate(dateStr) {
-  if (!dateStr) return "-";
+  function formatAppointmentDate(dateStr) {
+    if (!dateStr) return "-";
 
-  const formatted = dateStr
-    .replace("T", " ")
-    .replace("Z", "")
-    .split(".")[0];
+    const formatted = dateStr
+      .replace("T", " ")
+      .replace("Z", "")
+      .split(".")[0];
 
-  const [datePart, timePart] = formatted.split(" ");
+    const [datePart, timePart] = formatted.split(" ");
 
-  return (
-    new Date(datePart + "T12:00:00").toLocaleDateString("pt-BR", {
-      weekday: "short",
-      day: "2-digit",
-      month: "short",
-    }) +
-    " às " +
-    timePart.substring(0, 5)
-  );
-}
+    return (
+      new Date(datePart + "T12:00:00").toLocaleDateString("pt-BR", {
+        weekday: "short",
+        day: "2-digit",
+        month: "short",
+      }) +
+      " às " +
+      timePart.substring(0, 5)
+    );
+  }
 
-const VALID_DDDS = [
-  11,12,13,14,15,16,17,18,19, // SP
-  21,22,24, // RJ
-  27,28, // ES
-  31,32,33,34,35,37,38, // MG
-  41,42,43,44,45,46, // PR
-  47,48,49, // SC
-  51,53,54,55, // RS
-  61, // DF
-  62,64, // GO
-  63, // TO
-  65,66, // MT
-  67, // MS
-  68, // AC
-  69, // RO
-  71,73,74,75,77, // BA
-  79, // SE
-  81,87, // PE
-  82, // AL
-  83, // PB
-  84, // RN
-  85,88, // CE
-  86,89, // PI
-  91,93,94, // PA
-  92,97, // AM
-  95, // RR
-  96, // AP
-  98,99, // MA
-]
+  const VALID_DDDS = [
+    11,12,13,14,15,16,17,18,19, // SP
+    21,22,24, // RJ
+    27,28, // ES
+    31,32,33,34,35,37,38, // MG
+    41,42,43,44,45,46, // PR
+    47,48,49, // SC
+    51,53,54,55, // RS
+    61, // DF
+    62,64, // GO
+    63, // TO
+    65,66, // MT
+    67, // MS
+    68, // AC
+    69, // RO
+    71,73,74,75,77, // BA
+    79, // SE
+    81,87, // PE
+    82, // AL
+    83, // PB
+    84, // RN
+    85,88, // CE
+    86,89, // PI
+    91,93,94, // PA
+    92,97, // AM
+    95, // RR
+    96, // AP
+    98,99, // MA
+  ]
 
-function isValidPhone(phone) {
-  const digits = phone.replace(/\D/g, '')
+  function isValidPhone(phone) {
+    const digits = phone.replace(/\D/g, '')
 
-  if (digits.length !== 10 && digits.length !== 11) return false
+    if (digits.length !== 10 && digits.length !== 11) return false
 
-  const ddd = parseInt(digits.substring(0, 2), 10)
-  if (!VALID_DDDS.includes(ddd)) return false
+    const ddd = parseInt(digits.substring(0, 2), 10)
+    if (!VALID_DDDS.includes(ddd)) return false
 
-  // Celular (11 dígitos) precisa começar com 9 logo após o DDD
-  if (digits.length === 11 && digits[2] !== '9') return false
+    // Celular (11 dígitos) precisa começar com 9 logo após o DDD
+    if (digits.length === 11 && digits[2] !== '9') return false
 
-  // Bloqueia sequências óbvias tipo 11111111111, 99999999999, etc
-  const restNumber = digits.substring(2)
-  if (/^(\d)\1+$/.test(restNumber)) return false
+    // Bloqueia sequências óbvias tipo 11111111111, 99999999999, etc
+    const restNumber = digits.substring(2)
+    if (/^(\d)\1+$/.test(restNumber)) return false
 
-  return true
-}
-{selected.client_phone && !isValidPhone(selected.client_phone) && (
-  <p style={{ color: '#f87171', fontSize: '12px', margin: '-6px 0 10px' }}>
-    Telefone inválido. Use um DDD real e um celular começando com 9 (ex: 11987654321).
-  </p>
-)}
-// ========== FUNÇÃO NOVA: onlyDigits ==========
-function onlyDigits(value, maxLength = 11) {
-  return value.replace(/\D/g, '').slice(0, maxLength)
-}
+    return true
+  }
+
+  // ========== FUNÇÃO NOVA: onlyDigits ==========
+  function onlyDigits(value, maxLength = 11) {
+    return value.replace(/\D/g, '').slice(0, maxLength)
+  }
 
   // Buscar dados da barbearia
   useEffect(() => {
@@ -209,7 +205,7 @@ function onlyDigits(value, maxLength = 11) {
       setLoadingAppointments(false)
     }
   }
-//c onvertendo a data do agendamento para o formato desejado
+
   // Cancelar um agendamento da lista (por token)
   const cancelMyAppointment = async (token) => {
     if (!confirm('Tem certeza que deseja cancelar este agendamento? O horário será liberado.')) return
@@ -248,10 +244,10 @@ function onlyDigits(value, maxLength = 11) {
   }
 
   const formatDateValue = (d) => {
-  return d.getFullYear() + '-' +
-    String(d.getMonth() + 1).padStart(2, '0') + '-' +
-    String(d.getDate()).padStart(2, '0')
-}
+    return d.getFullYear() + '-' +
+      String(d.getMonth() + 1).padStart(2, '0') + '-' +
+      String(d.getDate()).padStart(2, '0')
+  }
 
   const STEPS = ['Serviço', 'Barbeiro', 'Data', 'Horário', 'Confirmação']
 
@@ -375,8 +371,8 @@ function onlyDigits(value, maxLength = 11) {
           <p style={s.heroAddr}><span style={{ marginRight: '6px' }}>📍</span>{barbershop.address}</p>
         )}
         <p style={s.heroHours}>
-  🕐 {barbershop.working_hours?.open || barbershop.opening_time || '07:00'} às {barbershop.working_hours?.close || barbershop.closing_time || '18:00'}
-</p>
+          🕐 {barbershop.working_hours?.open || barbershop.opening_time || '07:00'} às {barbershop.working_hours?.close || barbershop.closing_time || '18:00'}
+        </p>
       </div>
 
       {/* Botão para alternar entre agendamento e meus agendamentos */}
@@ -458,7 +454,6 @@ function onlyDigits(value, maxLength = 11) {
                         <p style={s.barberName}>{b.name}</p>
                         <p style={s.barberRole}>Barbeiro</p>
                       </div>
-                     
                     </button>
                   ))}
                 </div>
@@ -538,8 +533,14 @@ function onlyDigits(value, maxLength = 11) {
                 <input style={s.input} placeholder="WhatsApp (ex: 11999999999)" value={selected.client_phone}
                   onChange={e => setSelected({ ...selected, client_phone: onlyDigits(e.target.value) })}
                   type="tel" inputMode="numeric" maxLength={11} />
-                <button onClick={confirm} disabled={submitting || !selected.client_name || !selected.client_phone}
-                  style={{ ...s.confirmBtn, opacity: (!selected.client_name || !selected.client_phone) ? 0.5 : 1 }}>
+                {/* VALIDAÇÃO DE TELEFONE – MOVIDA PARA CÁ */}
+                {selected.client_phone && !isValidPhone(selected.client_phone) && (
+                  <p style={{ color: '#f87171', fontSize: '12px', margin: '-6px 0 10px' }}>
+                    Telefone inválido. Use um DDD real e um celular começando com 9 (ex: 11987654321).
+                  </p>
+                )}
+                <button onClick={confirm} disabled={submitting || !selected.client_name || !isValidPhone(selected.client_phone)}
+                  style={{ ...s.confirmBtn, opacity: (!selected.client_name || !isValidPhone(selected.client_phone)) ? 0.5 : 1 }}>
                   {submitting ? 'Confirmando...' : 'Confirmar Agendamento'}
                 </button>
                 <button onClick={() => setStep(3)} style={s.backBtn}>← Voltar</button>
@@ -565,7 +566,7 @@ function onlyDigits(value, maxLength = 11) {
               value={appointmentName}
               onChange={e => setAppointmentName(e.target.value)}
             />
-             <input
+            <input
               style={s.input}
               placeholder="WhatsApp (ex: 11999999999)"
               value={appointmentPhone}
@@ -738,8 +739,8 @@ const s = {
   pixQrWrap: { background: '#fff', borderRadius: '12px', padding: '12px', display: 'inline-block', marginBottom: '12px' },
   pixQrImg: { width: '180px', height: '180px', objectFit: 'contain', display: 'block' },
   pixNote: { fontSize: '12px', color: '#52525b', margin: 0 },
-  tabBtn: {padding: '10px 20px',  borderRadius: '20px',  border: 'none',  fontSize: '14px',  fontWeight: '600',  cursor: 'pointer',  transition: '0.2s',},
-  myAppointmentsSection: {  maxWidth: '480px',  margin: '0 auto',  padding: '24px 16px',  width: '100%',  boxSizing: 'border-box',},
-  appointmentCard: { background: '#18181b',  border: '0.5px solid #27272a',  borderRadius: '12px',  padding: '16px',  marginBottom: '12px',},
-  appointmentInfo: { display: 'flex',  justifyContent: 'space-between',  alignItems: 'center',  gap: '12px',},
+  tabBtn: { padding: '10px 20px',  borderRadius: '20px',  border: 'none',  fontSize: '14px',  fontWeight: '600',  cursor: 'pointer',  transition: '0.2s' },
+  myAppointmentsSection: {  maxWidth: '480px',  margin: '0 auto',  padding: '24px 16px',  width: '100%',  boxSizing: 'border-box' },
+  appointmentCard: { background: '#18181b',  border: '0.5px solid #27272a',  borderRadius: '12px',  padding: '16px',  marginBottom: '12px' },
+  appointmentInfo: { display: 'flex',  justifyContent: 'space-between',  alignItems: 'center',  gap: '12px' },
 }
