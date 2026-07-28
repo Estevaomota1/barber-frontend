@@ -245,14 +245,25 @@ export default function Booking() {
   const getDates = () => {
     const dates = []
     const today = new Date()
-    for (let i = 0; i <= 30; i++) {
-      const d = new Date(today)
-      d.setDate(today.getDate() + i)
-      dates.push(d)
+
+    if (barbershop?.week_limit_enabled) {
+      // Mostra só de hoje até o domingo desta semana (semana começa na segunda)
+      const dayOfWeek = today.getDay() // 0=domingo, 1=segunda, ..., 6=sábado
+      const daysUntilSunday = dayOfWeek === 0 ? 0 : 7 - dayOfWeek
+      for (let i = 0; i <= daysUntilSunday; i++) {
+        const d = new Date(today)
+        d.setDate(today.getDate() + i)
+        dates.push(d)
+      }
+    } else {
+      for (let i = 0; i <= 30; i++) {
+        const d = new Date(today)
+        d.setDate(today.getDate() + i)
+        dates.push(d)
+      }
     }
     return dates
   }
-
   const formatDateValue = (d) => {
     return d.getFullYear() + '-' +
       String(d.getMonth() + 1).padStart(2, '0') + '-' +

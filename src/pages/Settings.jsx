@@ -3,7 +3,7 @@ import Navbar from '../components/Navbar'
 
 const API = 'https://barber-saas-1-fpjl.onrender.com/api'
 
-export default function Settings() {
+export default function Settings() {  
   const [form, setForm] = useState({
     name: '',
     phone: '',
@@ -11,6 +11,7 @@ export default function Settings() {
     description: '',
     logo: '',
     slot_interval: 15,
+    week_limit_enabled: false,
     working_hours: {
       open: '07:00',
       close: '18:00',
@@ -64,6 +65,7 @@ export default function Settings() {
           closing_time: d.closing_time || '18:00',
           logo: d.logo || '',
           slot_interval: d.slot_interval || 15,
+          week_limit_enabled: d.week_limit_enabled || false,
           working_hours: workingHours,
         })
         setBarbers(d.barbers || [])
