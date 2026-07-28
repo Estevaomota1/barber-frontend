@@ -303,19 +303,32 @@ export default function Settings() {
           </div>
 
           {/* Intervalo de horários exibido ao cliente */}
-          <label style={s.label}>Intervalo entre horários (para o cliente escolher)</label>
-          <select
-            style={s.input}
-            value={form.slot_interval}
-            onChange={(e) => setForm({ ...form, slot_interval: parseInt(e.target.value, 10) })}
-          >
-            <option value={15}>De 15 em 15 minutos</option>
-            <option value={30}>De 30 em 30 minutos</option>
-          </select>
-          <p style={{ fontSize: '12px', color: '#f7f7f7', margin: '2px 5px 20px' }}>
-            Define de quanto em quanto tempo os horários aparecem na tela de agendamento do cliente.
-          </p>
+            <label style={s.label}>Intervalo entre horários (para o cliente escolher)</label>
+                      <select
+                        style={s.input}
+                        value={form.slot_interval}
+                        onChange={(e) => setForm({ ...form, slot_interval: parseInt(e.target.value, 10) })}
+                      >
+                        <option value={15}>De 15 em 15 minutos</option>
+                        <option value={30}>De 30 em 30 minutos</option>
+                      </select>
+                      <p style={{ fontSize: '12px', color: '#71717a', margin: '-8px 0 20px' }}>
+                        Define de quanto em quanto tempo os horários aparecem na tela de agendamento do cliente.
+                      </p>
 
+                      {/* Limitar agendamento à semana atual */}
+                      <label style={{ display: 'flex', alignItems: 'center', gap: '10px', color: '#fff', fontSize: '14px', cursor: 'pointer', marginTop: '20px' }}>
+                        <input
+                          type="checkbox"
+                          checked={form.week_limit_enabled}
+                          onChange={(e) => setForm({ ...form, week_limit_enabled: e.target.checked })}
+                        />
+                        Mostrar apenas a semana atual para o cliente
+                      </label>
+                      <p style={{ fontSize: '12px', color: '#71717a', margin: '6px 0 20px' }}>
+                        Quando ativado, o cliente só vê e consegue marcar dias de segunda a domingo da semana em curso.
+                        A cada domingo à meia-noite, a janela reinicia automaticamente para a próxima semana.
+                      </p>
           {/* Botão Salvar */}
           <button onClick={save} style={s.saveBtn}>
             <i
