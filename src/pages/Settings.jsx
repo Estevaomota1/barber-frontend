@@ -418,6 +418,9 @@ export default function Settings() {
           )}
         </div>
 
+        {/* Dias Bloqueados (feriados, folgas gerais) */}
+        <BlockedDatesSection headers={headers} API={API} />
+
         {/* Link de Agendamento */}
         <div style={{ ...s.card, marginTop: '20px' }}>
           <h2 style={s.sectionTitle}>
@@ -831,6 +834,100 @@ function BarberBlocksSection({ barber, headers, API, workingHours }) {
       )}
     </div>
   )
+  function BlockedDatesSection({ headers, API }) {
+  const [dates, setDates] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [newDate, setNewDate] = useState('')
+  const [reason, setReason] = useState('')
+  const [saving, setSaving] = useState(false)
+
+  const loadDates = () => {
+    setLoading(true)
+    fetch(`${API}/blocked-dates`, { headers })
+      .then(r => r.json())
+      .then(d => setDates(d.dates || []))
+      .finally(() => setLoading(false))
+  }
+
+  useEffect(() => { loadDates() }, [])
+
+  const addDate = async () => {
+    if (!newDate) return alert('Escolha uma data.')
+    setSaving(true)
+    try {
+      const res = await fetch(`${API}/blocked-dates`, {
+        method: 'POST',
+        headers,
+        body: JSON.stringify({ date: newDate, reason }),
+      })
+      const data = await res.json()
+      if (data.success) {
+        setNewDate('')
+        setReason('')
+        loadDates()
+      } else {
+        alert(data.error || 'Erro ao bloquear data.')
+      }
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  const removeDate = async (id) => {
+    if (!confirm('Desbloquear este dia?')) return
+    await fetch(`${API}/blocked-dates/${id}`, { method: 'DELETE', headers })
+    loadDates()
+  }
+
+  return (
+    <div style={{ ...s.card, marginTop: '20px' }}>
+      <h2 style={s.sectionTitle}>
+        <i className="ti ti-calendar-off" style={{ marginRight: '8px', color: '#f59e0b' }}></i>
+        Dias Bloqueados (Feriados, Folgas Gerais)
+      </h2>
+      <p style={s.hint}>
+        O dia inteiro fica indisponível para agendamento, para todos os barbeiros.
+      </p>
+
+      <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap', marginBottom: '10px' }}>
+        <input
+          type="date"
+          value={newDate}
+          onChange={(e) => setNewDate(e.target.value)}
+          style={{ ...s.input, flex: '1 1 160px', marginBottom: 0 }}
+        />
+        <input
+          placeholder="Motivo (ex: Feriado - Natal)"
+          value={reason}
+          onChange={(e) => setReason(e.target.value)}
+          style={{ ...s.input, flex: '2 1 200px', marginBottom: 0 }}
+        />
+      </div>
+
+      <button onClick={addDate} disabled={saving} style={s.saveBtn}>
+        {saving ? 'Bloqueando...' : '+ Bloquear este dia'}
+      </button>
+
+      <div style={{ marginTop: '18px' }}>
+        {loading ? (
+          <p style={{ color: '#71717a', fontSize: '13px' }}>Carregando...</p>
+        ) : dates.length === 0 ? (
+          <p style={{ color: '#71717a', fontSize: '13px' }}>Nenhum dia bloqueado.</p>
+        ) : dates.map((d) => (
+          <div key={d.id} style={s.blockListItem}>
+            <span style={s.blockListText}>
+              {new Date(d.date + 'T12:00:00').toLocaleDateString('pt-BR', { weekday: 'long', day: '2-digit', month: 'long' })}
+              {d.reason ? ` • ${d.reason}` : ''}
+            </span>
+            <button onClick={() => removeDate(d.id)} style={s.blockRemoveBtn}>
+              Desbloquear
+            </button>
+          </div>
+        ))}
+      </div>
+    </div>
+  )
+}
 }
 
 const s = {
