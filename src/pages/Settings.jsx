@@ -3,7 +3,7 @@ import Navbar from '../components/Navbar'
 
 const API = 'https://barber-saas-1-fpjl.onrender.com/api'
 
-export default function Settings() {  
+export default function Settings() {
   const [form, setForm] = useState({
     name: '',
     phone: '',
@@ -12,19 +12,14 @@ export default function Settings() {
     logo: '',
     slot_interval: 15,
     week_limit_enabled: false,
-    working_hours: {
-      open: '07:00',
-      close: '18:00',
-      working_days: [],
-    },
+    working_hours: { open: '07:00', close: '18:00', working_days: [] },
   })
-
   const [barbers, setBarbers] = useState([])
   const [loading, setLoading] = useState(true)
   const [saved, setSaved] = useState(false)
   const [savedPix, setSavedPix] = useState({})
+  const [activeTab, setActiveTab] = useState('geral')
   const logoRef = useRef()
-
   const token = localStorage.getItem('token')
   const headers = {
     Authorization: `Bearer ${token}`,
@@ -55,7 +50,6 @@ export default function Settings() {
             working_days: workingHours.working_days || [],
           }
         }
-
         setForm({
           name: d.name || '',
           phone: d.phone || '',
@@ -163,279 +157,303 @@ export default function Settings() {
           </div>
         </div>
 
-        {/* Logo da Barbearia */}
-        <div style={s.card}>
-          <h2 style={s.sectionTitle}>
-            <i className="ti ti-photo" style={{ marginRight: '8px', color: '#f59e0b' }}></i>
-            Logo da Barbearia
-          </h2>
-          <p style={s.hint}>Aparece na página de agendamento dos seus clientes</p>
-
-          <div style={s.logoArea}>
-            {form.logo ? (
-              <div style={s.logoPreviewWrap}>
-                <img src={form.logo} alt="Logo" style={s.logoPreview} />
-                <button onClick={() => setForm((f) => ({ ...f, logo: '' }))} style={s.removeBtn}>
-                  <i className="ti ti-trash" style={{ marginRight: '4px' }}></i>Remover
-                </button>
-              </div>
-            ) : (
-              <div style={s.logoPlaceholder} onClick={() => logoRef.current.click()}>
-                <i className="ti ti-upload" style={{ fontSize: '28px', color: '#52525b', marginBottom: '8px' }}></i>
-                <span style={{ fontSize: '13px', color: '#71717a' }}>Clique para fazer upload da logo</span>
-                <span style={{ fontSize: '11px', color: '#52525b', marginTop: '4px' }}>PNG, JPG ou SVG</span>
-              </div>
-            )}
-            <input ref={logoRef} type="file" accept="image/*" style={{ display: 'none' }} onChange={handleLogoUpload} />
-            {form.logo && (
-              <button onClick={() => logoRef.current.click()} style={s.changeBtn}>
-                <i className="ti ti-pencil" style={{ marginRight: '6px' }}></i>Trocar imagem
-              </button>
-            )}
-          </div>
+        {/* Barra de abas */}
+        <div style={s.tabsWrap}>
+          {[
+            { key: 'geral', label: 'Geral', icon: 'ti-building-store' },
+            { key: 'horarios', label: 'Horários', icon: 'ti-clock' },
+            { key: 'equipe', label: 'Equipe', icon: 'ti-users' },
+            { key: 'feriados', label: 'Feriados', icon: 'ti-calendar-off' },
+            { key: 'link', label: 'Link', icon: 'ti-link' },
+          ].map((tab) => (
+            <button
+              key={tab.key}
+              onClick={() => setActiveTab(tab.key)}
+              style={{ ...s.tabBtnSettings, ...(activeTab === tab.key ? s.tabBtnSettingsActive : {}) }}
+            >
+              <i className={`ti ${tab.icon}`} style={{ fontSize: '16px', marginBottom: '4px', display: 'block' }}></i>
+              {tab.label}
+            </button>
+          ))}
         </div>
 
-        {/* Informações da Barbearia */}
-        <div style={{ ...s.card, marginTop: '20px' }}>
-          <h2 style={s.sectionTitle}>
-            <i className="ti ti-building-store" style={{ marginRight: '8px', color: '#f59e0b' }}></i>
-            Informações da Barbearia
-          </h2>
-
-          <label style={s.label}>Nome da Barbearia</label>
-          <input
-            style={s.input}
-            value={form.name}
-            onChange={(e) => setForm({ ...form, name: e.target.value })}
-            placeholder="Ex: Barbearia do João"
-          />
-
-          <label style={s.label}>Telefone / WhatsApp</label>
-          <input
-            style={s.input}
-            value={form.phone}
-            onChange={(e) => setForm({ ...form, phone: e.target.value })}
-            placeholder="Ex: (11) 99999-9999"
-          />
-
-          <label style={s.label}>Endereço</label>
-          <input
-            style={s.input}
-            value={form.address}
-            onChange={(e) => setForm({ ...form, address: e.target.value })}
-            placeholder="Ex: Av. Principal, 123 - Bairro - Cidade/UF"
-          />
-
-          <label style={s.label}>Descrição</label>
-          <textarea
-            style={{ ...s.input, height: '80px', resize: 'vertical' }}
-            value={form.description}
-            onChange={(e) => setForm({ ...form, description: e.target.value })}
-            placeholder="Frase de apresentação da barbearia..."
-          />
-
-          <h3 style={{ color: '#fff', marginTop: 20, marginBottom: 15 }}>Horário de Funcionamento</h3>
-
-          <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '16px' }}>
-            <label style={{ color: '#fff', width: '100px' }}>Horário padrão</label>
-            <input
-              type="time"
-              value={form.working_hours?.open ?? '07:00'}
-              onChange={(e) =>
-                setForm({
-                  ...form,
-                  working_hours: {
-                    ...form.working_hours,
-                    open: e.target.value,
-                  },
-                })
-              }
-              style={s.input}
-            />
-            <span style={{ color: '#aaa' }}>até</span>
-            <input
-              type="time"
-              value={form.working_hours?.close ?? '18:00'}
-              onChange={(e) =>
-                setForm({
-                  ...form,
-                  working_hours: {
-                    ...form.working_hours,
-                    close: e.target.value,
-                  },
-                })
-              }
-              style={s.input}
-            />
-          </div>
-
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '12px', marginBottom: '20px' }}>
-            {[
-              ['monday', 'Seg'],
-              ['tuesday', 'Ter'],
-              ['wednesday', 'Qua'],
-              ['thursday', 'Qui'],
-              ['friday', 'Sex'],
-              ['saturday', 'Sáb'],
-              ['sunday', 'Dom'],
-            ].map(([key, label]) => (
-              <label key={key} style={{ color: '#fff', fontSize: '14px', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                <input
-                  type="checkbox"
-                  checked={form.working_hours?.working_days?.includes(key) ?? false}
-                  onChange={(e) => {
-                    const current = form.working_hours?.working_days ?? []
-                    const updated = e.target.checked
-                      ? [...current, key]
-                      : current.filter((d) => d !== key)
-                    setForm({
-                      ...form,
-                      working_hours: {
-                        ...form.working_hours,
-                        working_days: updated,
-                      },
-                    })
-                  }}
-                />
-                {label}
-              </label>
-            ))}
-          </div>
-
-          {/* Intervalo de horários exibido ao cliente */}
-            <label style={s.label}>Intervalo entre horários (para o cliente escolher)</label>
-                      <select
-                        style={s.input}
-                        value={form.slot_interval}
-                        onChange={(e) => setForm({ ...form, slot_interval: parseInt(e.target.value, 10) })}
-                      >
-                        <option value={15}>De 15 em 15 minutos</option>
-                        <option value={30}>De 30 em 30 minutos</option>
-                      </select>
-                      <p style={{ fontSize: '12px', color: '#71717a', margin: '-8px 0 20px' }}>
-                        Define de quanto em quanto tempo os horários aparecem na tela de agendamento do cliente.
-                      </p>
-
-                      {/* Limitar agendamento à semana atual */}
-                      <label style={{ display: 'flex', alignItems: 'center', gap: '10px', color: '#fff', fontSize: '14px', cursor: 'pointer', marginTop: '20px' }}>
-                        <input
-                          type="checkbox"
-                          checked={form.week_limit_enabled}
-                          onChange={(e) => setForm({ ...form, week_limit_enabled: e.target.checked })}
-                        />
-                        Mostrar apenas a semana atual para o cliente
-                      </label>
-                      <p style={{ fontSize: '12px', color: '#71717a', margin: '6px 0 20px' }}>
-                        Quando ativado, o cliente só vê e consegue marcar dias de segunda a domingo da semana em curso.
-                        A cada domingo à meia-noite, a janela reinicia automaticamente para a próxima semana.
-                      </p>
-          {/* Botão Salvar */}
-          <button onClick={save} style={s.saveBtn}>
-            <i
-              className={`ti ${saved ? 'ti-check' : 'ti-device-floppy'}`}
-              style={{ marginRight: '8px' }}
-            ></i>
-            {saved ? 'Salvo!' : 'Salvar Configurações'}
-          </button>
-        </div>
-
-        {/* QR Code Pix por Barbeiro */}
-        <div style={{ ...s.card, marginTop: '20px' }}>
-          <h2 style={s.sectionTitle}>
-            <i className="ti ti-qrcode" style={{ marginRight: '8px', color: '#f59e0b' }}></i>
-            QR Code Pix dos Barbeiros
-          </h2>
-          <p style={s.hint}>Aparece na tela de confirmação após o cliente agendar</p>
-
-          {barbers.length === 0 ? (
-            <p style={{ fontSize: '13px', color: '#71717a' }}>
-              Nenhum barbeiro cadastrado. <a href="/barbers" style={{ color: '#f59e0b' }}>Cadastrar barbeiros</a>
-            </p>
-          ) : (
-            <div style={s.barberPixList}>
-              {barbers.map((barber) => (
-                <div key={barber.id} style={s.barberPixCard}>
-                  <div style={s.barberPixHeader}>
-                    <div style={s.barberPixAvatar}>{barber.name[0].toUpperCase()}</div>
-                    <div>
-                      <p style={s.barberPixName}>{barber.name}</p>
-                      <p style={s.barberPixRole}>Barbeiro</p>
-                    </div>
-                    {savedPix[barber.id] && (
-                      <span style={s.savedBadge}>
-                        <i className="ti ti-check" style={{ marginRight: '4px' }}></i>Salvo!
-                      </span>
-                    )}
+        {/* Aba Geral - Logo + Informações */}
+        {activeTab === 'geral' && (
+          <>
+            <div style={s.card}>
+              <h2 style={s.sectionTitle}>
+                <i className="ti ti-photo" style={{ marginRight: '8px', color: '#f59e0b' }}></i>
+                Logo da Barbearia
+              </h2>
+              <p style={s.hint}>Aparece na página de agendamento dos seus clientes</p>
+              <div style={s.logoArea}>
+                {form.logo ? (
+                  <div style={s.logoPreviewWrap}>
+                    <img src={form.logo} alt="Logo" style={s.logoPreview} />
+                    <button onClick={() => setForm((f) => ({ ...f, logo: '' }))} style={s.removeBtn}>
+                      <i className="ti ti-trash" style={{ marginRight: '4px' }}></i>Remover
+                    </button>
                   </div>
+                ) : (
+                  <div style={s.logoPlaceholder} onClick={() => logoRef.current.click()}>
+                    <i className="ti ti-upload" style={{ fontSize: '28px', color: '#52525b', marginBottom: '8px' }}></i>
+                    <span style={{ fontSize: '13px', color: '#71717a' }}>Clique para fazer upload da logo</span>
+                    <span style={{ fontSize: '11px', color: '#52525b', marginTop: '4px' }}>PNG, JPG ou SVG</span>
+                  </div>
+                )}
+                <input ref={logoRef} type="file" accept="image/*" style={{ display: 'none' }} onChange={handleLogoUpload} />
+                {form.logo && (
+                  <button onClick={() => logoRef.current.click()} style={s.changeBtn}>
+                    <i className="ti ti-pencil" style={{ marginRight: '6px' }}></i>Trocar imagem
+                  </button>
+                )}
+              </div>
+              <button onClick={save} style={s.saveBtn}>
+                <i className={`ti ${saved ? 'ti-check' : 'ti-device-floppy'}`} style={{ marginRight: '8px' }}></i>
+                {saved ? 'Salvo!' : 'Salvar Configurações'}
+              </button>
+            </div>
 
-                  {barber.pix_qr ? (
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                      <div style={s.pixPreviewWrap}>
-                        <img src={barber.pix_qr} alt="QR Pix" style={s.pixPreview} />
-                        <div style={s.pixActions}>
-                          <label style={s.pixChangeBtn}>
-                            <i className="ti ti-pencil" style={{ marginRight: '4px' }}></i>Trocar
-                            <input
-                              type="file"
-                              accept="image/*"
-                              style={{ display: 'none' }}
-                              onChange={(e) => handlePixUpload(barber.id, e)}
-                            />
-                          </label>
-                          <button onClick={() => removePix(barber.id)} style={s.pixRemoveBtn}>
-                            <i className="ti ti-trash" style={{ marginRight: '4px' }}></i>Remover
-                          </button>
-                        </div>
-                      </div>
-                      <PixKeyField barber={barber} onSave={(key) => savePixKey(barber.id, key)} />
-                    </div>
-                  ) : (
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                      <label style={s.pixUploadArea}>
-                        <i className="ti ti-upload" style={{ fontSize: '22px', color: '#52525b', marginBottom: '6px' }}></i>
-                        <span style={{ fontSize: '12px', color: '#71717a' }}>Upload do QR Code Pix</span>
-                        <input
-                          type="file"
-                          accept="image/*"
-                          style={{ display: 'none' }}
-                          onChange={(e) => handlePixUpload(barber.id, e)}
-                        />
-                      </label>
-                      <PixKeyField barber={barber} onSave={(key) => savePixKey(barber.id, key)} />
-                    </div>
-                  )}
+            <div style={{ ...s.card, marginTop: '20px' }}>
+              <h2 style={s.sectionTitle}>
+                <i className="ti ti-building-store" style={{ marginRight: '8px', color: '#f59e0b' }}></i>
+                Informações da Barbearia
+              </h2>
+              <label style={s.label}>Nome da Barbearia</label>
+              <input
+                style={s.input}
+                value={form.name}
+                onChange={(e) => setForm({ ...form, name: e.target.value })}
+                placeholder="Ex: Barbearia do João"
+              />
+              <label style={s.label}>Telefone / WhatsApp</label>
+              <input
+                style={s.input}
+                value={form.phone}
+                onChange={(e) => setForm({ ...form, phone: e.target.value })}
+                placeholder="Ex: (11) 99999-9999"
+              />
+              <label style={s.label}>Endereço</label>
+              <input
+                style={s.input}
+                value={form.address}
+                onChange={(e) => setForm({ ...form, address: e.target.value })}
+                placeholder="Ex: Av. Principal, 123 - Bairro - Cidade/UF"
+              />
+              <label style={s.label}>Descrição</label>
+              <textarea
+                style={{ ...s.input, height: '80px', resize: 'vertical' }}
+                value={form.description}
+                onChange={(e) => setForm({ ...form, description: e.target.value })}
+                placeholder="Frase de apresentação da barbearia..."
+              />
+              <button onClick={save} style={s.saveBtn}>
+                <i className={`ti ${saved ? 'ti-check' : 'ti-device-floppy'}`} style={{ marginRight: '8px' }}></i>
+                {saved ? 'Salvo!' : 'Salvar Configurações'}
+              </button>
+            </div>
+          </>
+        )}
 
-                  {/* Passando workingHours para o componente de bloqueios */}
-                  <BarberBlocksSection
-                    barber={barber}
-                    headers={headers}
-                    API={API}
-                    workingHours={form.working_hours}
+        {/* Aba Horários */}
+        {activeTab === 'horarios' && (
+          <div style={{ ...s.card, marginTop: '20px' }}>
+            <h2 style={s.sectionTitle}>
+              <i className="ti ti-clock" style={{ marginRight: '8px', color: '#f59e0b' }}></i>
+              Horário de Funcionamento
+            </h2>
+
+            <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '16px' }}>
+              <label style={{ color: '#fff', width: '100px' }}>Horário padrão</label>
+              <input
+                type="time"
+                value={form.working_hours?.open ?? '07:00'}
+                onChange={(e) =>
+                  setForm({
+                    ...form,
+                    working_hours: { ...form.working_hours, open: e.target.value },
+                  })
+                }
+                style={s.input}
+              />
+              <span style={{ color: '#aaa' }}>até</span>
+              <input
+                type="time"
+                value={form.working_hours?.close ?? '18:00'}
+                onChange={(e) =>
+                  setForm({
+                    ...form,
+                    working_hours: { ...form.working_hours, close: e.target.value },
+                  })
+                }
+                style={s.input}
+              />
+            </div>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '12px', marginBottom: '20px' }}>
+              {[
+                ['monday', 'Seg'],
+                ['tuesday', 'Ter'],
+                ['wednesday', 'Qua'],
+                ['thursday', 'Qui'],
+                ['friday', 'Sex'],
+                ['saturday', 'Sáb'],
+                ['sunday', 'Dom'],
+              ].map(([key, label]) => (
+                <label key={key} style={{ color: '#fff', fontSize: '14px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  <input
+                    type="checkbox"
+                    checked={form.working_hours?.working_days?.includes(key) ?? false}
+                    onChange={(e) => {
+                      const current = form.working_hours?.working_days ?? []
+                      const updated = e.target.checked ? [...current, key] : current.filter((d) => d !== key)
+                      setForm({
+                        ...form,
+                        working_hours: { ...form.working_hours, working_days: updated },
+                      })
+                    }}
                   />
-                </div>
+                  {label}
+                </label>
               ))}
             </div>
-          )}
-        </div>
 
-        {/* Dias Bloqueados (feriados, folgas gerais) */}
-        <BlockedDatesSection headers={headers} API={API} />
+            <label style={s.label}>Intervalo entre horários (para o cliente escolher)</label>
+            <select
+              style={s.input}
+              value={form.slot_interval}
+              onChange={(e) => setForm({ ...form, slot_interval: parseInt(e.target.value, 10) })}
+            >
+              <option value={15}>De 15 em 15 minutos</option>
+              <option value={30}>De 30 em 30 minutos</option>
+            </select>
+            <p style={{ fontSize: '12px', color: '#71717a', margin: '-8px 0 20px' }}>
+              Define de quanto em quanto tempo os horários aparecem na tela de agendamento do cliente.
+            </p>
 
-        {/* Link de Agendamento */}
-        <div style={{ ...s.card, marginTop: '20px' }}>
-          <h2 style={s.sectionTitle}>
-            <i className="ti ti-link" style={{ marginRight: '8px', color: '#f59e0b' }}></i>
-            Link de Agendamento
-          </h2>
-          <p style={{ fontSize: '13px', color: '#71717a', margin: '0 0 16px' }}>
-            Compartilhe este link com seus clientes
-          </p>
-          <LinkBox />
-        </div>
+            <label style={{ display: 'flex', alignItems: 'center', gap: '10px', color: '#fff', fontSize: '14px', cursor: 'pointer', marginTop: '20px' }}>
+              <input
+                type="checkbox"
+                checked={form.week_limit_enabled}
+                onChange={(e) => setForm({ ...form, week_limit_enabled: e.target.checked })}
+              />
+              Mostrar apenas a semana atual para o cliente
+            </label>
+            <p style={{ fontSize: '12px', color: '#71717a', margin: '6px 0 20px' }}>
+              Quando ativado, o cliente só vê e consegue marcar dias de segunda a domingo da semana em curso.
+              A cada domingo à meia-noite, a janela reinicia automaticamente para a próxima semana.
+            </p>
+
+            <button onClick={save} style={s.saveBtn}>
+              <i className={`ti ${saved ? 'ti-check' : 'ti-device-floppy'}`} style={{ marginRight: '8px' }}></i>
+              {saved ? 'Salvo!' : 'Salvar Configurações'}
+            </button>
+          </div>
+        )}
+
+        {/* Aba Equipe - QR Code Pix por Barbeiro */}
+        {activeTab === 'equipe' && (
+          <div style={{ ...s.card, marginTop: '20px' }}>
+            <h2 style={s.sectionTitle}>
+              <i className="ti ti-qrcode" style={{ marginRight: '8px', color: '#f59e0b' }}></i>
+              QR Code Pix dos Barbeiros
+            </h2>
+            <p style={s.hint}>Aparece na tela de confirmação após o cliente agendar</p>
+            {barbers.length === 0 ? (
+              <p style={{ fontSize: '13px', color: '#71717a' }}>
+                Nenhum barbeiro cadastrado. <a href="/barbers" style={{ color: '#f59e0b' }}>Cadastrar barbeiros</a>
+              </p>
+            ) : (
+              <div style={s.barberPixList}>
+                {barbers.map((barber) => (
+                  <div key={barber.id} style={s.barberPixCard}>
+                    <div style={s.barberPixHeader}>
+                      <div style={s.barberPixAvatar}>{barber.name[0].toUpperCase()}</div>
+                      <div>
+                        <p style={s.barberPixName}>{barber.name}</p>
+                        <p style={s.barberPixRole}>Barbeiro</p>
+                      </div>
+                      {savedPix[barber.id] && (
+                        <span style={s.savedBadge}>
+                          <i className="ti ti-check" style={{ marginRight: '4px' }}></i>Salvo!
+                        </span>
+                      )}
+                    </div>
+
+                    {barber.pix_qr ? (
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                        <div style={s.pixPreviewWrap}>
+                          <img src={barber.pix_qr} alt="QR Pix" style={s.pixPreview} />
+                          <div style={s.pixActions}>
+                            <label style={s.pixChangeBtn}>
+                              <i className="ti ti-pencil" style={{ marginRight: '4px' }}></i>Trocar
+                              <input
+                                type="file"
+                                accept="image/*"
+                                style={{ display: 'none' }}
+                                onChange={(e) => handlePixUpload(barber.id, e)}
+                              />
+                            </label>
+                            <button onClick={() => removePix(barber.id)} style={s.pixRemoveBtn}>
+                              <i className="ti ti-trash" style={{ marginRight: '4px' }}></i>Remover
+                            </button>
+                          </div>
+                        </div>
+                        <PixKeyField barber={barber} onSave={(key) => savePixKey(barber.id, key)} />
+                      </div>
+                    ) : (
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                        <label style={s.pixUploadArea}>
+                          <i className="ti ti-upload" style={{ fontSize: '22px', color: '#52525b', marginBottom: '6px' }}></i>
+                          <span style={{ fontSize: '12px', color: '#71717a' }}>Upload do QR Code Pix</span>
+                          <input
+                            type="file"
+                            accept="image/*"
+                            style={{ display: 'none' }}
+                            onChange={(e) => handlePixUpload(barber.id, e)}
+                          />
+                        </label>
+                        <PixKeyField barber={barber} onSave={(key) => savePixKey(barber.id, key)} />
+                      </div>
+                    )}
+
+                    <BarberBlocksSection
+                      barber={barber}
+                      headers={headers}
+                      API={API}
+                      workingHours={form.working_hours}
+                    />
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Aba Feriados */}
+        {activeTab === 'feriados' && (
+          <BlockedDatesSection headers={headers} API={API} />
+        )}
+
+        {/* Aba Link */}
+        {activeTab === 'link' && (
+          <div style={{ ...s.card, marginTop: '20px' }}>
+            <h2 style={s.sectionTitle}>
+              <i className="ti ti-link" style={{ marginRight: '8px', color: '#f59e0b' }}></i>
+              Link de Agendamento
+            </h2>
+            <p style={{ fontSize: '13px', color: '#71717a', margin: '0 0 16px' }}>
+              Compartilhe este link com seus clientes
+            </p>
+            <LinkBox />
+          </div>
+        )}
       </div>
     </div>
   )
 }
+
+// Componentes auxiliares (LinkBox, PixKeyField, BarberBlocksSection, BlockedDatesSection)
+// mantidos exatamente como estavam, apenas reorganizei para ficar abaixo do componente principal.
 
 function LinkBox() {
   const [slug, setSlug] = useState('')
@@ -600,8 +618,13 @@ function BarberBlocksSection({ barber, headers, API, workingHours }) {
   const [openPeriod, setOpenPeriod] = useState('Manhã')
 
   const dayLabels = {
-    monday: 'Segunda', tuesday: 'Terça', wednesday: 'Quarta',
-    thursday: 'Quinta', friday: 'Sexta', saturday: 'Sábado', sunday: 'Domingo',
+    monday: 'Segunda',
+    tuesday: 'Terça',
+    wednesday: 'Quarta',
+    thursday: 'Quinta',
+    friday: 'Sexta',
+    saturday: 'Sábado',
+    sunday: 'Domingo',
   }
 
   const getNext14Days = () => {
@@ -617,7 +640,6 @@ function BarberBlocksSection({ barber, headers, API, workingHours }) {
   const formatDateValue = (d) =>
     d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0')
 
-  // Usa o expediente real da barbearia
   const openHour = workingHours?.open || '07:00'
   const closeHour = workingHours?.close || '18:00'
 
@@ -706,10 +728,8 @@ function BarberBlocksSection({ barber, headers, API, workingHours }) {
         <p style={{ ...s.blockTitle, margin: 0 }}>Bloqueios de horário — {barber.name}</p>
         <span style={s.blockCollapseIcon}>{expanded ? '▲ Fechar' : '▼ Abrir'}</span>
       </div>
-
       {expanded && (
         <div style={{ marginTop: '14px' }}>
-          {/* Tipo: data específica ou toda semana */}
           <div style={s.blockTypeTabs}>
             <button
               onClick={() => setType('once')}
@@ -725,7 +745,6 @@ function BarberBlocksSection({ barber, headers, API, workingHours }) {
             </button>
           </div>
 
-          {/* Seletor de data ou dia da semana */}
           {type === 'once' ? (
             <div style={s.blockDateTabsWrap}>
               {getNext14Days().map((d, i) => {
@@ -756,7 +775,6 @@ function BarberBlocksSection({ barber, headers, API, workingHours }) {
             </div>
           )}
 
-          {/* Períodos em accordion */}
           {periods.map(period => {
             const isOpen = openPeriod === period.label
             return (
@@ -834,7 +852,9 @@ function BarberBlocksSection({ barber, headers, API, workingHours }) {
       )}
     </div>
   )
-  function BlockedDatesSection({ headers, API }) {
+}
+
+function BlockedDatesSection({ headers, API }) {
   const [dates, setDates] = useState([])
   const [loading, setLoading] = useState(true)
   const [newDate, setNewDate] = useState('')
@@ -888,7 +908,6 @@ function BarberBlocksSection({ barber, headers, API, workingHours }) {
       <p style={s.hint}>
         O dia inteiro fica indisponível para agendamento, para todos os barbeiros.
       </p>
-
       <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap', marginBottom: '10px' }}>
         <input
           type="date"
@@ -903,11 +922,9 @@ function BarberBlocksSection({ barber, headers, API, workingHours }) {
           style={{ ...s.input, flex: '2 1 200px', marginBottom: 0 }}
         />
       </div>
-
       <button onClick={addDate} disabled={saving} style={s.saveBtn}>
         {saving ? 'Bloqueando...' : '+ Bloquear este dia'}
       </button>
-
       <div style={{ marginTop: '18px' }}>
         {loading ? (
           <p style={{ color: '#71717a', fontSize: '13px' }}>Carregando...</p>
@@ -928,386 +945,5 @@ function BarberBlocksSection({ barber, headers, API, workingHours }) {
     </div>
   )
 }
-}
 
-const s = {
-  page: { minHeight: '100vh', background: '#09090b' },
-  container: { maxWidth: '700px', margin: '0 auto', padding: '32px 20px' },
-  header: { marginBottom: '24px' },
-  title: { fontSize: '24px', fontWeight: '700', color: '#fff', margin: 0 },
-  subtitle: { fontSize: '14px', color: '#71717a', margin: '4px 0 0' },
-  hint: { fontSize: '13px', color: '#52525b', margin: '0 0 16px' },
-  card: { background: '#18181b', border: '0.5px solid #27272a', borderRadius: '12px', padding: '24px' },
-  sectionTitle: { fontSize: '16px', fontWeight: '600', color: '#fff', margin: '0 0 4px', display: 'flex', alignItems: 'center' },
-  label: { display: 'block', fontSize: '13px', color: '#a1a1aa', marginBottom: '6px', marginTop: '14px' },
-  input: {
-    width: '100%',
-    background: '#09090b',
-    border: '0.5px solid #27272a',
-    borderRadius: '8px',
-    padding: '10px 12px',
-    color: '#fff',
-    fontSize: '14px',
-    boxSizing: 'border-box',
-  },
-  row: { display: 'flex', gap: '16px', marginTop: '4px' },
-  saveBtn: {
-    marginTop: '24px',
-    width: '100%',
-    padding: '12px',
-    background: '#f59e0b',
-    color: '#09090b',
-    border: 'none',
-    borderRadius: '8px',
-    fontSize: '14px',
-    fontWeight: '700',
-    cursor: 'pointer',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  empty: { textAlign: 'center', color: '#71717a', padding: '60px' },
-
-  logoArea: { display: 'flex', flexDirection: 'column', gap: '12px' },
-  logoPlaceholder: {
-    border: '1.5px dashed #27272a',
-    borderRadius: '10px',
-    padding: '32px',
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'center',
-    justifyContent: 'center',
-    cursor: 'pointer',
-    background: '#09090b',
-  },
-  logoPreviewWrap: { display: 'flex', alignItems: 'center', gap: '16px' },
-  logoPreview: {
-    width: '80px',
-    height: '80px',
-    borderRadius: '10px',
-    objectFit: 'contain',
-    background: '#09090b',
-    border: '0.5px solid #27272a',
-  },
-  removeBtn: {
-    background: '#2a1414',
-    color: '#f87171',
-    border: '1px solid #7f1d1d',
-    padding: '8px 14px',
-    borderRadius: '8px',
-    fontSize: '13px',
-    cursor: 'pointer',
-    display: 'flex',
-    alignItems: 'center',
-  },
-  changeBtn: {
-    background: '#27272a',
-    color: '#a1a1aa',
-    border: 'none',
-    padding: '8px 14px',
-    borderRadius: '8px',
-    fontSize: '13px',
-    cursor: 'pointer',
-    display: 'flex',
-    alignItems: 'center',
-    width: 'fit-content',
-  },
-
-  barberPixList: { display: 'flex', flexDirection: 'column', gap: '16px' },
-  barberPixCard: { background: '#09090b', border: '0.5px solid #27272a', borderRadius: '10px', padding: '16px' },
-  barberPixHeader: { display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '14px' },
-  barberPixAvatar: {
-    width: '38px',
-    height: '38px',
-    borderRadius: '50%',
-    background: '#f59e0b',
-    color: '#09090b',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    fontSize: '16px',
-    fontWeight: '700',
-    flexShrink: 0,
-  },
-  barberPixName: { fontSize: '14px', fontWeight: '600', color: '#fff', margin: 0 },
-  barberPixRole: { fontSize: '11px', color: '#71717a', margin: '2px 0 0' },
-  savedBadge: {
-    marginLeft: 'auto',
-    background: '#14532d',
-    color: '#4ade80',
-    fontSize: '12px',
-    padding: '4px 10px',
-    borderRadius: '20px',
-    display: 'flex',
-    alignItems: 'center',
-  },
-
-  pixUploadArea: {
-    border: '1.5px dashed #27272a',
-    borderRadius: '8px',
-    padding: '20px',
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'center',
-    justifyContent: 'center',
-    cursor: 'pointer',
-    background: '#18181b',
-  },
-  pixPreviewWrap: { display: 'flex', alignItems: 'center', gap: '16px' },
-  pixPreview: {
-    width: '80px',
-    height: '80px',
-    borderRadius: '8px',
-    objectFit: 'contain',
-    background: '#18181b',
-    border: '0.5px solid #27272a',
-  },
-  pixActions: { display: 'flex', flexDirection: 'column', gap: '8px' },
-  pixChangeBtn: {
-    background: '#27272a',
-    color: '#a1a1aa',
-    border: 'none',
-    padding: '8px 14px',
-    borderRadius: '8px',
-    fontSize: '12px',
-    cursor: 'pointer',
-    display: 'flex',
-    alignItems: 'center',
-  },
-  pixRemoveBtn: {
-    background: '#2a1414',
-    color: '#f87171',
-    border: '1px solid #7f1d1d',
-    padding: '8px 14px',
-    borderRadius: '8px',
-    fontSize: '12px',
-    cursor: 'pointer',
-    display: 'flex',
-    alignItems: 'center',
-  },
-
-  blockCard: {
-    background: '#09090b',
-    border: '0.5px solid #27272a',
-    borderRadius: '10px',
-    padding: '16px',
-    marginTop: '12px',
-  },
-  blockTitle: {
-    color: '#fff',
-    fontWeight: 600,
-    fontSize: '14px',
-    marginBottom: '12px',
-  },
-  blockRow: {
-    display: 'flex',
-    flexWrap: 'wrap',
-    gap: '8px',
-    marginBottom: '10px',
-  },
-  blockSelect: {
-    background: '#18181b',
-    color: '#fff',
-    border: '0.5px solid #27272a',
-    borderRadius: '8px',
-    padding: '8px',
-    fontSize: '13px',
-    flex: '1 1 120px',
-    minWidth: '110px',
-  },
-  blockInput: {
-    background: '#18181b',
-    color: '#fff',
-    border: '0.5px solid #27272a',
-    borderRadius: '8px',
-    padding: '8px',
-    fontSize: '13px',
-    flex: '1 1 110px',
-    minWidth: '100px',
-    boxSizing: 'border-box',
-  },
-  blockReasonInput: {
-    width: '100%',
-    background: '#18181b',
-    color: '#fff',
-    border: '0.5px solid #27272a',
-    borderRadius: '8px',
-    padding: '8px 12px',
-    fontSize: '13px',
-    marginBottom: '10px',
-    boxSizing: 'border-box',
-  },
-  blockAddBtn: {
-    background: '#f59e0b',
-    color: '#09090b',
-    border: 'none',
-    borderRadius: '8px',
-    padding: '8px 16px',
-    fontSize: '13px',
-    fontWeight: '700',
-    cursor: 'pointer',
-  },
-  blockListItem: {
-    display: 'flex',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    gap: '8px',
-    padding: '8px 0',
-    borderTop: '0.5px solid #27272a',
-    flexWrap: 'wrap',
-  },
-  blockListText: {
-    color: '#a1a1aa',
-    fontSize: '13px',
-  },
-  blockRemoveBtn: {
-    background: 'none',
-    border: 'none',
-    color: '#f87171',
-    cursor: 'pointer',
-    fontSize: '12px',
-    whiteSpace: 'nowrap',
-  },
-
-  // Estilos do seletor de chips
-  blockTypeTabs: {
-    display: 'flex',
-    gap: '8px',
-    marginBottom: '14px',
-  },
-  blockTypeTab: {
-    flex: 1,
-    padding: '10px',
-    borderRadius: '10px',
-    border: '1px solid #27272a',
-    background: '#18181b',
-    color: '#a1a1aa',
-    fontSize: '13px',
-    fontWeight: '600',
-    cursor: 'pointer',
-    textAlign: 'center',
-  },
-  blockTypeTabActive: {
-    borderColor: '#f59e0b',
-    background: 'rgba(245,158,11,0.1)',
-    color: '#f59e0b',
-  },
-  blockDateTabsWrap: {
-    display: 'flex',
-    gap: '6px',
-    overflowX: 'auto',
-    paddingBottom: '8px',
-    marginBottom: '14px',
-    scrollbarWidth: 'none',
-  },
-  blockDateTab: {
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'center',
-    gap: '2px',
-    padding: '8px 12px',
-    borderRadius: '10px',
-    border: '1px solid #27272a',
-    background: '#18181b',
-    color: '#71717a',
-    fontSize: '11px',
-    fontWeight: '600',
-    cursor: 'pointer',
-    minWidth: '56px',
-    flexShrink: 0,
-  },
-  blockDateTabActive: {
-    borderColor: '#f59e0b',
-    background: 'rgba(245,158,11,0.1)',
-    color: '#f59e0b',
-  },
-  blockSectionLabel: {
-    fontSize: '12px',
-    color: '#71717a',
-    fontWeight: '600',
-    margin: '14px 0 8px',
-    textTransform: 'uppercase',
-    letterSpacing: '0.04em',
-  },
-  blockChipGrid: {
-    display: 'grid',
-    gridTemplateColumns: 'repeat(auto-fill, minmax(72px, 1fr))',
-    gap: '8px',
-  },
-  blockChip: {
-    padding: '10px 8px',
-    borderRadius: '10px',
-    border: '1px solid #27272a',
-    background: '#18181b',
-    color: '#e4e4e7',
-    fontSize: '13px',
-    fontWeight: '500',
-    cursor: 'pointer',
-    textAlign: 'center',
-  },
-  blockChipStart: {
-    borderColor: '#f59e0b',
-    background: 'rgba(245,158,11,0.15)',
-    color: '#f59e0b',
-    fontWeight: '700',
-  },
-  blockChipEnd: {
-    borderColor: '#f59e0b',
-    background: 'rgba(245,158,11,0.15)',
-    color: '#f59e0b',
-    fontWeight: '700',
-  },
-  blockChipInRange: {
-    borderColor: 'rgba(245,158,11,0.4)',
-    background: 'rgba(245,158,11,0.06)',
-    color: '#fbbf24',
-  },
-  blockRangePreview: {
-    marginTop: '12px',
-    padding: '10px 14px',
-    background: 'rgba(245,158,11,0.08)',
-    border: '1px solid rgba(245,158,11,0.2)',
-    borderRadius: '8px',
-    fontSize: '13px',
-    color: '#fbbf24',
-    fontWeight: '600',
-  },
-
-  // Novos estilos para accordion mobile
-  blockCardHeader: {
-    display: 'flex',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    cursor: 'pointer',
-  },
-  blockCollapseIcon: {
-    color: '#71717a',
-    fontSize: '13px',
-  },
-  blockPeriodHeader: {
-    display: 'flex',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    padding: '10px 12px',
-    background: '#18181b',
-    border: '1px solid #27272a',
-    borderRadius: '8px',
-    cursor: 'pointer',
-    marginTop: '8px',
-  },
-  blockPeriodHeaderActive: {
-    borderColor: 'rgba(245,158,11,0.4)',
-    background: 'rgba(245,158,11,0.06)',
-  },
-  blockPeriodLabel: {
-    fontSize: '12px',
-    color: '#a1a1aa',
-    fontWeight: '600',
-    textTransform: 'uppercase',
-    letterSpacing: '0.04em',
-  },
-  blockPeriodChevron: {
-    color: '#71717a',
-    fontSize: '12px',
-  },
-}
+const s={page:{minHeight:"100vh",background:"#09090b"},container:{maxWidth:"700px",margin:"0 auto",padding:"32px 20px"},header:{marginBottom:"24px"},title:{fontSize:"24px",fontWeight:"700",color:"#fff",margin:0},subtitle:{fontSize:"14px",color:"#71717a",margin:"4px 0 0"},tabsWrap:{display:"grid",gridTemplateColumns:"repeat(5, 1fr)",gap:"6px",marginBottom:"20px"},tabBtnSettings:{background:"#18181b",border:"1px solid #27272a",borderRadius:"10px",color:"#71717a",fontSize:"11px",fontWeight:"600",padding:"10px 4px",cursor:"pointer",textAlign:"center"},tabBtnSettingsActive:{borderColor:"#f59e0b",background:"rgba(245,158,11,0.1)",color:"#f59e0b"},hint:{fontSize:"13px",color:"#52525b",margin:"0 0 16px"},card:{background:"#18181b",border:"0.5px solid #27272a",borderRadius:"12px",padding:"24px"},sectionTitle:{fontSize:"16px",fontWeight:"600",color:"#fff",margin:"0 0 4px",display:"flex",alignItems:"center"},label:{display:"block",fontSize:"13px",color:"#a1a1aa",marginBottom:"6px",marginTop:"14px"},input:{width:"100%",background:"#09090b",border:"0.5px solid #27272a",borderRadius:"8px",padding:"10px 12px",color:"#fff",fontSize:"14px",boxSizing:"border-box"},saveBtn:{marginTop:"24px",width:"100%",padding:"12px",background:"#f59e0b",color:"#09090b",border:"none",borderRadius:"8px",fontSize:"14px",fontWeight:"700",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center"},empty:{textAlign:"center",color:"#71717a",padding:"60px"},logoArea:{display:"flex",flexDirection:"column",gap:"12px"},logoPlaceholder:{border:"1.5px dashed #27272a",borderRadius:"10px",padding:"32px",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",cursor:"pointer",background:"#09090b"},logoPreviewWrap:{display:"flex",alignItems:"center",gap:"16px"},logoPreview:{width:"80px",height:"80px",borderRadius:"10px",objectFit:"contain",background:"#09090b",border:"0.5px solid #27272a"},removeBtn:{background:"#2a1414",color:"#f87171",border:"1px solid #7f1d1d",padding:"8px 14px",borderRadius:"8px",fontSize:"13px",cursor:"pointer",display:"flex",alignItems:"center"},changeBtn:{background:"#27272a",color:"#a1a1aa",border:"none",padding:"8px 14px",borderRadius:"8px",fontSize:"13px",cursor:"pointer",display:"flex",alignItems:"center",width:"fit-content"},barberPixList:{display:"flex",flexDirection:"column",gap:"16px"},barberPixCard:{background:"#09090b",border:"0.5px solid #27272a",borderRadius:"10px",padding:"16px"},barberPixHeader:{display:"flex",alignItems:"center",gap:"12px",marginBottom:"14px"},barberPixAvatar:{width:"38px",height:"38px",borderRadius:"50%",background:"#f59e0b",color:"#09090b",display:"flex",alignItems:"center",justifyContent:"center",fontSize:"16px",fontWeight:"700",flexShrink:0},barberPixName:{fontSize:"14px",fontWeight:"600",color:"#fff",margin:0},barberPixRole:{fontSize:"11px",color:"#71717a",margin:"2px 0 0"},savedBadge:{marginLeft:"auto",background:"#14532d",color:"#4ade80",fontSize:"12px",padding:"4px 10px",borderRadius:"20px",display:"flex",alignItems:"center"},pixUploadArea:{border:"1.5px dashed #27272a",borderRadius:"8px",padding:"20px",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",cursor:"pointer",background:"#18181b"},pixPreviewWrap:{display:"flex",alignItems:"center",gap:"16px"},pixPreview:{width:"80px",height:"80px",borderRadius:"8px",objectFit:"contain",background:"#18181b",border:"0.5px solid #27272a"},pixActions:{display:"flex",flexDirection:"column",gap:"8px"},pixChangeBtn:{background:"#27272a",color:"#a1a1aa",border:"none",padding:"8px 14px",borderRadius:"8px",fontSize:"12px",cursor:"pointer",display:"flex",alignItems:"center"},pixRemoveBtn:{background:"#2a1414",color:"#f87171",border:"1px solid #7f1d1d",padding:"8px 14px",borderRadius:"8px",fontSize:"12px",cursor:"pointer",display:"flex",alignItems:"center"},blockCard:{background:"#09090b",border:"0.5px solid #27272a",borderRadius:"10px",padding:"16px",marginTop:"12px"},blockTitle:{color:"#fff",fontWeight:600,fontSize:"14px",marginBottom:"12px"},blockReasonInput:{width:"100%",background:"#18181b",color:"#fff",border:"0.5px solid #27272a",borderRadius:"8px",padding:"8px 12px",fontSize:"13px",marginBottom:"10px",boxSizing:"border-box"},blockAddBtn:{background:"#f59e0b",color:"#09090b",border:"none",borderRadius:"8px",padding:"8px 16px",fontSize:"13px",fontWeight:"700",cursor:"pointer"},blockListItem:{display:"flex",justifyContent:"space-between",alignItems:"center",gap:"8px",padding:"8px 0",borderTop:"0.5px solid #27272a",flexWrap:"wrap"},blockListText:{color:"#a1a1aa",fontSize:"13px"},blockRemoveBtn:{background:"none",border:"none",color:"#f87171",cursor:"pointer",fontSize:"12px",whiteSpace:"nowrap"},blockTypeTabs:{display:"flex",gap:"8px",marginBottom:"14px"},blockTypeTab:{flex:1,padding:"10px",borderRadius:"10px",border:"1px solid #27272a",background:"#18181b",color:"#a1a1aa",fontSize:"13px",fontWeight:"600",cursor:"pointer",textAlign:"center"},blockTypeTabActive:{borderColor:"#f59e0b",background:"rgba(245,158,11,0.1)",color:"#f59e0b"},blockDateTabsWrap:{display:"flex",gap:"6px",overflowX:"auto",paddingBottom:"8px",marginBottom:"14px",scrollbarWidth:"none"},blockDateTab:{display:"flex",flexDirection:"column",alignItems:"center",gap:"2px",padding:"8px 12px",borderRadius:"10px",border:"1px solid #27272a",background:"#18181b",color:"#71717a",fontSize:"11px",fontWeight:"600",cursor:"pointer",minWidth:"56px",flexShrink:0},blockDateTabActive:{borderColor:"#f59e0b",background:"rgba(245,158,11,0.1)",color:"#f59e0b"},blockChipGrid:{display:"grid",gridTemplateColumns:"repeat(auto-fill, minmax(72px, 1fr))",gap:"8px"},blockChip:{padding:"10px 8px",borderRadius:"10px",border:"1px solid #27272a",background:"#18181b",color:"#e4e4e7",fontSize:"13px",fontWeight:"500",cursor:"pointer",textAlign:"center"},blockChipStart:{borderColor:"#f59e0b",background:"rgba(245,158,11,0.15)",color:"#f59e0b",fontWeight:"700"},blockChipEnd:{borderColor:"#f59e0b",background:"rgba(245,158,11,0.15)",color:"#f59e0b",fontWeight:"700"},blockChipInRange:{borderColor:"rgba(245,158,11,0.4)",background:"rgba(245,158,11,0.06)",color:"#fbbf24"},blockRangePreview:{marginTop:"12px",padding:"10px 14px",background:"rgba(245,158,11,0.08)",border:"1px solid rgba(245,158,11,0.2)",borderRadius:"8px",fontSize:"13px",color:"#fbbf24",fontWeight:"600"},blockCardHeader:{display:"flex",justifyContent:"space-between",alignItems:"center",cursor:"pointer"},blockCollapseIcon:{color:"#71717a",fontSize:"13px"},blockPeriodHeader:{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"10px 12px",background:"#18181b",border:"1px solid #27272a",borderRadius:"8px",cursor:"pointer",marginTop:"8px"},blockPeriodHeaderActive:{borderColor:"rgba(245,158,11,0.4)",background:"rgba(245,158,11,0.06)"},blockPeriodLabel:{fontSize:"12px",color:"#a1a1aa",fontWeight:"600",textTransform:"uppercase",letterSpacing:"0.04em"},blockPeriodChevron:{color:"#71717a",fontSize:"12px"}};
