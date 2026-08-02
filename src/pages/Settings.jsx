@@ -617,6 +617,15 @@ function BarberBlocksSection({ barber, headers, API, workingHours }) {
   const [saving, setSaving] = useState(false)
   const [openPeriod, setOpenPeriod] = useState('Manhã')
 
+  // --- MUDANÇA 1: função de filtro (adicionada antes de dayLabels) ---
+  const isBlockActive = (block) => {
+    if (!block.date) return true
+    const today = new Date()
+    today.setHours(0, 0, 0, 0)
+    const blockDate = new Date(block.date + 'T00:00:00')
+    return blockDate >= today
+  }
+
   const dayLabels = {
     monday: 'Segunda',
     tuesday: 'Terça',
@@ -830,12 +839,13 @@ function BarberBlocksSection({ barber, headers, API, workingHours }) {
             {saving ? 'Salvando...' : '+ Adicionar bloqueio'}
           </button>
 
+          {/* --- MUDANÇA 2: filtro aplicado na listagem e na contagem --- */}
           <div style={{ marginTop: '18px' }}>
             {loading ? (
               <p style={{ color: '#71717a', fontSize: '13px' }}>Carregando...</p>
-            ) : blocks.length === 0 ? (
+            ) : blocks.filter(isBlockActive).length === 0 ? (
               <p style={{ color: '#71717a', fontSize: '13px' }}>Nenhum bloqueio cadastrado.</p>
-            ) : blocks.map(b => (
+            ) : blocks.filter(isBlockActive).map(b => (
               <div key={b.id} style={s.blockListItem}>
                 <span style={s.blockListText}>
                   {b.date ? new Date(b.date + 'T12:00:00').toLocaleDateString('pt-BR') : dayLabels[b.day_of_week] + ' (toda semana)'}
@@ -860,6 +870,14 @@ function BlockedDatesSection({ headers, API }) {
   const [newDate, setNewDate] = useState('')
   const [reason, setReason] = useState('')
   const [saving, setSaving] = useState(false)
+
+  // --- MUDANÇA 3: função de filtro (adicionada antes de loadDates) ---
+  const isDateActive = (d) => {
+    const today = new Date()
+    today.setHours(0, 0, 0, 0)
+    const blockDate = new Date(d.date + 'T00:00:00')
+    return blockDate >= today
+  }
 
   const loadDates = () => {
     setLoading(true)
@@ -925,12 +943,14 @@ function BlockedDatesSection({ headers, API }) {
       <button onClick={addDate} disabled={saving} style={s.saveBtn}>
         {saving ? 'Bloqueando...' : '+ Bloquear este dia'}
       </button>
+
+      {/* --- MUDANÇA 4: filtro aplicado na listagem e na contagem --- */}
       <div style={{ marginTop: '18px' }}>
         {loading ? (
           <p style={{ color: '#71717a', fontSize: '13px' }}>Carregando...</p>
-        ) : dates.length === 0 ? (
+        ) : dates.filter(isDateActive).length === 0 ? (
           <p style={{ color: '#71717a', fontSize: '13px' }}>Nenhum dia bloqueado.</p>
-        ) : dates.map((d) => (
+        ) : dates.filter(isDateActive).map((d) => (
           <div key={d.id} style={s.blockListItem}>
             <span style={s.blockListText}>
               {new Date(d.date + 'T12:00:00').toLocaleDateString('pt-BR', { weekday: 'long', day: '2-digit', month: 'long' })}
