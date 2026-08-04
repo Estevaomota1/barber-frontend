@@ -452,9 +452,7 @@ export default function Settings() {
   )
 }
 
-// Componentes auxiliares (LinkBox, PixKeyField, BarberBlocksSection, BlockedDatesSection)
-// mantidos exatamente como estavam, apenas reorganizei para ficar abaixo do componente principal.
-
+// Componentes auxiliares
 function LinkBox() {
   const [slug, setSlug] = useState('')
   const [copied, setCopied] = useState(false)
@@ -604,7 +602,7 @@ function PixKeyField({ barber, onSave }) {
   )
 }
 
-// ========== BarberBlocksSection com a substituição dos chips por inputs de tempo ==========
+// ========== BarberBlocksSection com grade de horários clicáveis ==========
 function BarberBlocksSection({ barber, headers, API, workingHours }) {
   const [expanded, setExpanded] = useState(false)
   const [blocks, setBlocks] = useState([])
@@ -617,7 +615,6 @@ function BarberBlocksSection({ barber, headers, API, workingHours }) {
   const [reason, setReason] = useState('')
   const [saving, setSaving] = useState(false)
 
-  // --- MUDANÇA 1: função de filtro (mantida) ---
   const isBlockActive = (block) => {
     if (!block.date) return true
     const today = new Date()
@@ -649,6 +646,38 @@ function BarberBlocksSection({ barber, headers, API, workingHours }) {
   const formatDateValue = (d) =>
     d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0')
 
+  // Gera os horários em grade (slots)
+  const generateTimeSlots = (open, close, interval = 30) => {
+    if (!open || !close) return []
+    const [oh, om] = open.split(':').map(Number)
+    const [ch, cm] = close.split(':').map(Number)
+    let current = oh * 60 + om
+    const end = ch * 60 + cm
+    const slots = []
+    while (current < end) {
+      const hh = String(Math.floor(current / 60)).padStart(2, '0')
+      const mm = String(current % 60).padStart(2, '0')
+      slots.push(`${hh}:${mm}`)
+      current += interval
+    }
+    return slots
+  }
+
+  const slots = generateTimeSlots(workingHours?.open, workingHours?.close, 30)
+
+  const handleSlotClick = (slot) => {
+    if (!startTime || (startTime && endTime)) {
+      setStartTime(slot)
+      setEndTime(null)
+    } else if (slot === startTime) {
+      setStartTime(null)
+    } else if (slot < startTime) {
+      setStartTime(slot)
+    } else {
+      setEndTime(slot)
+    }
+  }
+
   const loadBlocks = () => {
     setLoading(true)
     fetch(`${API}/barbers/${barber.id}/blocks`, { headers })
@@ -661,8 +690,7 @@ function BarberBlocksSection({ barber, headers, API, workingHours }) {
 
   const addBlock = async () => {
     if (type === 'once' && !date) return alert('Escolha uma data.')
-    if (!startTime || !endTime) return alert('Preencha o horário de início e fim.')
-    if (startTime >= endTime) return alert('O horário de início deve ser menor que o fim.')
+    if (!startTime || !endTime) return alert('Selecione o horário de início e fim na grade.')
     setSaving(true)
     try {
       const res = await fetch(`${API}/barbers/${barber.id}/blocks`, {
@@ -750,36 +778,43 @@ function BarberBlocksSection({ barber, headers, API, workingHours }) {
             </div>
           )}
 
-          {/* -- NOVOS INPUTS DE HORÁRIO (substituem os chips e accordions) -- */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '12px', margin: '14px 0' }}>
-            <div style={{ flex: 1 }}>
-              <label style={{ fontSize: '12px', color: '#71717a', display: 'block', marginBottom: '6px' }}>
-                Horário início
-              </label>
-              <input
-                type="time"
-                value={startTime || ''}
-                onChange={(e) => setStartTime(e.target.value)}
-                style={s.input}
-              />
+          {/* GRADE DE HORÁRIOS */}
+          <label style={{ fontSize: '12px', color: '#71717a', display: 'block', margin: '14px 0 8px' }}>
+            {!startTime
+              ? 'Selecione o horário de início'
+              : !endTime
+              ? 'Agora selecione o horário de fim'
+              : 'Intervalo selecionado'}
+          </label>
+          {slots.length === 0 ? (
+            <p style={{ fontSize: '13px', color: '#71717a' }}>
+              Defina o horário de funcionamento na aba "Horários" primeiro.
+            </p>
+          ) : (
+            <div style={s.slotGrid}>
+              {slots.map((slot) => {
+                const isStart = slot === startTime
+                const isEnd = slot === endTime
+                const inRange = startTime && endTime && slot > startTime && slot < endTime
+                return (
+                  <button
+                    key={slot}
+                    onClick={() => handleSlotClick(slot)}
+                    style={{
+                      ...s.slotBtn,
+                      ...(isStart || isEnd ? s.slotBtnActive : inRange ? s.slotBtnRange : {}),
+                    }}
+                  >
+                    {slot}
+                  </button>
+                )
+              })}
             </div>
-            <span style={{ color: '#71717a', marginTop: '20px' }}>até</span>
-            <div style={{ flex: 1 }}>
-              <label style={{ fontSize: '12px', color: '#71717a', display: 'block', marginBottom: '6px' }}>
-                Horário fim
-              </label>
-              <input
-                type="time"
-                value={endTime || ''}
-                onChange={(e) => setEndTime(e.target.value)}
-                style={s.input}
-              />
-            </div>
-          </div>
+          )}
 
           {startTime && (
             <div style={s.blockRangePreview}>
-              🔒 Bloqueando de {startTime} {endTime ? `até ${endTime}` : '— defina o horário final'}
+              🔒 Bloqueando de {startTime} {endTime ? `até ${endTime}` : '— selecione o horário final'}
             </div>
           )}
 
@@ -794,7 +829,6 @@ function BarberBlocksSection({ barber, headers, API, workingHours }) {
             {saving ? 'Salvando...' : '+ Adicionar bloqueio'}
           </button>
 
-          {/* -- LISTAGEM DE BLOQUEIOS (com filtro de ativos) -- */}
           <div style={{ marginTop: '18px' }}>
             {loading ? (
               <p style={{ color: '#71717a', fontSize: '13px' }}>Carregando...</p>
@@ -826,7 +860,6 @@ function BlockedDatesSection({ headers, API }) {
   const [reason, setReason] = useState('')
   const [saving, setSaving] = useState(false)
 
-  // --- MUDANÇA 3: função de filtro (adicionada antes de loadDates) ---
   const isDateActive = (d) => {
     const today = new Date()
     today.setHours(0, 0, 0, 0)
@@ -899,7 +932,6 @@ function BlockedDatesSection({ headers, API }) {
         {saving ? 'Bloqueando...' : '+ Bloquear este dia'}
       </button>
 
-      {/* --- MUDANÇA 4: filtro aplicado na listagem e na contagem --- */}
       <div style={{ marginTop: '18px' }}>
         {loading ? (
           <p style={{ color: '#71717a', fontSize: '13px' }}>Carregando...</p>
@@ -1160,4 +1192,30 @@ const s = {
   },
   blockCardHeader: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', cursor: 'pointer' },
   blockCollapseIcon: { color: '#71717a', fontSize: '13px' },
+  // Novos estilos para a grade de horários
+  slotGrid: {
+    display: 'flex',
+    flexWrap: 'wrap',
+    gap: '10px',
+  },
+  slotBtn: {
+    padding: '10px 16px',
+    borderRadius: '10px',
+    border: '1px solid #27272a',
+    background: '#18181b',
+    color: '#fff',
+    fontSize: '13px',
+    fontWeight: '600',
+    cursor: 'pointer',
+  },
+  slotBtnActive: {
+    background: '#f59e0b',
+    color: '#09090b',
+    borderColor: '#f59e0b',
+  },
+  slotBtnRange: {
+    background: 'rgba(245,158,11,0.15)',
+    color: '#fbbf24',
+    borderColor: 'rgba(245,158,11,0.4)',
+  },
 }
