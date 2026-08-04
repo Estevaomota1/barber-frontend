@@ -604,6 +604,7 @@ function PixKeyField({ barber, onSave }) {
   )
 }
 
+// ========== BarberBlocksSection com a substituição dos chips por inputs de tempo ==========
 function BarberBlocksSection({ barber, headers, API, workingHours }) {
   const [expanded, setExpanded] = useState(false)
   const [blocks, setBlocks] = useState([])
@@ -615,9 +616,8 @@ function BarberBlocksSection({ barber, headers, API, workingHours }) {
   const [endTime, setEndTime] = useState(null)
   const [reason, setReason] = useState('')
   const [saving, setSaving] = useState(false)
-  const [openPeriod, setOpenPeriod] = useState('Manhã')
 
-  // --- MUDANÇA 1: função de filtro (adicionada antes de dayLabels) ---
+  // --- MUDANÇA 1: função de filtro (mantida) ---
   const isBlockActive = (block) => {
     if (!block.date) return true
     const today = new Date()
@@ -649,27 +649,6 @@ function BarberBlocksSection({ barber, headers, API, workingHours }) {
   const formatDateValue = (d) =>
     d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0')
 
-  const openHour = workingHours?.open || '07:00'
-  const closeHour = workingHours?.close || '18:00'
-
-  const buildSlots = () => {
-    const slots = []
-    let [h, m] = openHour.split(':').map(Number)
-    const [endH, endM] = closeHour.split(':').map(Number)
-    while (h < endH || (h === endH && m < endM)) {
-      slots.push(`${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`)
-      m += 30
-      if (m === 60) { m = 0; h++ }
-    }
-    return slots
-  }
-  const allSlots = buildSlots()
-  const periods = [
-    { label: 'Manhã', slots: allSlots.filter(t => t < '12:00') },
-    { label: 'Tarde', slots: allSlots.filter(t => t >= '12:00' && t < '18:00') },
-    { label: 'Noite', slots: allSlots.filter(t => t >= '18:00') },
-  ].filter(p => p.slots.length > 0)
-
   const loadBlocks = () => {
     setLoading(true)
     fetch(`${API}/barbers/${barber.id}/blocks`, { headers })
@@ -680,23 +659,10 @@ function BarberBlocksSection({ barber, headers, API, workingHours }) {
 
   useEffect(() => { if (expanded) loadBlocks() }, [barber.id, expanded])
 
-  const handleSlotClick = (slot) => {
-    if (!startTime || (startTime && endTime)) {
-      setStartTime(slot)
-      setEndTime(null)
-    } else if (slot > startTime) {
-      setEndTime(slot)
-    } else {
-      setStartTime(slot)
-      setEndTime(null)
-    }
-  }
-
-  const isInRange = (slot) => startTime && endTime && slot > startTime && slot < endTime
-
   const addBlock = async () => {
     if (type === 'once' && !date) return alert('Escolha uma data.')
-    if (!startTime || !endTime) return alert('Selecione o horário de início e fim clicando nos chips.')
+    if (!startTime || !endTime) return alert('Preencha o horário de início e fim.')
+    if (startTime >= endTime) return alert('O horário de início deve ser menor que o fim.')
     setSaving(true)
     try {
       const res = await fetch(`${API}/barbers/${barber.id}/blocks`, {
@@ -784,47 +750,36 @@ function BarberBlocksSection({ barber, headers, API, workingHours }) {
             </div>
           )}
 
-          {periods.map(period => {
-            const isOpen = openPeriod === period.label
-            return (
-              <div key={period.label}>
-                <div
-                  style={{ ...s.blockPeriodHeader, ...(isOpen ? s.blockPeriodHeaderActive : {}) }}
-                  onClick={() => setOpenPeriod(isOpen ? null : period.label)}
-                >
-                  <span style={s.blockPeriodLabel}>{period.label}</span>
-                  <span style={s.blockPeriodChevron}>{isOpen ? '▲' : '▼'}</span>
-                </div>
-                {isOpen && (
-                  <div style={{ ...s.blockChipGrid, marginTop: '8px', marginBottom: '4px' }}>
-                    {period.slots.map(slot => {
-                      const isStart = slot === startTime
-                      const isEnd = slot === endTime
-                      const inRange = isInRange(slot)
-                      return (
-                        <button
-                          key={slot}
-                          onClick={() => handleSlotClick(slot)}
-                          style={{
-                            ...s.blockChip,
-                            ...(isStart ? s.blockChipStart : {}),
-                            ...(isEnd ? s.blockChipEnd : {}),
-                            ...(inRange ? s.blockChipInRange : {}),
-                          }}
-                        >
-                          {slot}
-                        </button>
-                      )
-                    })}
-                  </div>
-                )}
-              </div>
-            )
-          })}
+          {/* -- NOVOS INPUTS DE HORÁRIO (substituem os chips e accordions) -- */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px', margin: '14px 0' }}>
+            <div style={{ flex: 1 }}>
+              <label style={{ fontSize: '12px', color: '#71717a', display: 'block', marginBottom: '6px' }}>
+                Horário início
+              </label>
+              <input
+                type="time"
+                value={startTime || ''}
+                onChange={(e) => setStartTime(e.target.value)}
+                style={s.input}
+              />
+            </div>
+            <span style={{ color: '#71717a', marginTop: '20px' }}>até</span>
+            <div style={{ flex: 1 }}>
+              <label style={{ fontSize: '12px', color: '#71717a', display: 'block', marginBottom: '6px' }}>
+                Horário fim
+              </label>
+              <input
+                type="time"
+                value={endTime || ''}
+                onChange={(e) => setEndTime(e.target.value)}
+                style={s.input}
+              />
+            </div>
+          </div>
 
           {startTime && (
             <div style={s.blockRangePreview}>
-              🔒 Bloqueando de {startTime} {endTime ? `até ${endTime}` : '— clique no horário final'}
+              🔒 Bloqueando de {startTime} {endTime ? `até ${endTime}` : '— defina o horário final'}
             </div>
           )}
 
@@ -839,7 +794,7 @@ function BarberBlocksSection({ barber, headers, API, workingHours }) {
             {saving ? 'Salvando...' : '+ Adicionar bloqueio'}
           </button>
 
-          {/* --- MUDANÇA 2: filtro aplicado na listagem e na contagem --- */}
+          {/* -- LISTAGEM DE BLOQUEIOS (com filtro de ativos) -- */}
           <div style={{ marginTop: '18px' }}>
             {loading ? (
               <p style={{ color: '#71717a', fontSize: '13px' }}>Carregando...</p>
@@ -966,4 +921,243 @@ function BlockedDatesSection({ headers, API }) {
   )
 }
 
-const s={page:{minHeight:"100vh",background:"#09090b"},container:{maxWidth:"700px",margin:"0 auto",padding:"32px 20px"},header:{marginBottom:"24px"},title:{fontSize:"24px",fontWeight:"700",color:"#fff",margin:0},subtitle:{fontSize:"14px",color:"#71717a",margin:"4px 0 0"},tabsWrap:{display:"grid",gridTemplateColumns:"repeat(5, 1fr)",gap:"6px",marginBottom:"20px"},tabBtnSettings:{background:"#18181b",border:"1px solid #27272a",borderRadius:"10px",color:"#71717a",fontSize:"11px",fontWeight:"600",padding:"10px 4px",cursor:"pointer",textAlign:"center"},tabBtnSettingsActive:{borderColor:"#f59e0b",background:"rgba(245,158,11,0.1)",color:"#f59e0b"},hint:{fontSize:"13px",color:"#52525b",margin:"0 0 16px"},card:{background:"#18181b",border:"0.5px solid #27272a",borderRadius:"12px",padding:"24px"},sectionTitle:{fontSize:"16px",fontWeight:"600",color:"#fff",margin:"0 0 4px",display:"flex",alignItems:"center"},label:{display:"block",fontSize:"13px",color:"#a1a1aa",marginBottom:"6px",marginTop:"14px"},input:{width:"100%",background:"#09090b",border:"0.5px solid #27272a",borderRadius:"8px",padding:"10px 12px",color:"#fff",fontSize:"14px",boxSizing:"border-box"},saveBtn:{marginTop:"24px",width:"100%",padding:"12px",background:"#f59e0b",color:"#09090b",border:"none",borderRadius:"8px",fontSize:"14px",fontWeight:"700",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center"},empty:{textAlign:"center",color:"#71717a",padding:"60px"},logoArea:{display:"flex",flexDirection:"column",gap:"12px"},logoPlaceholder:{border:"1.5px dashed #27272a",borderRadius:"10px",padding:"32px",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",cursor:"pointer",background:"#09090b"},logoPreviewWrap:{display:"flex",alignItems:"center",gap:"16px"},logoPreview:{width:"80px",height:"80px",borderRadius:"10px",objectFit:"contain",background:"#09090b",border:"0.5px solid #27272a"},removeBtn:{background:"#2a1414",color:"#f87171",border:"1px solid #7f1d1d",padding:"8px 14px",borderRadius:"8px",fontSize:"13px",cursor:"pointer",display:"flex",alignItems:"center"},changeBtn:{background:"#27272a",color:"#a1a1aa",border:"none",padding:"8px 14px",borderRadius:"8px",fontSize:"13px",cursor:"pointer",display:"flex",alignItems:"center",width:"fit-content"},barberPixList:{display:"flex",flexDirection:"column",gap:"16px"},barberPixCard:{background:"#09090b",border:"0.5px solid #27272a",borderRadius:"10px",padding:"16px"},barberPixHeader:{display:"flex",alignItems:"center",gap:"12px",marginBottom:"14px"},barberPixAvatar:{width:"38px",height:"38px",borderRadius:"50%",background:"#f59e0b",color:"#09090b",display:"flex",alignItems:"center",justifyContent:"center",fontSize:"16px",fontWeight:"700",flexShrink:0},barberPixName:{fontSize:"14px",fontWeight:"600",color:"#fff",margin:0},barberPixRole:{fontSize:"11px",color:"#71717a",margin:"2px 0 0"},savedBadge:{marginLeft:"auto",background:"#14532d",color:"#4ade80",fontSize:"12px",padding:"4px 10px",borderRadius:"20px",display:"flex",alignItems:"center"},pixUploadArea:{border:"1.5px dashed #27272a",borderRadius:"8px",padding:"20px",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",cursor:"pointer",background:"#18181b"},pixPreviewWrap:{display:"flex",alignItems:"center",gap:"16px"},pixPreview:{width:"80px",height:"80px",borderRadius:"8px",objectFit:"contain",background:"#18181b",border:"0.5px solid #27272a"},pixActions:{display:"flex",flexDirection:"column",gap:"8px"},pixChangeBtn:{background:"#27272a",color:"#a1a1aa",border:"none",padding:"8px 14px",borderRadius:"8px",fontSize:"12px",cursor:"pointer",display:"flex",alignItems:"center"},pixRemoveBtn:{background:"#2a1414",color:"#f87171",border:"1px solid #7f1d1d",padding:"8px 14px",borderRadius:"8px",fontSize:"12px",cursor:"pointer",display:"flex",alignItems:"center"},blockCard:{background:"#09090b",border:"0.5px solid #27272a",borderRadius:"10px",padding:"16px",marginTop:"12px"},blockTitle:{color:"#fff",fontWeight:600,fontSize:"14px",marginBottom:"12px"},blockReasonInput:{width:"100%",background:"#18181b",color:"#fff",border:"0.5px solid #27272a",borderRadius:"8px",padding:"8px 12px",fontSize:"13px",marginBottom:"10px",boxSizing:"border-box"},blockAddBtn:{background:"#f59e0b",color:"#09090b",border:"none",borderRadius:"8px",padding:"8px 16px",fontSize:"13px",fontWeight:"700",cursor:"pointer"},blockListItem:{display:"flex",justifyContent:"space-between",alignItems:"center",gap:"8px",padding:"8px 0",borderTop:"0.5px solid #27272a",flexWrap:"wrap"},blockListText:{color:"#a1a1aa",fontSize:"13px"},blockRemoveBtn:{background:"none",border:"none",color:"#f87171",cursor:"pointer",fontSize:"12px",whiteSpace:"nowrap"},blockTypeTabs:{display:"flex",gap:"8px",marginBottom:"14px"},blockTypeTab:{flex:1,padding:"10px",borderRadius:"10px",border:"1px solid #27272a",background:"#18181b",color:"#a1a1aa",fontSize:"13px",fontWeight:"600",cursor:"pointer",textAlign:"center"},blockTypeTabActive:{borderColor:"#f59e0b",background:"rgba(245,158,11,0.1)",color:"#f59e0b"},blockDateTabsWrap:{display:"flex",gap:"6px",overflowX:"auto",paddingBottom:"8px",marginBottom:"14px",scrollbarWidth:"none"},blockDateTab:{display:"flex",flexDirection:"column",alignItems:"center",gap:"2px",padding:"8px 12px",borderRadius:"10px",border:"1px solid #27272a",background:"#18181b",color:"#71717a",fontSize:"11px",fontWeight:"600",cursor:"pointer",minWidth:"56px",flexShrink:0},blockDateTabActive:{borderColor:"#f59e0b",background:"rgba(245,158,11,0.1)",color:"#f59e0b"},blockChipGrid:{display:"grid",gridTemplateColumns:"repeat(auto-fill, minmax(72px, 1fr))",gap:"8px"},blockChip:{padding:"10px 8px",borderRadius:"10px",border:"1px solid #27272a",background:"#18181b",color:"#e4e4e7",fontSize:"13px",fontWeight:"500",cursor:"pointer",textAlign:"center"},blockChipStart:{borderColor:"#f59e0b",background:"rgba(245,158,11,0.15)",color:"#f59e0b",fontWeight:"700"},blockChipEnd:{borderColor:"#f59e0b",background:"rgba(245,158,11,0.15)",color:"#f59e0b",fontWeight:"700"},blockChipInRange:{borderColor:"rgba(245,158,11,0.4)",background:"rgba(245,158,11,0.06)",color:"#fbbf24"},blockRangePreview:{marginTop:"12px",padding:"10px 14px",background:"rgba(245,158,11,0.08)",border:"1px solid rgba(245,158,11,0.2)",borderRadius:"8px",fontSize:"13px",color:"#fbbf24",fontWeight:"600"},blockCardHeader:{display:"flex",justifyContent:"space-between",alignItems:"center",cursor:"pointer"},blockCollapseIcon:{color:"#71717a",fontSize:"13px"},blockPeriodHeader:{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"10px 12px",background:"#18181b",border:"1px solid #27272a",borderRadius:"8px",cursor:"pointer",marginTop:"8px"},blockPeriodHeaderActive:{borderColor:"rgba(245,158,11,0.4)",background:"rgba(245,158,11,0.06)"},blockPeriodLabel:{fontSize:"12px",color:"#a1a1aa",fontWeight:"600",textTransform:"uppercase",letterSpacing:"0.04em"},blockPeriodChevron:{color:"#71717a",fontSize:"12px"}};
+const s = {
+  page: { minHeight: '100vh', background: '#09090b' },
+  container: { maxWidth: '700px', margin: '0 auto', padding: '32px 20px' },
+  header: { marginBottom: '24px' },
+  title: { fontSize: '24px', fontWeight: '700', color: '#fff', margin: 0 },
+  subtitle: { fontSize: '14px', color: '#71717a', margin: '4px 0 0' },
+  tabsWrap: { display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: '6px', marginBottom: '20px' },
+  tabBtnSettings: {
+    background: '#18181b',
+    border: '1px solid #27272a',
+    borderRadius: '10px',
+    color: '#71717a',
+    fontSize: '11px',
+    fontWeight: '600',
+    padding: '10px 4px',
+    cursor: 'pointer',
+    textAlign: 'center',
+  },
+  tabBtnSettingsActive: {
+    borderColor: '#f59e0b',
+    background: 'rgba(245,158,11,0.1)',
+    color: '#f59e0b',
+  },
+  hint: { fontSize: '13px', color: '#52525b', margin: '0 0 16px' },
+  card: { background: '#18181b', border: '0.5px solid #27272a', borderRadius: '12px', padding: '24px' },
+  sectionTitle: { fontSize: '16px', fontWeight: '600', color: '#fff', margin: '0 0 4px', display: 'flex', alignItems: 'center' },
+  label: { display: 'block', fontSize: '13px', color: '#a1a1aa', marginBottom: '6px', marginTop: '14px' },
+  input: {
+    width: '100%',
+    background: '#09090b',
+    border: '0.5px solid #27272a',
+    borderRadius: '8px',
+    padding: '10px 12px',
+    color: '#fff',
+    fontSize: '14px',
+    boxSizing: 'border-box',
+  },
+  saveBtn: {
+    marginTop: '24px',
+    width: '100%',
+    padding: '12px',
+    background: '#f59e0b',
+    color: '#09090b',
+    border: 'none',
+    borderRadius: '8px',
+    fontSize: '14px',
+    fontWeight: '700',
+    cursor: 'pointer',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  empty: { textAlign: 'center', color: '#71717a', padding: '60px' },
+  logoArea: { display: 'flex', flexDirection: 'column', gap: '12px' },
+  logoPlaceholder: {
+    border: '1.5px dashed #27272a',
+    borderRadius: '10px',
+    padding: '32px',
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    justifyContent: 'center',
+    cursor: 'pointer',
+    background: '#09090b',
+  },
+  logoPreviewWrap: { display: 'flex', alignItems: 'center', gap: '16px' },
+  logoPreview: { width: '80px', height: '80px', borderRadius: '10px', objectFit: 'contain', background: '#09090b', border: '0.5px solid #27272a' },
+  removeBtn: {
+    background: '#2a1414',
+    color: '#f87171',
+    border: '1px solid #7f1d1d',
+    padding: '8px 14px',
+    borderRadius: '8px',
+    fontSize: '13px',
+    cursor: 'pointer',
+    display: 'flex',
+    alignItems: 'center',
+  },
+  changeBtn: {
+    background: '#27272a',
+    color: '#a1a1aa',
+    border: 'none',
+    padding: '8px 14px',
+    borderRadius: '8px',
+    fontSize: '13px',
+    cursor: 'pointer',
+    display: 'flex',
+    alignItems: 'center',
+    width: 'fit-content',
+  },
+  barberPixList: { display: 'flex', flexDirection: 'column', gap: '16px' },
+  barberPixCard: { background: '#09090b', border: '0.5px solid #27272a', borderRadius: '10px', padding: '16px' },
+  barberPixHeader: { display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '14px' },
+  barberPixAvatar: {
+    width: '38px',
+    height: '38px',
+    borderRadius: '50%',
+    background: '#f59e0b',
+    color: '#09090b',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    fontSize: '16px',
+    fontWeight: '700',
+    flexShrink: 0,
+  },
+  barberPixName: { fontSize: '14px', fontWeight: '600', color: '#fff', margin: 0 },
+  barberPixRole: { fontSize: '11px', color: '#71717a', margin: '2px 0 0' },
+  savedBadge: {
+    marginLeft: 'auto',
+    background: '#14532d',
+    color: '#4ade80',
+    fontSize: '12px',
+    padding: '4px 10px',
+    borderRadius: '20px',
+    display: 'flex',
+    alignItems: 'center',
+  },
+  pixUploadArea: {
+    border: '1.5px dashed #27272a',
+    borderRadius: '8px',
+    padding: '20px',
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    justifyContent: 'center',
+    cursor: 'pointer',
+    background: '#18181b',
+  },
+  pixPreviewWrap: { display: 'flex', alignItems: 'center', gap: '16px' },
+  pixPreview: { width: '80px', height: '80px', borderRadius: '8px', objectFit: 'contain', background: '#18181b', border: '0.5px solid #27272a' },
+  pixActions: { display: 'flex', flexDirection: 'column', gap: '8px' },
+  pixChangeBtn: {
+    background: '#27272a',
+    color: '#a1a1aa',
+    border: 'none',
+    padding: '8px 14px',
+    borderRadius: '8px',
+    fontSize: '12px',
+    cursor: 'pointer',
+    display: 'flex',
+    alignItems: 'center',
+  },
+  pixRemoveBtn: {
+    background: '#2a1414',
+    color: '#f87171',
+    border: '1px solid #7f1d1d',
+    padding: '8px 14px',
+    borderRadius: '8px',
+    fontSize: '12px',
+    cursor: 'pointer',
+    display: 'flex',
+    alignItems: 'center',
+  },
+  blockCard: { background: '#09090b', border: '0.5px solid #27272a', borderRadius: '10px', padding: '16px', marginTop: '12px' },
+  blockTitle: { color: '#fff', fontWeight: 600, fontSize: '14px', marginBottom: '12px' },
+  blockReasonInput: {
+    width: '100%',
+    background: '#18181b',
+    color: '#fff',
+    border: '0.5px solid #27272a',
+    borderRadius: '8px',
+    padding: '8px 12px',
+    fontSize: '13px',
+    marginBottom: '10px',
+    boxSizing: 'border-box',
+  },
+  blockAddBtn: {
+    background: '#f59e0b',
+    color: '#09090b',
+    border: 'none',
+    borderRadius: '8px',
+    padding: '8px 16px',
+    fontSize: '13px',
+    fontWeight: '700',
+    cursor: 'pointer',
+  },
+  blockListItem: {
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    gap: '8px',
+    padding: '8px 0',
+    borderTop: '0.5px solid #27272a',
+    flexWrap: 'wrap',
+  },
+  blockListText: { color: '#a1a1aa', fontSize: '13px' },
+  blockRemoveBtn: { background: 'none', border: 'none', color: '#f87171', cursor: 'pointer', fontSize: '12px', whiteSpace: 'nowrap' },
+  blockTypeTabs: { display: 'flex', gap: '8px', marginBottom: '14px' },
+  blockTypeTab: {
+    flex: 1,
+    padding: '10px',
+    borderRadius: '10px',
+    border: '1px solid #27272a',
+    background: '#18181b',
+    color: '#a1a1aa',
+    fontSize: '13px',
+    fontWeight: '600',
+    cursor: 'pointer',
+    textAlign: 'center',
+  },
+  blockTypeTabActive: { borderColor: '#f59e0b', background: 'rgba(245,158,11,0.1)', color: '#f59e0b' },
+  blockDateTabsWrap: {
+    display: 'flex',
+    gap: '6px',
+    overflowX: 'auto',
+    paddingBottom: '8px',
+    marginBottom: '14px',
+    scrollbarWidth: 'none',
+  },
+  blockDateTab: {
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    gap: '2px',
+    padding: '8px 12px',
+    borderRadius: '10px',
+    border: '1px solid #27272a',
+    background: '#18181b',
+    color: '#71717a',
+    fontSize: '11px',
+    fontWeight: '600',
+    cursor: 'pointer',
+    minWidth: '56px',
+    flexShrink: 0,
+  },
+  blockDateTabActive: { borderColor: '#f59e0b', background: 'rgba(245,158,11,0.1)', color: '#f59e0b' },
+  blockRangePreview: {
+    marginTop: '12px',
+    padding: '10px 14px',
+    background: 'rgba(245,158,11,0.08)',
+    border: '1px solid rgba(245,158,11,0.2)',
+    borderRadius: '8px',
+    fontSize: '13px',
+    color: '#fbbf24',
+    fontWeight: '600',
+  },
+  blockCardHeader: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', cursor: 'pointer' },
+  blockCollapseIcon: { color: '#71717a', fontSize: '13px' },
+}
