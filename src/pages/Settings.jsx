@@ -654,7 +654,7 @@ function BarberBlocksSection({ barber, headers, API, workingHours }) {
     let current = oh * 60 + om
     const end = ch * 60 + cm
     const slots = []
-    while (current < end) {
+    while (current <= end) {
       const hh = String(Math.floor(current / 60)).padStart(2, '0')
       const mm = String(current % 60).padStart(2, '0')
       slots.push(`${hh}:${mm}`)
