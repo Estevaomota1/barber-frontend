@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import api from '../services/api'
 import Navbar from '../components/Navbar'
 import { enablePushNotifications, isPushEnabled } from '../services/push'
+
 function getInitials(name = '') {
   return name.split(' ').slice(0, 2).map(n => n[0]).join('').toUpperCase()
 }
@@ -78,6 +79,21 @@ export default function Dashboard() {
   const [clients, setClients] = useState([])
   const [barbers, setBarbers] = useState([])
   const [loading, setLoading] = useState(true)
+  const [pushEnabled, setPushEnabled] = useState(isPushEnabled())
+
+  useEffect(() => {
+    if (Notification?.permission === 'granted') {
+      setPushEnabled(true)
+    }
+  }, [])
+
+  const handleEnablePush = async () => {
+    const ok = await enablePushNotifications()
+    if (ok) {
+      localStorage.setItem('push_enabled', 'true')
+      setPushEnabled(true)
+    }
+  }
 
   useEffect(() => {
     async function loadData() {
@@ -167,6 +183,24 @@ export default function Dashboard() {
               {new Date().toLocaleDateString('pt-BR', { day: '2-digit', month: 'long' })}
             </div>
           </div>
+
+          {/* Banner de notificações push */}
+          {!pushEnabled && (
+            <div className="dash-card" style={{ marginBottom: '20px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px', flexWrap: 'wrap' }}>
+              <div>
+                <h3 style={{ fontSize: '14px', fontWeight: '600', margin: '0 0 4px 0', color: '#fff' }}>
+                  <i className="ti ti-bell-ringing" style={{ marginRight: '8px', color: '#f59e0b' }}></i>
+                  Ativar notificações
+                </h3>
+                <p style={{ fontSize: '13px', color: '#71717a', margin: 0 }}>
+                  Receba um aviso no celular assim que um cliente agendar.
+                </p>
+              </div>
+              <button onClick={handleEnablePush} style={{ background: '#f59e0b', color: '#09090b', border: 'none', padding: '10px 18px', borderRadius: '8px', fontSize: '13px', fontWeight: '700', cursor: 'pointer', flexShrink: 0 }}>
+                Ativar
+              </button>
+            </div>
+          )}
 
           {/* Stats */}
           <div className="dash-stats-grid">
