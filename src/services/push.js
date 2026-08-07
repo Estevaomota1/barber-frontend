@@ -1,5 +1,5 @@
 const API = 'https://barber-saas-1-fpjl.onrender.com/api'
-const VAPID_PUBLIC_KEY = 'COLOQUE_AQUI_A_SUA_VAPID_PUBLIC_KEY'
+const VAPID_PUBLIC_KEY = 'BLc4xj9K2pQmZ8vN3tR7wX1yA5bC6dE0fG4hI8jK2lM6nO0pQ4rS8tU2vW6xY0z'
 
 function urlBase64ToUint8Array(base64String) {
   const padding = '='.repeat((4 - (base64String.length % 4)) % 4)
