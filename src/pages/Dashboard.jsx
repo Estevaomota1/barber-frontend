@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import api from '../services/api'
 import Navbar from '../components/Navbar'
-
+import { enablePushNotifications, isPushEnabled } from '../services/push'
 function getInitials(name = '') {
   return name.split(' ').slice(0, 2).map(n => n[0]).join('').toUpperCase()
 }
